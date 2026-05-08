@@ -1,27 +1,25 @@
 from datetime import datetime
+from escala import converter_data, gerar_proximos_dias
 
-print("==== SIMULADOR DE ESCALAS ====")
-print("\n1 - Consultar uma data.")
-print("2 - Ver proximas dias.")
-print("3 - Alterar escalas.")
-print("4 - Sair.")
+def iniciar_programa():
+    data_texto = input("Digite a data inicial da escala (dd/mm/aaaa): ")
 
-while True:
-    menu = input("\nEscolha uma opção: ")
-    
-    if menu == "1":
-        pass
-    
-    elif menu == "2":
-        pass
-    
-    elif menu == "3":
-        pass
+    data_inicio = converter_data(data_texto)
 
-    elif menu == "4":
-        print("Volte sempre")
-        break
-    
-    else:
-        print("Favor inserir uma opção valida entre 1 e 4!")
-        continue
+    if data_inicio is None:
+        print("Data inválida. Use o formato dd/mm/aaaa.")
+        return
+
+    quantidade_dias = int(input("Quantos dias deseja visualizar? "))
+    dias_trabalho = int(input("Quantos dias de trabalho? "))
+    dias_folga = int(input("Quantos dias de folga? "))
+
+    gerar_proximos_dias(
+        data_inicio,
+        quantidade_dias,
+        dias_trabalho,
+        dias_folga
+    )
+
+if __name__ == "__main__":
+    iniciar_programa()
