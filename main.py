@@ -46,6 +46,7 @@ def main():
 
         elif menu == "2":
             data_inicio_texto = input("Digite a data inicial da escala (dd/mm/aaaa): ")
+
             data_inicio = converter_data(data_inicio_texto)
 
             if data_inicio is None:
