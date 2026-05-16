@@ -1,237 +1,329 @@
-<div align="center">
+<p align="center">
+  <img src="./assets/banner.png" alt="Banner do projeto Simulador de Escala de Trabalho" width="100%">
+</p>
 
-# ⏰ Simulador de Escala de Trabalho
+<h1 align="center">⏰ Simulador de Escala de Trabalho</h1>
 
-### Um projeto em Python para simular escalas de trabalho e consultar dias de **trabalho** ou **folga**
+<p align="center">
+  <strong>Projeto em Python para consultar, simular e visualizar escalas de trabalho como 6x3, 5x2, 4x4 e outras variações baseadas em ciclos.</strong>
+</p>
 
-![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
-![Python](https://img.shields.io/badge/python-3.x-blue)
-![CLI](https://img.shields.io/badge/interface-CLI-informational)
-![Projeto](https://img.shields.io/badge/foco-lógica%20e%20datas-success)
+<p align="center">
+  <img src="https://img.shields.io/badge/STATUS-EM%20DESENVOLVIMENTO-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/PYTHON-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/INTERFACE-CLI-00C2FF?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/PORTF%C3%93LIO-GITHUB%20%7C%20LINKEDIN-48CAE4?style=for-the-badge&labelColor=061A2B">
+</p>
 
-</div>
+<br>
+
+<table>
+  <tr>
+    <td width="33%" align="center">
+      <h3>🔁 Ciclos automáticos</h3>
+      <p>Calcula a posição da data dentro do ciclo da escala.</p>
+    </td>
+    <td width="33%" align="center">
+      <h3>📅 Consulta por data</h3>
+      <p>Informa se o dia consultado será de trabalho ou folga.</p>
+    </td>
+    <td width="33%" align="center">
+      <h3>⚙️ Escalas flexíveis</h3>
+      <p>Permite simular modelos como 6x3, 5x2, 4x4 e outros.</p>
+    </td>
+  </tr>
+</table>
 
 ---
 
-## 📌 Sobre o projeto
+## 📌 Visão geral
 
-O **Simulador de Escala de Trabalho** é um projeto desenvolvido em **Python** com o objetivo de simular diferentes escalas de trabalho e informar se uma pessoa estará **trabalhando** ou **folgando** em uma determinada data.
+O **Simulador de Escala de Trabalho** é uma aplicação desenvolvida em **Python** para calcular automaticamente se uma determinada data corresponde a um dia de **trabalho** ou **folga**, com base em uma escala definida pelo usuário.
 
-A proposta inicial é construir o sistema em **terminal/CLI**, com foco no desenvolvimento da lógica do programa, manipulação de datas e organização do código.
+A primeira versão do projeto funciona via terminal, com foco em:
 
-Posteriormente, o projeto poderá evoluir para versões mais completas, com novas regras, escalas, turnos, funcionários e até uma interface gráfica ou web.
+- clareza de lógica;
+- manipulação de datas;
+- cálculo de ciclos;
+- organização modular;
+- evolução gradual do sistema.
+
+> [!NOTE]
+> Apesar de ser um projeto simples, ele foi estruturado com mentalidade de produto: começo enxuto, lógica bem definida e espaço para evolução futura.
 
 ---
 
 ## 🎯 Objetivo
 
-Criar uma ferramenta simples e funcional que permita:
+Criar uma ferramenta prática que permita ao usuário:
 
-- definir uma **data inicial**
-- configurar uma **escala de trabalho**
-- consultar uma **data específica**
-- descobrir se, naquele dia, a pessoa estará:
-
-✅ **Trabalhando**
-
-ou
-
-🌙 **Folgando**
+| Recurso | Descrição |
+|--------|-----------|
+| 📅 Definir data inicial | Informa quando o ciclo da escala começa |
+| 🔎 Consultar uma data | Verifica se o usuário estará trabalhando ou folgando |
+| 📆 Visualizar próximos dias | Gera uma sequência futura da escala |
+| ⚙️ Alterar escala | Permite mudar os dias de trabalho e folga |
+| 🧠 Entender o ciclo | Aplica cálculo modular para localizar a posição no ciclo |
 
 ---
 
-## 🧠 Exemplo de funcionamento
+## 🧠 Exemplo prático
+
+Imagine a seguinte escala:
+
+| Informação | Valor |
+|-----------|-------|
+| Data inicial | `01/05/2026` |
+| Modelo de escala | `6x3` |
+| Data consultada | `07/05/2026` |
+
+Resultado esperado:
 
 ```text
-Data inicial da escala: 01/05/2026
-Escala: 6x3
-Data consultada: 07/05/2026
-
-Resultado: Folga
+Na data 07/05/2026, você estará: Folga
 ```
 
-### 🔎 Interpretação do exemplo
+### Interpretação
 
-Nesse caso:
-
-- a escala é **6x3**
-- isso significa **6 dias de trabalho** seguidos de **3 dias de folga**
-- ao consultar a data informada, o sistema calcula em qual ponto do ciclo a pessoa estará
-- com base nesse cálculo, retorna se o dia será de trabalho ou folga
-
----
-
-## ⚙️ Tecnologias utilizadas
-
-- **Python**
-- **Manipulação de datas com `datetime`**
-- **Lógica condicional**
-- **Estruturas de repetição**
-- **Funções**
-- **Organização modular de código**
-- **Interface inicial via terminal/CLI**
-
----
-
-## 📚 Conceitos praticados
-
-Este projeto também serve como prática para estudos em Python, principalmente nos temas:
-
-- lógica de programação
-- manipulação de datas
-- cálculo de ciclos
-- entrada e saída de dados
-- funções
-- organização de pastas
-- modularização
-- boas práticas para projetos de portfólio
-
----
-
-## 📂 Estrutura inicial do projeto
-
-```text
-simulador-escala-trabalho/
-│
-├── main.py
-├── README.md
-│
-├── src/
-│   ├── escala.py
-│   ├── validacoes.py
-│   └── utils.py
-│
-├── data/
-│   └── escalas.json
-│
-└── docs/
-    └── anotacoes.md
-```
-
-### 📁 Explicação das pastas
-
-| Pasta / Arquivo | Função |
-|---|---|
-| `main.py` | Arquivo principal do projeto, responsável por iniciar o sistema |
-| `src/` | Pasta onde ficará a lógica principal do programa |
-| `escala.py` | Arquivo responsável pelos cálculos da escala |
-| `validacoes.py` | Arquivo para validar datas, entradas e formatos |
-| `utils.py` | Funções auxiliares do projeto |
-| `data/` | Pasta para armazenar dados, como modelos de escala |
-| `escalas.json` | Arquivo futuro para salvar configurações de escalas |
-| `docs/` | Pasta para anotações, ideias e documentação do projeto |
-| `README.md` | Documentação principal do projeto |
-
----
-
-## 🚀 Proposta de evolução do projeto
-
-Este projeto foi pensado para crescer aos poucos.
-
-### Primeira versão
-
-- [ ] criar sistema em terminal
-- [ ] receber data inicial da escala
-- [ ] receber tipo de escala
-- [ ] receber data de consulta
-- [ ] calcular se o dia é trabalho ou folga
-
-### Melhorias futuras
-
-- [ ] suporte para diferentes tipos de escala
-- [ ] escalas como 5x2, 6x1, 6x2, 6x3 e outras
-- [ ] escalas rotativas com turnos
-- [ ] cadastro de funcionários
-- [ ] consulta de períodos maiores
-- [ ] calendário mensal da escala
-- [ ] tratamento de férias
-- [ ] tratamento de afastamentos
-- [ ] exportação de relatórios
-- [ ] versão com interface gráfica
-- [ ] versão web com HTML, CSS e Python
-
----
-
-## 🖥️ Exemplo de uso esperado
-
-O usuário informa:
-
-1. a data de início da escala
-2. o modelo da escala, por exemplo **6x3**
-3. a data que deseja consultar
-
-E o sistema retorna algo como:
-
-```text
-No dia 07/05/2026 você estará de folga.
-```
-
-Ou:
-
-```text
-No dia 10/05/2026 você estará trabalhando.
-```
-
----
-
-## 🔄 Como funciona a lógica da escala
-
-A escala funciona como um ciclo.
-
-Por exemplo, em uma escala **6x3**:
+Uma escala **6x3** significa:
 
 ```text
 6 dias trabalhando + 3 dias folgando = ciclo de 9 dias
 ```
 
-Ou seja:
+Representação visual do ciclo:
+
+<p align="center">
+  <img src="https://img.shields.io/badge/T-Trabalho-0077B6?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/T-Trabalho-0077B6?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/T-Trabalho-0077B6?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/T-Trabalho-0077B6?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/T-Trabalho-0077B6?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/T-Trabalho-0077B6?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/F-Folga-E63946?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/F-Folga-E63946?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/F-Folga-E63946?style=for-the-badge&labelColor=061A2B">
+</p>
+
+---
+
+## ⚙️ Funcionalidades
+
+| Funcionalidade | Status |
+|---------------|--------|
+| Consultar uma data específica | ✅ Implementado |
+| Gerar próximos dias da escala | ✅ Implementado |
+| Alterar escala pelo menu | ✅ Implementado |
+| Validação básica de datas | ✅ Implementado |
+| Validação de entradas numéricas | ✅ Implementado |
+| Interface via terminal | ✅ Implementado |
+| Calendário mensal visual | 🔜 Planejado |
+| Cadastro de funcionários | 🔜 Planejado |
+| Exportação de relatórios | 🔜 Planejado |
+| Interface gráfica ou web | 🔜 Planejado |
+
+---
+
+## 🖥️ Demonstração no terminal
 
 ```text
-Dia 1  - Trabalha
-Dia 2  - Trabalha
-Dia 3  - Trabalha
-Dia 4  - Trabalha
-Dia 5  - Trabalha
-Dia 6  - Trabalha
-Dia 7  - Folga
-Dia 8  - Folga
-Dia 9  - Folga
-Dia 10 - Reinicia o ciclo
+==== SIMULADOR DE ESCALAS ====
+Escala atual: 6x3
+
+1 - Consultar uma data
+2 - Ver próximos dias
+3 - Alterar escala
+4 - Sair
+
+Escolha uma opção: 1
+Digite a data inicial da escala (dd/mm/aaaa): 01/05/2026
+Digite a data que deseja consultar (dd/mm/aaaa): 07/05/2026
+
+Na data 07/05/2026, você estará: Folga
 ```
 
-O sistema calcula quantos dias se passaram desde a data inicial e identifica em qual posição do ciclo a data consultada se encaixa.
+Exemplo de visualização dos próximos dias:
+
+```text
+01/05/2026: Trabalhando
+02/05/2026: Trabalhando
+03/05/2026: Trabalhando
+04/05/2026: Trabalhando
+05/05/2026: Trabalhando
+06/05/2026: Trabalhando
+07/05/2026: Folga
+08/05/2026: Folga
+09/05/2026: Folga
+10/05/2026: Trabalhando
+```
 
 ---
 
-## 📌 Status do projeto
+## 🧩 Arquitetura do projeto
 
-🚧 **Em desenvolvimento**
+```text
+simulador-escala-trabalho/
+│
+├── assets/
+│   └── banner.png
+│
+├── escala.py
+├── main.py
+└── README.md
+```
 
-A estrutura inicial está sendo planejada e construída com foco em clareza, evolução gradual e boas práticas.
+### Responsabilidade dos arquivos
+
+| Arquivo/Pasta | Responsabilidade |
+|--------------|------------------|
+| `assets/` | Armazena recursos visuais do projeto |
+| `banner.png` | Banner principal do README |
+| `escala.py` | Contém a lógica de datas, ciclos e cálculo da escala |
+| `main.py` | Controla o menu, entradas do usuário e execução principal |
+| `README.md` | Documentação principal do projeto |
 
 ---
 
-## 💡 Motivo da criação
+## 🧮 Como funciona a lógica
 
-Este projeto foi criado como parte da minha jornada de aprendizado em Python e construção de portfólio.
+A lógica principal usa o conceito de **ciclo**.
 
-Além de ser um projeto simples, ele trabalha conceitos importantes como:
+Para uma escala `6x3`:
 
-- datas
-- ciclos
-- lógica matemática
-- validação de entrada
-- organização de código
-- documentação
-- evolução gradual de um sistema
+```text
+ciclo = dias de trabalho + dias de folga
+ciclo = 6 + 3
+ciclo = 9 dias
+```
+
+Depois, o sistema calcula:
+
+```text
+dias_passados = data_consulta - data_inicio
+posicao_ciclo = dias_passados % ciclo
+```
+
+A decisão acontece assim:
+
+```text
+Se posicao_ciclo < dias_trabalho:
+    Trabalhando
+Senão:
+    Folga
+```
+
+Essa abordagem permite reaproveitar a mesma lógica para diferentes modelos de escala.
 
 ---
 
-## 🤝 Contribuição
+## 🛠️ Tecnologias utilizadas
 
-Sugestões, melhorias e ideias são sempre bem-vindas.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-061A2B?style=for-the-badge&logo=python&logoColor=FFD43B">
+  <img src="https://img.shields.io/badge/Datetime-0077B6?style=for-the-badge">
+  <img src="https://img.shields.io/badge/CLI-00B4D8?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Git-061A2B?style=for-the-badge&logo=git&logoColor=F05032">
+  <img src="https://img.shields.io/badge/GitHub-03045E?style=for-the-badge&logo=github&logoColor=white">
+</p>
 
-Esse projeto faz parte da minha jornada de aprendizado e desenvolvimento profissional, então qualquer feedback pode ajudar na evolução do sistema.
+### Conceitos praticados
+
+- lógica de programação;
+- funções;
+- modularização;
+- manipulação de datas;
+- estruturas condicionais;
+- estruturas de repetição;
+- validação de entrada;
+- cálculo de ciclos;
+- organização de projeto;
+- documentação para portfólio.
+
+---
+
+## 🚀 Como executar
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/Dinox75/simulador-escala-trabalho.git
+```
+
+### 2. Acesse a pasta
+
+```bash
+cd simulador-escala-trabalho
+```
+
+### 3. Execute o projeto
+
+```bash
+python main.py
+```
+
+Ou, dependendo do ambiente:
+
+```bash
+python3 main.py
+```
+
+---
+
+## 🧪 Testes manuais sugeridos
+
+| Data inicial | Escala | Data consultada | Resultado esperado |
+|-------------|--------|-----------------|--------------------|
+| `01/05/2026` | `6x3` | `01/05/2026` | Trabalhando |
+| `01/05/2026` | `6x3` | `06/05/2026` | Trabalhando |
+| `01/05/2026` | `6x3` | `07/05/2026` | Folga |
+| `01/05/2026` | `6x3` | `09/05/2026` | Folga |
+| `01/05/2026` | `6x3` | `10/05/2026` | Trabalhando |
+
+---
+
+## 🧭 Roadmap
+
+### Versão atual
+
+- [x] Criar lógica de conversão de datas
+- [x] Calcular status de trabalho ou folga
+- [x] Gerar próximos dias da escala
+- [x] Criar menu interativo
+- [x] Permitir alteração da escala no terminal
+
+### Próximas melhorias
+
+- [ ] Melhorar tratamento de erros no terminal
+- [ ] Criar validações em módulo separado
+- [ ] Adicionar escalas favoritas
+- [ ] Criar visualização mensal da escala
+- [ ] Adicionar suporte para múltiplos funcionários
+- [ ] Permitir cadastro de turnos
+- [ ] Exportar resultados em `.txt`, `.csv` ou `.pdf`
+- [ ] Criar interface gráfica
+- [ ] Criar versão web
+
+---
+
+## 💼 Valor profissional
+
+Este projeto demonstra habilidades importantes para desenvolvimento de software:
+
+<table>
+  <tr>
+    <td align="center"><strong>🧠 Lógica</strong><br>Cálculo de ciclos e regras</td>
+    <td align="center"><strong>📅 Datas</strong><br>Manipulação com datetime</td>
+    <td align="center"><strong>🧩 Modularização</strong><br>Separação entre lógica e execução</td>
+  </tr>
+  <tr>
+    <td align="center"><strong>🖥️ CLI</strong><br>Interação via terminal</td>
+    <td align="center"><strong>🧪 Testes</strong><br>Validação manual de cenários</td>
+    <td align="center"><strong>📚 Documentação</strong><br>README estruturado para portfólio</td>
+  </tr>
+</table>
+
+> [!IMPORTANT]
+> O objetivo não é apenas criar um script, mas desenvolver um projeto apresentável, organizado e com potencial de evolução.
 
 ---
 
@@ -239,20 +331,31 @@ Esse projeto faz parte da minha jornada de aprendizado e desenvolvimento profiss
 
 **Vinicius Lima**
 
-Estudante de Análise de Dados e Desenvolvimento de Sistemas.
+Estudante de **Análise de Dados e Desenvolvimento de Sistemas**, com foco em desenvolvimento prático, automação, análise de dados e construção de projetos para GitHub e LinkedIn.
 
-Foco em:
+### Áreas de interesse
 
-- Python
-- automação
-- análise de dados
-- Power BI
-- desenvolvimento de projetos práticos para GitHub e LinkedIn
+<p>
+  <img src="https://img.shields.io/badge/Python-0077B6?style=flat-square">
+  <img src="https://img.shields.io/badge/Automa%C3%A7%C3%A3o-00B4D8?style=flat-square">
+  <img src="https://img.shields.io/badge/An%C3%A1lise%20de%20Dados-48CAE4?style=flat-square">
+  <img src="https://img.shields.io/badge/Power%20BI-F9C74F?style=flat-square">
+  <img src="https://img.shields.io/badge/GitHub-061A2B?style=flat-square">
+  <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat-square">
+</p>
 
 ---
 
-<div align="center">
+<p align="center">
+  <strong>Projeto desenvolvido como parte da minha jornada de aprendizado, prática e evolução profissional em tecnologia.</strong>
+</p>
 
-### ⭐ Projeto em desenvolvimento para aprendizado e portfólio
+<p align="center">
+  <img src="https://img.shields.io/badge/Personalize-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/Simule-0077B6?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/Planeje-03045E?style=for-the-badge&labelColor=061A2B">
+</p>
 
-</div>
+<p align="center">
+  ⭐ Se este projeto te ajudou ou serviu como inspiração, considere deixar uma estrela no repositório.
+</p>
