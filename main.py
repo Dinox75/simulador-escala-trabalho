@@ -40,12 +40,15 @@ def main():
 
             quantidade_dias = ler_numero("Quantos dias deseja visualizar? ")
 
-            gerar_proximos_dias(
+            proximos_dias = gerar_proximos_dias(
                 data_inicio,
                 quantidade_dias,
                 dias_trabalho,
                 dias_folga
             )
+
+            for dia in proximos_dias:
+                print(f"{dia['data'].strftime('%d/%m/%Y')}: {dia['status']}")
 
         elif menu == "3":
             novo_dias_trabalho = ler_numero("Quantos dias de trabalho? ")
