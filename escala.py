@@ -1,15 +1,5 @@
 # Responsável pela lógica da escala.
-
-from datetime import datetime, timedelta
-
-
-def converter_data(data_texto):
-    try:
-        data_convertida = datetime.strptime(data_texto, "%d/%m/%Y").date()
-        return data_convertida
-    except ValueError:
-        return None
-
+from datetime import timedelta
 
 def calcular_status(data_inicio, data_consulta, dias_trabalho, dias_folga):
     ciclo = dias_trabalho + dias_folga
@@ -28,9 +18,9 @@ def gerar_proximos_dias(data_inicio, quantidade_dias, dias_trabalho, dias_folga)
     result = []
 
     for dia in range(quantidade_dias):
-        data_atual = data_inicio + timedelta(days= dia)
+        data_atual = data_inicio + timedelta(days=dia)
 
-        status = calcular_status (
+        status = calcular_status(
             data_inicio,
             data_atual,
             dias_trabalho,
