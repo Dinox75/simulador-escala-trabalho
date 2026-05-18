@@ -356,6 +356,16 @@ Estudante de **Análise de Dados e Desenvolvimento de Sistemas**, com foco em de
   <img src="https://img.shields.io/badge/Planeje-03045E?style=for-the-badge&labelColor=061A2B">
 </p>
 
+## 📄 Licença
+
+Este projeto está protegido por uma **Licença Proprietária de Uso Não Comercial**.
+
+O código está disponível publicamente para fins de estudo, avaliação técnica, portfólio e recrutamento.  
+O uso comercial, redistribuição, venda, cópia substancial ou criação de soluções derivadas para fins comerciais não é permitido sem autorização prévia e por escrito do autor.
+
+Para mais detalhes, consulte o arquivo [LICENSE](./LICENSE).
+
+
 <p align="center">
   ⭐ Se este projeto te ajudou ou serviu como inspiração, considere deixar uma estrela no repositório.
 </p>
