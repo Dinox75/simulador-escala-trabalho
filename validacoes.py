@@ -35,3 +35,12 @@ def ler_data(mensagem):
 
         except ValueError:
             print("Data inválida. Use o formato dd/mm/aaaa.")
+
+def ler_opcao_menu(mensagem, opcoes_validas):
+    while True:
+        opcao = input(mensagem).strip()
+
+        if opcao in opcoes_validas:
+            return opcao
+
+        print("Opção inválida. Escolha uma opção válida.")

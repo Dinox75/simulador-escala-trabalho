@@ -1,5 +1,6 @@
 from escala import converter_data, calcular_status, gerar_proximos_dias
 from validacoes import ler_numero, ler_data
+from validacoes import ler_numero, ler_data, ler_opcao_menu
 
 def main():
     dias_trabalho = 6
@@ -13,7 +14,7 @@ def main():
         print("3 - Alterar escala")
         print("4 - Sair")
 
-        menu = input("\nEscolha uma opção: ")
+        menu = ler_opcao_menu("\nEscolha uma opção: ", ["1", "2", "3", "4"])
 
         if menu == "1":
             data_inicio = ler_data("Digite a data inicial da escala (dd/mm/aaaa): ")
