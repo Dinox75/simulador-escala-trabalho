@@ -1,14 +1,5 @@
 from escala import converter_data, calcular_status, gerar_proximos_dias
-
-
-def ler_numero(mensagem):
-    try:
-        numero = int(input(mensagem))
-        return numero
-    except ValueError:
-        print("Digite apenas números.")
-        return None
-
+from validacoes import ler_numero
 
 def main():
     dias_trabalho = 6
@@ -55,10 +46,6 @@ def main():
 
             quantidade_dias = ler_numero("Quantos dias deseja visualizar? ")
 
-            if quantidade_dias is None or quantidade_dias <= 0:
-                print("Informe uma quantidade de dias válida.")
-                continue
-
             gerar_proximos_dias(
                 data_inicio,
                 quantidade_dias,
@@ -90,7 +77,6 @@ def main():
 
         else:
             print("Favor inserir uma opção válida entre 1 e 4!")
-
 
 if __name__ == "__main__":
     main()
