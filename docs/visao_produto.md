@@ -1,20 +1,27 @@
 # Visão do Produto
 
+> Documento de visão estratégica do projeto **Simulador de Escala de Trabalho**, descrevendo sua possível evolução de uma aplicação CLI em Python para uma plataforma corporativa de gestão de escalas, jornadas, folgas, férias, relatórios e integrações operacionais.
+
+> [!IMPORTANT]
+> Este documento representa a visão futura do produto. Nem todas as funcionalidades descritas aqui estão implementadas na versão atual do projeto.
+
+---
+
 ## 1. Contexto
 
-O projeto **Simulador de Escala de Trabalho** nasceu inicialmente como uma aplicação simples em Python, executada via terminal, com o objetivo de calcular se uma determinada data corresponde a um dia de trabalho ou folga com base em uma escala definida.
+O **Simulador de Escala de Trabalho** nasceu como uma aplicação simples em Python, executada via terminal, com o objetivo de calcular se uma determinada data corresponde a um dia de **trabalho** ou **folga**, com base em uma escala definida.
 
-Apesar de começar como um projeto de estudo e portfólio, a ideia possui potencial para evoluir para uma solução corporativa mais completa: um sistema privado de gestão de escalas, jornadas, folgas, férias, feriados, paradas programadas e relatórios operacionais para empresas com grande volume de colaboradores.
+Apesar de começar como um projeto de estudo e portfólio, a ideia possui potencial para evoluir para uma solução corporativa mais completa: um sistema privado para empresas gerenciarem escalas, turnos, funcionários, folgas, férias, feriados, paradas programadas e relatórios operacionais.
 
-A proposta futura é transformar a lógica atual em um produto real, capaz de atender empresas que trabalham com diferentes turnos, escalas rotativas e equipes distribuídas em setores distintos.
+A lógica atual do projeto funciona como o primeiro núcleo do sistema: o cálculo de ciclos de trabalho e folga.
 
 ---
 
 ## 2. Problema identificado
 
-Empresas com muitos colaboradores, principalmente em ambientes industriais, logísticos, operacionais ou de produção, costumam lidar com diferentes tipos de escala, turnos e regras internas.
+Empresas com grande volume de colaboradores, principalmente em ambientes industriais, logísticos, operacionais e de produção, costumam lidar com diferentes tipos de escala, turnos e regras internas.
 
-Em cenários como esse, é comum que colaboradores, principalmente novos funcionários, tenham dificuldade para entender corretamente:
+Nesse cenário, colaboradores podem ter dificuldade para entender corretamente:
 
 - quais dias irão trabalhar;
 - quais dias estarão de folga;
@@ -24,47 +31,62 @@ Em cenários como esse, é comum que colaboradores, principalmente novos funcion
 - quando começam ou terminam suas férias;
 - como consultar seu histórico de trabalho, faltas e folgas.
 
-Do lado da empresa, a dificuldade está em manter uma visão clara e centralizada sobre a jornada dos colaboradores, especialmente quando há diferentes escalas, setores, líderes e regras operacionais.
+Do lado da empresa, o desafio está em manter uma visão centralizada, confiável e atualizada sobre a jornada dos colaboradores, especialmente quando há diferentes setores, líderes, turnos e escalas.
 
-A falta de clareza pode gerar atrasos, faltas não intencionais, dúvidas recorrentes com liderança e RH, falhas de comunicação e perda de produtividade.
+> [!NOTE]
+> A falta de clareza sobre escalas pode gerar atrasos, faltas não intencionais, dúvidas recorrentes com liderança/RH e falhas de comunicação operacional.
 
 ---
 
 ## 3. Proposta de solução
 
-A proposta é evoluir o projeto para uma plataforma privada de gestão de escalas, acessível por empresa e por colaborador, onde cada usuário tenha uma visão personalizada de suas informações.
+A proposta é evoluir o projeto para uma plataforma privada de gestão de escalas, acessível por empresas e colaboradores.
 
-O sistema permitiria que a empresa cadastrasse suas informações, setores, funcionários, escalas e eventos importantes, enquanto o colaborador poderia acessar sua própria conta para consultar seus dias de trabalho, folgas, férias, feriados e alertas relacionados à sua jornada.
+A empresa poderia cadastrar funcionários, setores, escalas, férias, feriados e paradas programadas. O colaborador, por sua vez, teria acesso a uma visão individual da própria jornada, podendo consultar seus próximos dias de trabalho, folgas, férias e alertas.
 
-A lógica atual do projeto, responsável por calcular ciclos de trabalho e folga, seria o núcleo inicial do sistema. Com o tempo, essa lógica poderia ser expandida para atender regras mais complexas de negócio.
+A ideia central é transformar uma regra que hoje está no terminal em uma solução mais ampla, com potencial para:
+
+- reduzir confusão sobre escalas;
+- melhorar a comunicação entre empresa e colaborador;
+- apoiar o RH e a liderança;
+- gerar relatórios operacionais;
+- futuramente integrar com relógios de ponto ou sistemas internos.
 
 ---
 
 ## 4. Público-alvo
 
-O sistema seria voltado para empresas que possuem grande quantidade de colaboradores e trabalham com escalas variadas, como:
+O sistema seria voltado para empresas que possuem muitos colaboradores e trabalham com escalas variadas.
 
-- indústrias;
-- fábricas;
-- centros logísticos;
-- supermercados;
-- hospitais;
-- empresas de segurança;
-- empresas de transporte;
-- operações com turnos alternados;
-- empresas com regime 6x3, 5x2, 6x1, 4x4 ou escalas personalizadas.
+| Tipo de empresa | Possível uso |
+|---|---|
+| Indústrias e fábricas | Controle de turnos, paradas e escalas rotativas |
+| Centros logísticos | Organização de equipes em operação contínua |
+| Supermercados | Escalas variadas por setor e turno |
+| Hospitais | Controle de plantões e jornadas alternadas |
+| Empresas de segurança | Escalas com revezamento |
+| Empresas de transporte | Controle de equipes em horários diferentes |
+| Operações 24h | Gestão de múltiplos turnos |
 
-Um exemplo de aplicação prática seria uma empresa de grande porte, como uma fábrica com muitos colaboradores em turnos diferentes, onde novos funcionários precisam consultar com facilidade seus dias de trabalho e folga sem depender sempre de planilhas, murais ou comunicação informal.
+Um exemplo prático seria uma empresa de grande porte, com muitos colaboradores em escalas diferentes, onde novos funcionários precisam consultar seus dias de trabalho e folga sem depender apenas de planilhas, murais ou comunicação informal.
 
 ---
 
 ## 5. Perfis de usuário
 
-## 5.1 Empresa / Administrador
+| Perfil | Objetivo principal |
+|---|---|
+| Empresa / Administrador | Gerenciar funcionários, escalas, eventos e relatórios |
+| Colaborador | Consultar a própria escala, folgas, férias e alertas |
+| Liderança / RH | Acompanhar equipe, ausências, jornadas e indicadores |
+
+---
+
+## 6. Empresa / Administrador
 
 O perfil de empresa ou administrador seria responsável por gerenciar a estrutura principal do sistema.
 
-Possíveis permissões:
+Possíveis funcionalidades:
 
 - cadastrar empresa;
 - cadastrar setores;
@@ -79,7 +101,9 @@ Possíveis permissões:
 - consultar relatórios gerais;
 - visualizar indicadores por setor, escala ou colaborador.
 
-## 5.2 Colaborador
+---
+
+## 7. Colaborador
 
 O colaborador teria acesso a uma visão individual e simplificada da própria jornada.
 
@@ -95,7 +119,12 @@ Possíveis funcionalidades:
 - acompanhar sua escala atual;
 - verificar mudanças feitas pela empresa.
 
-## 5.3 Liderança / RH
+> [!TIP]
+> Essa visão é especialmente útil para novos colaboradores, que ainda estão se adaptando à rotina da empresa e ao funcionamento da escala.
+
+---
+
+## 8. Liderança / RH
 
 Em uma versão futura, o sistema também poderia ter um perfil intermediário para líderes, supervisores ou RH.
 
@@ -111,28 +140,22 @@ Possíveis funcionalidades:
 
 ---
 
-## 6. Funcionalidades futuras
+## 9. Funcionalidades futuras
 
-## 6.1 Gestão de empresas
+| Módulo | Descrição | Prioridade futura |
+|---|---|---|
+| Gestão de empresas | Cadastro e organização de ambientes por empresa | Alta |
+| Gestão de funcionários | Cadastro de colaboradores, matrícula, setor e escala | Alta |
+| Gestão de escalas | Criação de escalas 6x3, 5x2, 4x4 e personalizadas | Alta |
+| Calendário individual | Visualização de trabalho, folgas, férias e feriados | Alta |
+| Alertas | Lembretes antes do turno ou mudanças de escala | Média |
+| Feriados e paradas | Cadastro de eventos que impactam a jornada | Média |
+| Relatórios | Indicadores individuais e gerais | Alta |
+| Integração com ponto | Comparação entre escala planejada e ponto registrado | Avançada |
 
-O sistema poderá permitir o cadastro de empresas, criando um ambiente privado para cada organização.
+---
 
-Cada empresa teria seus próprios usuários, funcionários, escalas, setores e regras internas.
-
-## 6.2 Gestão de funcionários
-
-A empresa poderá cadastrar colaboradores com informações como:
-
-- nome;
-- matrícula;
-- setor;
-- cargo;
-- turno;
-- escala vinculada;
-- data de início na escala;
-- status ativo ou inativo.
-
-## 6.3 Gestão de escalas
+## 10. Gestão de escalas
 
 O sistema poderá permitir a criação de diferentes modelos de escala, como:
 
@@ -145,40 +168,47 @@ O sistema poderá permitir a criação de diferentes modelos de escala, como:
 - escalas por funcionário;
 - escalas com troca de turno.
 
-## 6.4 Calendário individual
+A lógica atual do projeto já permite calcular ciclos baseados em dias de trabalho e dias de folga. Futuramente, essa lógica poderá ser expandida para lidar com turnos, exceções, feriados, férias e mudanças específicas de funcionário.
 
-Cada colaborador poderá visualizar um calendário com seus dias de trabalho, folgas, férias, feriados e eventos importantes.
+---
 
-Essa funcionalidade ajudaria principalmente novos colaboradores, evitando confusão sobre o ciclo da escala.
+## 11. Calendário individual
 
-## 6.5 Alertas e notificações
+Cada colaborador poderá visualizar um calendário com:
 
-Uma funcionalidade futura importante seria a ativação de alertas, como:
+- dias de trabalho;
+- folgas;
+- férias;
+- feriados;
+- paradas programadas;
+- possíveis alterações de escala.
 
-- lembrete antes do turno;
-- aviso de mudança de escala;
-- aviso de início de férias;
-- aviso de retorno ao trabalho;
-- aviso de parada programada;
-- aviso de feriado.
+Essa funcionalidade ajudaria a reduzir dúvidas e evitar que colaboradores se percam no ciclo da escala.
 
-## 6.6 Feriados, férias e paradas
+---
 
-A empresa poderá cadastrar eventos que impactam a escala, como:
+## 12. Alertas e notificações
 
-- feriados nacionais;
-- feriados locais;
-- férias individuais;
-- paradas de fábrica;
-- afastamentos;
-- folgas programadas;
-- compensações.
+Uma funcionalidade futura importante seria a ativação de alertas.
 
-## 6.7 Relatórios
+Possíveis alertas:
 
-O sistema poderá gerar relatórios para empresa e colaborador.
+| Alerta | Objetivo |
+|---|---|
+| Lembrete antes do turno | Avisar o colaborador antes do horário de trabalho |
+| Mudança de escala | Notificar alteração feita pela empresa |
+| Início de férias | Avisar início do período de férias |
+| Retorno ao trabalho | Lembrar retorno após férias ou folga |
+| Parada programada | Comunicar parada de fábrica ou evento interno |
+| Feriado | Informar impacto de feriado na jornada |
 
-Relatórios possíveis para a empresa:
+---
+
+## 13. Relatórios
+
+O sistema poderá gerar relatórios tanto para a empresa quanto para o colaborador.
+
+### Relatórios para a empresa
 
 - dias trabalhados por funcionário;
 - folgas no período;
@@ -190,7 +220,7 @@ Relatórios possíveis para a empresa:
 - relatório individual;
 - relatório geral.
 
-Relatórios possíveis para o colaborador:
+### Relatórios para o colaborador
 
 - dias trabalhados no mês;
 - dias trabalhados no ano;
@@ -199,11 +229,15 @@ Relatórios possíveis para o colaborador:
 - férias;
 - histórico de jornada.
 
-## 6.8 Integração com relógio de ponto
+---
+
+## 14. Integração com relógio de ponto
 
 Em uma evolução mais avançada, o sistema poderá se integrar a relógios de ponto ou sistemas externos via API.
 
-Essa integração permitiria comparar a escala planejada com os registros reais de entrada e saída, possibilitando análises como:
+Essa integração permitiria comparar a escala planejada com os registros reais de entrada e saída.
+
+Possíveis análises:
 
 - presença confirmada;
 - falta;
@@ -212,28 +246,29 @@ Essa integração permitiria comparar a escala planejada com os registros reais 
 - horas trabalhadas;
 - inconsistências de registro.
 
----
-
-## 7. Valor para a empresa
-
-A solução pode gerar valor para empresas ao centralizar informações de escala e reduzir falhas de comunicação.
-
-Benefícios esperados:
-
-- maior clareza na comunicação de jornadas;
-- redução de dúvidas frequentes com RH e liderança;
-- melhor organização de escalas;
-- apoio ao planejamento operacional;
-- redução de faltas causadas por confusão de escala;
-- acompanhamento mais claro de folgas, férias e faltas;
-- relatórios para tomada de decisão;
-- possibilidade futura de integração com sistemas internos.
+> [!WARNING]
+> Integrações com ponto eletrônico exigem atenção a regras trabalhistas, segurança de dados, permissões de acesso e confiabilidade das informações.
 
 ---
 
-## 8. Valor para o colaborador
+## 15. Valor para a empresa
 
-Para o colaborador, o sistema oferece autonomia e clareza.
+A solução pode gerar valor ao centralizar informações de escala e reduzir falhas de comunicação.
+
+| Benefício | Impacto esperado |
+|---|---|
+| Clareza de jornada | Menos dúvidas sobre dias de trabalho e folga |
+| Organização operacional | Melhor planejamento de equipes |
+| Redução de erros | Menos faltas por confusão de escala |
+| Apoio ao RH | Informações mais acessíveis e organizadas |
+| Relatórios | Melhor acompanhamento de indicadores |
+| Integração futura | Possibilidade de conexão com sistemas internos |
+
+---
+
+## 16. Valor para o colaborador
+
+Para o colaborador, o sistema oferece autonomia e previsibilidade.
 
 Benefícios esperados:
 
@@ -244,88 +279,67 @@ Benefícios esperados:
 - acompanhar férias, folgas e feriados;
 - ter uma visão mais transparente da própria jornada.
 
-Essa funcionalidade pode ser especialmente útil para novos colaboradores, que ainda estão se adaptando ao ritmo da empresa e às regras da escala.
-
 ---
 
-## 9. Evolução técnica planejada
+## 17. Evolução técnica planejada
 
 A evolução do projeto pode acontecer em fases, respeitando o aprendizado e a complexidade do sistema.
 
-## Fase 1 — Aplicação CLI
+| Fase | Objetivo | Tecnologias possíveis |
+|---|---|---|
+| Fase 1 | Aplicação CLI | Python |
+| Fase 2 | Persistência em arquivos | JSON |
+| Fase 3 | Cadastro básico | Python + JSON |
+| Fase 4 | Banco de dados | SQLite, PostgreSQL ou MySQL |
+| Fase 5 | API | FastAPI ou Flask |
+| Fase 6 | Interface web ou app | HTML, CSS, JavaScript, React ou Flutter |
+| Fase 7 | Integrações externas | APIs, sistemas de ponto, serviços internos |
 
-Fase atual do projeto.
+---
 
-Objetivo:
+## 18. Fase atual — Aplicação CLI
+
+A versão atual do projeto está focada em:
 
 - calcular escalas;
 - consultar datas;
 - gerar próximos dias;
 - validar entradas;
 - organizar o código em módulos;
-- documentar o projeto.
+- documentar o projeto;
+- manter uma base simples, funcional e evolutiva.
 
-## Fase 2 — Persistência com arquivos
-
-Adicionar salvamento de dados em arquivos, como JSON.
-
-Possíveis arquivos:
-
-- empresas.json;
-- funcionarios.json;
-- escalas.json;
-- feriados.json;
-- registros.json.
-
-## Fase 3 — Cadastro básico
-
-Criar funcionalidades para cadastrar empresas, funcionários e escalas diretamente pelo terminal.
-
-Objetivo:
-
-- transformar o simulador em um pequeno sistema de gestão;
-- permitir consultas vinculadas a funcionários;
-- salvar e reutilizar dados cadastrados.
-
-## Fase 4 — Banco de dados
-
-Migrar os dados para um banco estruturado.
-
-Possíveis tecnologias:
-
-- SQLite para aprendizado inicial;
-- PostgreSQL ou MySQL para uma abordagem mais profissional.
-
-## Fase 5 — API
-
-Criar uma API para permitir comunicação entre backend, frontend, app mobile ou integrações externas.
-
-Possíveis tecnologias:
-
-- FastAPI;
-- Flask.
-
-## Fase 6 — Interface web ou aplicativo
-
-Criar uma interface para empresa e colaborador.
-
-Possíveis telas:
-
-- login;
-- painel da empresa;
-- painel do colaborador;
-- cadastro de funcionário;
-- calendário de escala;
-- relatórios;
-- alertas.
-
-## Fase 7 — Integrações externas
-
-Adicionar integrações com sistemas corporativos, relógios de ponto ou APIs internas.
+Essa etapa é importante porque estabelece a lógica principal antes de adicionar camadas mais complexas, como banco de dados, autenticação ou interface.
 
 ---
 
-## 10. Visão de longo prazo
+## 19. Possível arquitetura futura
+
+Uma arquitetura futura poderia seguir uma divisão parecida com:
+
+```text
+Sistema de Gestão de Escalas
+│
+├── Empresas
+├── Usuários
+├── Funcionários
+├── Setores
+├── Escalas
+├── Turnos
+├── Feriados
+├── Férias
+├── Faltas
+├── Registros de ponto
+├── Relatórios
+├── API
+└── Interface web/app
+```
+
+Essa estrutura ajudaria a separar responsabilidades e permitir crescimento gradual do projeto.
+
+---
+
+## 20. Visão de longo prazo
 
 A visão de longo prazo é transformar o projeto em uma solução completa de gestão de escalas corporativas, com foco em clareza, organização e redução de falhas operacionais.
 
@@ -342,11 +356,9 @@ O projeto começa como um simulador simples em Python, mas foi pensado para cres
 - relatórios;
 - integração com sistemas externos.
 
-Essa evolução torna o projeto relevante tanto como ferramenta prática quanto como demonstração de aprendizado profissional em desenvolvimento de sistemas.
-
 ---
 
-## 11. Conclusão
+## 21. Conclusão
 
 O **Simulador de Escala de Trabalho** representa o primeiro passo de uma ideia maior: criar uma solução que ajude empresas e colaboradores a lidarem melhor com escalas, turnos, folgas e jornadas.
 
