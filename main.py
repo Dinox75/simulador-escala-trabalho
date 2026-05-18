@@ -1,5 +1,5 @@
 from escala import converter_data, calcular_status, gerar_proximos_dias
-from validacoes import ler_numero
+from validacoes import ler_numero, ler_data
 
 def main():
     dias_trabalho = 6
@@ -16,15 +16,8 @@ def main():
         menu = input("\nEscolha uma opção: ")
 
         if menu == "1":
-            data_inicio_texto = input("Digite a data inicial da escala (dd/mm/aaaa): ")
-            data_consulta_texto = input("Digite a data que deseja consultar (dd/mm/aaaa): ")
-
-            data_inicio = converter_data(data_inicio_texto)
-            data_consulta = converter_data(data_consulta_texto)
-
-            if data_inicio is None or data_consulta is None:
-                print("Data inválida. Use o formato dd/mm/aaaa.")
-                continue
+            data_inicio = ler_data("Digite a data inicial da escala (dd/mm/aaaa): ")
+            data_consulta = ler_data("Digite a data que deseja consultar (dd/mm/aaaa): ")
 
             status = calcular_status(
                 data_inicio,

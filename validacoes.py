@@ -1,4 +1,7 @@
+from datetime import datetime
+
 def ler_numero(mensagem):
+
     while True:
         numero = input(mensagem).strip()
 
@@ -17,3 +20,18 @@ def ler_numero(mensagem):
 
         except ValueError:
             print("Digite apenas números.")
+
+def ler_data(mensagem):
+    while True:
+        data_texto = input(mensagem).strip()
+
+        if data_texto == "":
+            print("Data inválida. Digite uma data.")
+            continue
+
+        try:
+            data_convertida = datetime.strptime(data_texto, "%d/%m/%Y").date()
+            return data_convertida
+
+        except ValueError:
+            print("Data inválida. Use o formato dd/mm/aaaa.")
