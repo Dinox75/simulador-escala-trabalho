@@ -1,26 +1,13 @@
 from escala import calcular_status, gerar_proximos_dias
 from validacoes import ler_numero, ler_data, ler_opcao_menu
-
-def exibir_proximos_dias(proximos_dias):
-    print("\n==== PRÓXIMOS DIAS ====")
-
-    for dia in proximos_dias:
-        data_formatada = dia['data'].strftime('%d/%m/%Y')
-        status = dia['status']
-
-        print(f"{data_formatada}: {status}")
+from interface import exibir_proximos_dias, exibir_menu
 
 def main():
     dias_trabalho = 6
     dias_folga = 3
 
     while True:
-        print("\n==== SIMULADOR DE ESCALAS ====")
-        print(f"Escala atual: {dias_trabalho}x{dias_folga}")
-        print("\n1 - Consultar uma data")
-        print("2 - Ver próximos dias")
-        print("3 - Alterar escala")
-        print("4 - Sair")
+        exibir_menu(dias_trabalho, dias_folga)
 
         menu = ler_opcao_menu("\nEscolha uma opção: ", ["1", "2", "3", "4"])
 
