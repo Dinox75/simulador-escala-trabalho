@@ -16,3 +16,11 @@ def exibir_menu(dias_trabalho, dias_folga):
     print("2 - Ver próximos dias")
     print("3 - Alterar escala")
     print("4 - Sair")
+
+def exibir_resultado_consulta(data_consulta, status):
+    data_formatada = data_consulta.strftime('%d/%m/%Y')
+    print(f"\nNa data {data_formatada}, você estará: {status}")
+
+def exibir_escala_alterada(dias_trabalho, dias_folga):
+    print(f"\nEscala alterada para {dias_trabalho}x{dias_folga}.")
+
