@@ -1,6 +1,15 @@
 from escala import calcular_status, gerar_proximos_dias
 from validacoes import ler_numero, ler_data, ler_opcao_menu
 
+def exibir_proximos_dias(proximos_dias):
+    print("\n==== PRÓXIMOS DIAS ====")
+
+    for dia in proximos_dias:
+        data_formatada = dia['data'].strftime('%d/%m/%Y')
+        status = dia['status']
+
+        print(f"{data_formatada}: {status}")
+
 def main():
     dias_trabalho = 6
     dias_folga = 3
@@ -41,8 +50,7 @@ def main():
                 dias_folga
             )
 
-            for dia in proximos_dias:
-                print(f"{dia['data'].strftime('%d/%m/%Y')}: {dia['status']}")
+            exibir_proximos_dias(proximos_dias)
 
         elif menu == "3":
             novo_dias_trabalho = ler_numero("Quantos dias de trabalho? ")
@@ -56,9 +64,6 @@ def main():
         elif menu == "4":
             print("Volte sempre!")
             break
-
-        else:
-            print("Favor inserir uma opção válida entre 1 e 4!")
 
 if __name__ == "__main__":
     main()
