@@ -1,11 +1,20 @@
 #Responsável por toda a interação com o usuário, exibindo menus e resultados de forma clara e organizada.
 
+def formatar_status(status):
+    if status == "Trabalhando":
+        return "🟢 Trabalhando"
+
+    elif status == "Folga":
+        return "🌙 Folga"
+
+    return status
+
 def exibir_proximos_dias(proximos_dias):
     print("\n==== PRÓXIMOS DIAS ====")
 
     for dia in proximos_dias:
         data_formatada = dia['data'].strftime('%d/%m/%Y')
-        status = dia['status']
+        status = formatar_status(dia["status"])
 
         print(f"{data_formatada}: {status}")
 
@@ -19,7 +28,8 @@ def exibir_menu(dias_trabalho, dias_folga):
 
 def exibir_resultado_consulta(data_consulta, status):
     data_formatada = data_consulta.strftime('%d/%m/%Y')
-    print(f"\nNa data {data_formatada}, você estará: {status}")
+    status_formatado = formatar_status(status)
+    print(f"\nNa data {data_formatada}, você estará: {status_formatado}")
 
 def exibir_escala_alterada(dias_trabalho, dias_folga):
     print(f"\nEscala alterada para {dias_trabalho}x{dias_folga}.")
