@@ -1,6 +1,6 @@
 from datetime import date
 
-from escala import calcular_status
+from escala import calcular_status, gerar_proximos_dias
 
 
 def test_calcular_status_primeiro_dia_de_trabalho():
@@ -28,3 +28,19 @@ def test_calcular_status_primeiro_dia_de_folga():
     )
 
     assert resultado == "Folga"
+
+def test_gerar_proximos_dias():
+    data_inicio = date(2026, 5, 1)
+
+    resultado = gerar_proximos_dias(
+        data_inicio,
+        10,
+        6,
+        3
+    )
+
+    assert len(resultado) == 10
+    assert resultado[0]['data'] == date(2026, 5, 1)
+    assert resultado[5]['status'] == "Trabalhando"
+    assert resultado[6]['data'] == date(2026, 5, 7)
+    assert resultado[8]['status'] == "Folga"
