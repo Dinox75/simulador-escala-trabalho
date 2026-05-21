@@ -1,0 +1,261 @@
+/* ============================
+   BASE VISUAL DO PROJETO
+============================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #eaf8ff;
+    background:
+        radial-gradient(circle at top left, rgba(0, 180, 216, 0.25), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(72, 202, 228, 0.18), transparent 35%),
+        linear-gradient(135deg, #03045e, #061a2b 55%, #020617);
+}
+
+/* ============================
+   CONTAINER PRINCIPAL
+============================ */
+
+.container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 50px 0;
+}
+
+/* ============================
+   HERO
+============================ */
+
+.hero {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 8px 18px;
+    margin-bottom: 18px;
+    border: 1px solid rgba(72, 202, 228, 0.5);
+    border-radius: 999px;
+    background: rgba(0, 180, 216, 0.12);
+    color: #90e0ef;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    animation: softGlow 2.8s ease-in-out infinite;
+}
+
+.hero h1 {
+    font-size: clamp(2rem, 5vw, 4rem);
+    margin-bottom: 15px;
+    color: #ffffff;
+    animation: fadeUp 0.8s ease both;
+}
+
+.hero p {
+    max-width: 750px;
+    margin: 0 auto;
+    color: #caf0f8;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    animation: fadeUp 1s ease both;
+}
+
+.hero strong {
+    color: #48cae4;
+}
+
+/* ============================
+   CARDS
+============================ */
+
+.card,
+.resultado {
+    background: rgba(6, 26, 43, 0.78);
+    border: 1px solid rgba(72, 202, 228, 0.22);
+    border-radius: 22px;
+    padding: 28px;
+    margin-bottom: 28px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(12px);
+    animation: fadeUp 0.7s ease both;
+}
+
+.card h2,
+.resultado h2 {
+    margin-bottom: 22px;
+    color: #ffffff;
+    font-size: 1.5rem;
+}
+
+/* ============================
+   FORMULÁRIO
+============================ */
+
+form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #caf0f8;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+input {
+    padding: 14px 16px;
+    border: 1px solid rgba(144, 224, 239, 0.35);
+    border-radius: 14px;
+    background: rgba(2, 6, 23, 0.75);
+    color: #ffffff;
+    font-size: 1rem;
+    outline: none;
+}
+
+input:focus {
+    border-color: #00b4d8;
+    box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.18);
+}
+
+button {
+    grid-column: 1 / -1;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #00b4d8, #0077b6);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0, 180, 216, 0.3);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* ============================
+   RESULTADOS
+============================ */
+
+.lista-resultados {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+}
+
+.mensagem-inicial {
+    color: #90e0ef;
+    line-height: 1.6;
+}
+
+.item-dia {
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(2, 6, 23, 0.55);
+    border: 1px solid rgba(144, 224, 239, 0.16);
+    animation: fadeUp 0.45s ease both;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.item-dia:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    border-color: rgba(144, 224, 239, 0.45);
+}
+
+.item-dia strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #ffffff;
+}
+
+.trabalho {
+    border-left: 5px solid #00b4d8;
+}
+
+.folga {
+    border-left: 5px solid #e63946;
+}
+
+/* ============================
+   RESPONSIVIDADE
+============================ */
+
+@media (max-width: 700px) {
+    form {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        width: 92%;
+        padding: 32px 0;
+    }
+
+    .card,
+    .resultado {
+        padding: 22px;
+    }
+}
+
+/* ============================
+   ANIMAÇÕES
+============================ */
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes softGlow {
+    0% {
+        box-shadow: 0 0 0 rgba(0, 180, 216, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 18px rgba(0, 180, 216, 0.35);
+    }
+
+    100% {
+        box-shadow: 0 0 0 rgba(0, 180, 216, 0);
+    }
+}
+
+@keyframes floatSoft {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo | Simulador de Escala de Trabalho</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main class="container">
+        <section class="hero">
+            <span class="badge">Demo interativa</span>
+
+            <h1>Simulador de Escala de Trabalho</h1>
+
+            <p>
+                Consulte dias de trabalho e folga com base em escalas como
+                <strong>6x3</strong>, <strong>5x2</strong> e outras variações.
+            </p>
+        </section>
+
+        <section class="card">
+            <h2>Configurar escala</h2>
+
+            <form id="form-escala">
+                <label>
+                    Data inicial da escala
+                    <input type="date" id="data-inicial" required>
+                </label>
+
+                <label>
+                    Dias de trabalho
+                    <input type="number" id="dias-trabalho" min="1" value="6" required>
+                </label>
+
+                <label>
+                    Dias de folga
+                    <input type="number" id="dias-folga" min="1" value="3" required>
+                </label>
+
+                <label>
+                    Quantidade de dias para visualizar
+                    <input type="number" id="quantidade-dias" min="1" value="15" required>
+                </label>
+
+                <button type="submit">Gerar escala</button>
+            </form>
+        </section>
+
+        <section class="resultado">
+            <h2>Resultado</h2>
+
+            <div id="lista-resultados" class="lista-resultados">
+                <p class="mensagem-inicial">
+                    Preencha os dados acima e gere uma simulação da escala.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
