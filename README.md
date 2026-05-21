@@ -26,7 +26,7 @@
   <tr>
     <td width="25%" align="center">
       <h3>🔁 Ciclos</h3>
-      <p>Calcula automaticamente a posição da data dentro da escala.</p>
+      <p>Calcula automaticamente a posição de uma data dentro da escala.</p>
     </td>
     <td width="25%" align="center">
       <h3>📅 Consulta</h3>
@@ -45,29 +45,37 @@
 
 ---
 
-## 📌 Visão geral
+## 📌 Problema resolvido
 
-O **Simulador de Escala de Trabalho** é uma aplicação desenvolvida em **Python** para calcular automaticamente se uma determinada data corresponde a um dia de **trabalho** ou **folga**, com base em uma escala definida pelo usuário.
+Trabalhadores que atuam em escalas como **6x3, 5x2, 4x4 ou outros modelos de ciclo** muitas vezes precisam consultar manualmente se estarão trabalhando ou folgando em uma data futura.
 
-A versão atual funciona via terminal, com foco em:
+Em ambientes com turnos, revezamentos e escalas diferentes, essa consulta pode gerar dúvidas, erros de planejamento e dificuldade para organizar compromissos pessoais ou profissionais.
 
-- clareza de lógica;
-- manipulação de datas;
-- cálculo de ciclos;
-- validação de entradas;
-- organização modular;
-- testes automatizados;
-- documentação profissional;
-- evolução gradual para um sistema maior.
-
-> [!NOTE]
-> Apesar de começar como um projeto simples em CLI, ele foi estruturado com visão de produto: lógica bem definida, módulos separados, documentação estratégica e espaço para evolução futura.
+Este projeto foi criado para resolver esse problema de forma simples: o usuário informa a data inicial da escala, escolhe o modelo de trabalho e folga, e o sistema calcula automaticamente o status de qualquer data consultada.
 
 ---
 
-## 🎯 Objetivo
+## ✅ Solução proposta
 
-Criar uma ferramenta prática que permita ao usuário:
+O **Simulador de Escala de Trabalho** é uma aplicação em **Python** que permite consultar, simular e visualizar escalas de trabalho baseadas em ciclos.
+
+A versão atual funciona via terminal e permite:
+
+- consultar se uma data será de trabalho ou folga;
+- visualizar os próximos dias da escala;
+- alterar a quantidade de dias trabalhados e dias de folga;
+- validar entradas digitadas pelo usuário;
+- organizar a lógica em módulos separados;
+- testar a regra principal com testes automatizados.
+
+> [!NOTE]
+> Apesar de começar como um projeto simples em CLI, ele foi estruturado com visão de produto: lógica clara, organização modular, testes automatizados, documentação profissional e espaço para evolução futura.
+
+---
+
+## 🎯 Objetivo do projeto
+
+Criar uma ferramenta prática para simular escalas de trabalho de forma automática, reduzindo consultas manuais e facilitando o planejamento do usuário.
 
 | Recurso | Descrição |
 |--------|-----------|
@@ -82,11 +90,11 @@ Criar uma ferramenta prática que permita ao usuário:
 
 ## 🧠 Exemplo prático
 
-Imagine a seguinte escala:
+Imagine a seguinte situação:
 
 | Informação | Valor |
 |-----------|-------|
-| Data inicial | `01/05/2026` |
+| Data inicial da escala | `01/05/2026` |
 | Modelo de escala | `6x3` |
 | Data consultada | `07/05/2026` |
 
@@ -223,7 +231,7 @@ simulador-escala-trabalho/
 
 A lógica principal usa o conceito de **ciclo**.
 
-Para uma escala `6x3`:
+Em uma escala `6x3`:
 
 ```text
 ciclo = dias de trabalho + dias de folga
@@ -231,7 +239,7 @@ ciclo = 6 + 3
 ciclo = 9 dias
 ```
 
-Depois, o sistema calcula:
+Depois, o sistema calcula a diferença entre a data consultada e a data inicial da escala:
 
 ```text
 dias_passados = data_consulta - data_inicio
@@ -247,7 +255,13 @@ Senão:
     Folga
 ```
 
-Essa abordagem permite reaproveitar a mesma lógica para diferentes modelos de escala.
+Essa abordagem permite reaproveitar a mesma lógica para diferentes modelos de escala, como:
+
+- `6x3`
+- `5x2`
+- `4x4`
+- `12x36`
+- modelos personalizados definidos pelo usuário
 
 ---
 
@@ -287,7 +301,7 @@ Essa abordagem permite reaproveitar a mesma lógica para diferentes modelos de e
 git clone https://github.com/Dinox75/simulador-escala-trabalho.git
 ```
 
-### 2. Acesse a pasta
+### 2. Acesse a pasta do projeto
 
 ```bash
 cd simulador-escala-trabalho
