@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=950&lines=Consulte+dias+de+trabalho+e+folga+com+Python;Simule+escalas+6x3%2C+5x2%2C+4x4+e+personalizadas;Projeto+CLI+modular+com+testes+automatizados;Base+para+evoluir+para+gest%C3%A3o+corporativa+de+escalas" alt="Typing SVG">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=950&lines=Consulte+dias+de+trabalho+e+folga+com+Python;Simule+escalas+6x3%2C+5x2%2C+4x4+e+personalizadas;Projeto+CLI+modular+com+testes+automatizados;Demo+web+interativa+publicada+com+GitHub+Pages" alt="Typing SVG">
 </p>
 
 <p align="center">
@@ -22,8 +22,14 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/DEMO-WEB%20INTERATIVA-0077B6?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/GITHUB%20PAGES-PUBLICADO-00B4D8?style=for-the-badge&logo=github&logoColor=white&labelColor=061A2B">
   <img src="https://img.shields.io/badge/LICEN%C3%87A-USO%20N%C3%83O%20COMERCIAL-E63946?style=for-the-badge&labelColor=061A2B">
-  <img src="https://img.shields.io/badge/PORTF%C3%93LIO-GITHUB%20%7C%20LINKEDIN-CAF0F8?style=for-the-badge&labelColor=061A2B">
+</p>
+
+<p align="center">
+  <a href="https://dinox75.github.io/simulador-escala-trabalho/demo/" target="_blank">
+    <img src="https://img.shields.io/badge/%F0%9F%8C%90%20ACESSAR%20DEMO%20INTERATIVA-00B4D8?style=for-the-badge&labelColor=061A2B">
+  </a>
 </p>
 
 ---
@@ -44,7 +50,7 @@
     </td>
     <td width="25%" align="center">
       <h3>🌐 Demo</h3>
-      <p>Inclui demonstração web interativa em HTML, CSS e JavaScript.</p>
+      <p>Demonstração web interativa hospedada com GitHub Pages.</p>
     </td>
   </tr>
 </table>
@@ -55,7 +61,7 @@
 
 > **v0.1.0 - Primeira versão CLI funcional**
 
-Esta versão entrega a primeira base funcional do projeto em terminal, com cálculo de escalas, validações, separação de responsabilidades, testes automatizados e documentação profissional.
+Esta versão entrega a primeira base funcional do projeto em terminal, com cálculo de escalas, validações, separação de responsabilidades, testes automatizados, documentação profissional e uma demo web interativa para apresentação do conceito.
 
 ### Destaques da versão
 
@@ -66,8 +72,35 @@ Esta versão entrega a primeira base funcional do projeto em terminal, com cálc
 | 🧪 Testes | Testes automatizados com `pytest` |
 | 🧩 Arquitetura | Separação entre lógica, validações, interface e fluxo principal |
 | 🌐 Demo web | Versão interativa em HTML, CSS e JavaScript |
+| 🚀 Publicação | Demo hospedada com GitHub Pages |
 | 📚 Documentação | README, visão de produto e changelog |
 | 📄 Licença | Uso não comercial sem autorização |
+
+---
+
+## 🌐 Demo interativa
+
+<table>
+  <tr>
+    <td align="center">
+      <h3>🚀 Teste o projeto direto no navegador</h3>
+      <p>
+        A demo web permite simular escalas visualmente informando a data inicial, dias de trabalho, dias de folga e quantidade de dias para visualizar.
+      </p>
+      <p>
+        <a href="https://dinox75.github.io/simulador-escala-trabalho/demo/" target="_blank">
+          <img src="https://img.shields.io/badge/Abrir%20Demo%20Interativa-00B4D8?style=for-the-badge&labelColor=061A2B">
+        </a>
+      </p>
+      <p>
+        <code>https://dinox75.github.io/simulador-escala-trabalho/demo/</code>
+      </p>
+    </td>
+  </tr>
+</table>
+
+> [!NOTE]
+> A demo web não substitui a aplicação principal em Python. Ela funciona como uma vitrine interativa para apresentar o conceito do projeto de forma visual e acessível.
 
 ---
 
@@ -101,8 +134,8 @@ A versão atual funciona via terminal e permite:
 - testar a regra principal com testes automatizados;
 - visualizar uma demonstração web interativa do conceito.
 
-> [!NOTE]
-> Apesar de começar como um projeto simples em CLI, ele foi estruturado com visão de produto: lógica clara, organização modular, testes automatizados, documentação profissional e espaço para evolução futura.
+> [!IMPORTANT]
+> O projeto começa como uma solução CLI, mas foi estruturado com mentalidade de produto: código modular, testes, documentação, visão futura e uma demo acessível para apresentação.
 
 ---
 
@@ -176,8 +209,10 @@ Representação visual do ciclo:
 | Formatação visual de status no terminal | ✅ Implementado |
 | Testes automatizados da lógica principal | ✅ Implementado |
 | Demo web interativa | ✅ Implementado |
+| GitHub Pages para demo | ✅ Implementado |
 | README profissional | ✅ Implementado |
 | Documento de visão futura do produto | ✅ Implementado |
+| Changelog | ✅ Implementado |
 | Licença de uso não comercial | ✅ Implementado |
 | Calendário mensal visual | 🔜 Planejado |
 | Cadastro de funcionários | 🔜 Planejado |
@@ -222,34 +257,6 @@ Exemplo de visualização dos próximos dias:
 08/05/2026: 🌙 Folga
 09/05/2026: 🌙 Folga
 10/05/2026: 🟢 Trabalhando
-```
-
----
-
-## 🌐 Demo interativa
-
-Além da aplicação principal em Python via terminal, o projeto possui uma demonstração web simples em **HTML, CSS e JavaScript**.
-
-A demo permite testar visualmente a lógica da escala diretamente pelo navegador, informando:
-
-- data inicial;
-- dias de trabalho;
-- dias de folga;
-- quantidade de dias para visualizar.
-
-> [!NOTE]
-> A demo web não substitui a aplicação principal em Python. Ela funciona como uma vitrine interativa para apresentação do conceito.
-
-### Acessar demo
-
-```text
-docs/demo/
-```
-
-Após ativar o GitHub Pages, a demo poderá ser acessada por um link semelhante a:
-
-```text
-https://dinox75.github.io/simulador-escala-trabalho/demo/
 ```
 
 ---
@@ -317,7 +324,7 @@ simulador-escala-trabalho/
 | `assets/` | Armazena recursos visuais do projeto |
 | `banner.png` | Banner principal utilizado no README |
 | `docs/` | Documentação complementar e visão futura do produto |
-| `docs/demo/` | Demo web interativa |
+| `docs/demo/` | Demo web interativa publicada via GitHub Pages |
 | `visao_produto.md` | Documento estratégico sobre evolução do projeto |
 | `tests/` | Testes automatizados do projeto |
 | `test_escala.py` | Testes da lógica principal de escala |
@@ -414,8 +421,8 @@ Essa abordagem permite reaproveitar a mesma lógica para diferentes modelos de e
   <img src="https://img.shields.io/badge/HTML5-061A2B?style=for-the-badge&logo=html5&logoColor=E34F26">
   <img src="https://img.shields.io/badge/CSS3-0077B6?style=for-the-badge&logo=css3&logoColor=white">
   <img src="https://img.shields.io/badge/JavaScript-03045E?style=for-the-badge&logo=javascript&logoColor=F7DF1E">
+  <img src="https://img.shields.io/badge/GitHub%20Pages-00B4D8?style=for-the-badge&logo=github&logoColor=white">
   <img src="https://img.shields.io/badge/Git-061A2B?style=for-the-badge&logo=git&logoColor=F05032">
-  <img src="https://img.shields.io/badge/GitHub-03045E?style=for-the-badge&logo=github&logoColor=white">
 </p>
 
 ### Conceitos praticados
@@ -432,7 +439,8 @@ Essa abordagem permite reaproveitar a mesma lógica para diferentes modelos de e
 - organização de projeto;
 - documentação para portfólio;
 - visão de evolução de produto;
-- criação de demo web estática.
+- criação de demo web estática;
+- publicação com GitHub Pages.
 
 ---
 
@@ -518,11 +526,13 @@ timeline
     v0.1.0 : CLI funcional
            : Validações
            : Testes com pytest
-           : Demo web inicial
+           : Demo web publicada
+    v0.1.1 : Ajustes de documentação
+           : Melhorias visuais na demo
     v0.2.0 : Persistência em JSON
            : Escalas favoritas
     v0.3.0 : Visualização mensal
-           : Melhorias na demo web
+           : Melhorias na experiência do usuário
     v0.4.0 : Cadastro simples de funcionários
            : Cadastro de turnos
     Futuro : Banco de dados
@@ -544,10 +554,10 @@ timeline
 - [x] Criar documentação de visão do produto
 - [x] Adicionar licença de uso não comercial
 - [x] Criar demo web inicial
+- [x] Publicar demo com GitHub Pages
 
 ### Próximas melhorias
 
-- [ ] Ativar GitHub Pages para a demo
 - [ ] Criar cadastro simples de escalas favoritas
 - [ ] Salvar configurações em arquivo JSON
 - [ ] Criar visualização mensal da escala
@@ -670,7 +680,10 @@ Para mais detalhes, consulte o arquivo [LICENSE](./LICENSE).
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Personalize-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <a href="https://dinox75.github.io/simulador-escala-trabalho/demo/" target="_blank">
+    <img src="https://img.shields.io/badge/%F0%9F%8C%90%20Abrir%20Demo-00B4D8?style=for-the-badge&labelColor=061A2B">
+  </a>
+  <img src="https://img.shields.io/badge/Personalize-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/Simule-0077B6?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/Planeje-03045E?style=for-the-badge&labelColor=061A2B">
 </p>
