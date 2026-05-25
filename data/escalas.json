@@ -1,0 +1,22 @@
+[
+    {
+        "nome": "Escala 6x3",
+        "dias_trabalho": 6,
+        "dias_folga": 3
+    },
+    {
+        "nome": "Escala Administativa 5x2",
+        "dias_trabalho": 5,
+        "dias_folga": 2
+    },
+    {
+        "nome": "Escala 4x2",
+        "dias_trabalho": 4,
+        "dias_folga": 2
+    },
+    {
+        "nome": "Escala 6x1",
+        "dias_trabalho": 6,
+        "dias_folga": 1
+    }
+]

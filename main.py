@@ -4,8 +4,11 @@ from interface import (
     exibir_menu,
     exibir_proximos_dias,
     exibir_resultado_consulta,
-    exibir_escala_alterada
+    exibir_escala_alterada,
+    exibir_escalas_salvas
 )
+from armazenamento import carregar_escalas
+
 
 def main():
     dias_trabalho = 6
@@ -14,7 +17,7 @@ def main():
     while True:
         exibir_menu(dias_trabalho, dias_folga)
 
-        menu = ler_opcao_menu("\nEscolha uma opção: ", ["1", "2", "3", "4"])
+        menu = ler_opcao_menu("\nEscolha uma opção: ", ["1", "2", "3", "4", "5"])
 
         if menu == "1":
             data_inicio = ler_data("Digite a data inicial da escala (dd/mm/aaaa): ")
@@ -54,6 +57,13 @@ def main():
             exibir_escala_alterada(dias_trabalho, dias_folga)
 
         elif menu == "4":
+            from armazenamento import carregar_escalas
+            from interface import exibir_escalas_salvas
+
+            escalas = carregar_escalas()
+            exibir_escalas_salvas(escalas)
+
+        elif menu == "5":
             print("Volte sempre!")
             break
 
