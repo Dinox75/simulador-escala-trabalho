@@ -25,7 +25,8 @@ def exibir_menu(dias_trabalho, dias_folga):
     print("2 - Ver próximos dias")
     print("3 - Alterar escala")
     print("4 - Ver escalas salvas")
-    print("5 - Sair")
+    print("5 - Cadastrar nova escala")
+    print("6 - Sair")
 
 def exibir_resultado_consulta(data_consulta, status):
     data_formatada = data_consulta.strftime('%d/%m/%Y')

@@ -1,5 +1,5 @@
 from escala import calcular_status, gerar_proximos_dias
-from validacoes import ler_numero, ler_data, ler_opcao_menu, ler_indice_lista
+from validacoes import ler_numero, ler_data, ler_opcao_menu, ler_indice_lista, ler_texto
 from interface import (
     exibir_menu,
     exibir_proximos_dias,
@@ -7,7 +7,7 @@ from interface import (
     exibir_escala_alterada,
     exibir_escalas_salvas
 )
-from armazenamento import carregar_escalas
+from armazenamento import carregar_escalas, adicionar_escala
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
     while True:
         exibir_menu(dias_trabalho, dias_folga)
 
-        menu = ler_opcao_menu("\nEscolha uma opção: ", ["1", "2", "3", "4", "5"])
+        menu = ler_opcao_menu("\nEscolha uma opção: ", ["1", "2", "3", "4", "5", "6"])
 
         if menu == "1":
             data_inicio = ler_data("Digite a data inicial da escala (dd/mm/aaaa): ")
@@ -70,6 +70,14 @@ def main():
                 exibir_escala_alterada(dias_trabalho, dias_folga)
 
         elif menu == "5":
+            nome = ler_texto("Digite o nome da nova escala: ")
+            dias_trabalho = ler_numero("Quantos dias de trabalho? ")
+            dias_folga = ler_numero("Quantos dias de folga? ")
+
+            adicionar_escala(nome, dias_trabalho, dias_folga)
+            print(f"Escala '{nome}' adicionada com sucesso!")
+
+        elif menu == "6":
             print("Volte sempre!")
             break
 

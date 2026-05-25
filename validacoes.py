@@ -53,3 +53,12 @@ def ler_indice_lista(mensagem, tamanho_lista):
             return indice - 1
 
         print("Opção inválida. Escolha um número da lista.")
+
+def ler_texto(mensagem):
+    while True:
+        texto = input(mensagem).strip()
+
+        if texto:
+            return texto
+
+        print("O texto não pode ficar vazio.")
