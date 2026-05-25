@@ -1,5 +1,5 @@
 from escala import calcular_status, gerar_proximos_dias
-from validacoes import ler_numero, ler_data, ler_opcao_menu
+from validacoes import ler_numero, ler_data, ler_opcao_menu, ler_indice_lista
 from interface import (
     exibir_menu,
     exibir_proximos_dias,
@@ -57,11 +57,17 @@ def main():
             exibir_escala_alterada(dias_trabalho, dias_folga)
 
         elif menu == "4":
-            from armazenamento import carregar_escalas
-            from interface import exibir_escalas_salvas
-
             escalas = carregar_escalas()
             exibir_escalas_salvas(escalas)
+
+            if escalas:
+                indice = ler_indice_lista("Escolha uma escala para usar: ", len(escalas))
+                escala_escolhida = escalas[indice]
+
+                dias_trabalho = escala_escolhida["dias_trabalho"]
+                dias_folga = escala_escolhida["dias_folga"]
+
+                exibir_escala_alterada(dias_trabalho, dias_folga)
 
         elif menu == "5":
             print("Volte sempre!")

@@ -44,3 +44,12 @@ def ler_opcao_menu(mensagem, opcoes_validas):
             return opcao
 
         print("Opção inválida. Escolha uma opção válida.")
+
+def ler_indice_lista(mensagem, tamanho_lista):
+    while True:
+        indice = ler_numero(mensagem)
+
+        if 1 <= indice <= tamanho_lista:
+            return indice - 1
+
+        print("Opção inválida. Escolha um número da lista.")
