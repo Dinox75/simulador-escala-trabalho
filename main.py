@@ -74,12 +74,16 @@ def main():
             dias_trabalho = ler_numero("Digite a quantidade de dias trabalhados: ")
             dias_folga = ler_numero("Digite a quantidade de dias de folga: ")
 
-            cadastro_realizado = adicionar_escala(nome, dias_trabalho, dias_folga)
+            resultado = adicionar_escala(nome, dias_trabalho, dias_folga)
 
-            if cadastro_realizado:
+            if resultado == "sucesso":
                 print("Escala cadastrada com sucesso!")
-            else:
+
+            elif resultado == "nome_duplicado":
                 print(f"A escala '{nome}' já existe.")
+
+            elif resultado == "configuracao_duplicada":
+                print("Já existe uma escala com essa mesma quantidade de dias trabalhados e dias de folga.")
 
         elif menu == "6":
             print("Volte sempre!")
