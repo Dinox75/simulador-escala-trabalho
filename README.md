@@ -5,19 +5,20 @@
 <h1 align="center">⏰ Simulador de Escala de Trabalho</h1>
 
 <p align="center">
-  <strong>Aplicação em Python para consultar, simular e visualizar escalas de trabalho como 6x3, 5x2, 4x4 e outras variações baseadas em ciclos.</strong>
+  <strong>Aplicação em Python para consultar, simular, salvar e reutilizar escalas de trabalho como 6x3, 5x2, 4x4 e outras variações baseadas em ciclos.</strong>
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=950&lines=Consulte+dias+de+trabalho+e+folga+com+Python;Simule+escalas+6x3%2C+5x2%2C+4x4+e+personalizadas;Projeto+CLI+modular+com+testes+automatizados;Demo+web+interativa+publicada+com+GitHub+Pages" alt="Typing SVG">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=950&lines=Simule+dias+de+trabalho+e+folga+com+Python;Cadastre+e+reutilize+escalas+favoritas+em+JSON;Projeto+CLI+modular+com+testes+automatizados;Demo+web+interativa+publicada+com+GitHub+Pages" alt="Typing SVG">
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.1.0-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.2.0-00B4D8?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/STATUS-EM%20DESENVOLVIMENTO-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PYTHON-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=061A2B">
   <img src="https://img.shields.io/badge/INTERFACE-CLI-00C2FF?style=for-the-badge&labelColor=061A2B">
-  <img src="https://img.shields.io/badge/TESTES-PYTEST-90E0EF?style=for-the-badge&logo=pytest&logoColor=white&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/PERSIST%C3%8ANCIA-JSON-90E0EF?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/TESTES-PYTEST-CAF0F8?style=for-the-badge&logo=pytest&logoColor=061A2B&labelColor=061A2B">
 </p>
 
 <p align="center">
@@ -38,19 +39,19 @@
   <tr>
     <td width="25%" align="center">
       <h3>🔁 Ciclos</h3>
-      <p>Calcula a posição de uma data dentro do ciclo da escala.</p>
+      <p>Calcula a posição de uma data dentro da escala.</p>
     </td>
     <td width="25%" align="center">
       <h3>📅 Consulta</h3>
       <p>Informa se uma data será de trabalho ou folga.</p>
     </td>
     <td width="25%" align="center">
-      <h3>🧩 Modular</h3>
-      <p>Projeto separado por lógica, validação, interface e testes.</p>
+      <h3>💾 JSON</h3>
+      <p>Permite salvar, listar e reutilizar escalas favoritas.</p>
     </td>
     <td width="25%" align="center">
-      <h3>🌐 Demo</h3>
-      <p>Demonstração web interativa hospedada com GitHub Pages.</p>
+      <h3>🧪 Testes</h3>
+      <p>Valida a lógica principal e o armazenamento com pytest.</p>
     </td>
   </tr>
 </table>
@@ -59,9 +60,9 @@
 
 ## 📌 Versão atual
 
-> **v0.1.0 - Primeira versão CLI funcional**
+> **v0.2.0 - Escalas favoritas com persistência em JSON**
 
-Esta versão entrega a primeira base funcional do projeto em terminal, com cálculo de escalas, validações, separação de responsabilidades, testes automatizados, documentação profissional e uma demo web interativa para apresentação do conceito.
+A versão atual evolui o projeto de uma calculadora simples de escala para uma aplicação com **persistência de dados**, permitindo cadastrar, listar e reutilizar escalas favoritas salvas em arquivo JSON.
 
 ### Destaques da versão
 
@@ -69,8 +70,10 @@ Esta versão entrega a primeira base funcional do projeto em terminal, com cálc
 |---|---|
 | 🐍 Aplicação principal | CLI em Python |
 | 🔁 Lógica de escala | Cálculo de trabalho e folga por ciclo |
+| 💾 Persistência | Leitura e gravação em `data/escalas.json` |
+| ⭐ Escalas favoritas | Cadastro, listagem e aplicação de escalas salvas |
+| 🧠 Validações | Bloqueio de nome duplicado e configuração duplicada |
 | 🧪 Testes | Testes automatizados com `pytest` |
-| 🧩 Arquitetura | Separação entre lógica, validações, interface e fluxo principal |
 | 🌐 Demo web | Versão interativa em HTML, CSS e JavaScript |
 | 🚀 Publicação | Demo hospedada com GitHub Pages |
 | 📚 Documentação | README, visão de produto e changelog |
@@ -100,7 +103,7 @@ Esta versão entrega a primeira base funcional do projeto em terminal, com cálc
 </table>
 
 > [!NOTE]
-> A demo web não substitui a aplicação principal em Python. Ela funciona como uma vitrine interativa para apresentar o conceito do projeto de forma visual e acessível.
+> A demo web funciona como uma vitrine visual do conceito. A aplicação principal do projeto continua sendo a versão em Python executada pelo terminal.
 
 ---
 
@@ -114,28 +117,32 @@ Em ambientes com turnos, revezamentos e escalas diferentes, essa consulta pode g
 - confusão em períodos de folga;
 - dificuldade para planejar compromissos;
 - erros de comunicação;
-- dependência de planilhas, murais ou consultas manuais.
+- dependência de planilhas, murais ou consultas manuais;
+- dificuldade para reutilizar configurações de escala já conhecidas.
 
-Este projeto foi criado para resolver esse problema de forma simples: o usuário informa a data inicial da escala, define o modelo de trabalho e folga, e o sistema calcula automaticamente o status de qualquer data consultada.
+Este projeto foi criado a partir de uma necessidade real observada no ambiente de trabalho: simplificar a consulta de escalas e transformar uma regra repetitiva em uma ferramenta prática, testável e expansível.
 
 ---
 
 ## ✅ Solução proposta
 
-O **Simulador de Escala de Trabalho** é uma aplicação em **Python** que permite consultar, simular e visualizar escalas de trabalho baseadas em ciclos.
+O **Simulador de Escala de Trabalho** é uma aplicação em **Python** que permite consultar, simular, cadastrar e reutilizar escalas de trabalho baseadas em ciclos.
 
-A versão atual funciona via terminal e permite:
+A versão atual permite:
 
 - consultar se uma data será de trabalho ou folga;
 - visualizar os próximos dias da escala;
-- alterar a quantidade de dias trabalhados e dias de folga;
-- validar entradas digitadas pelo usuário;
-- organizar a lógica em módulos separados;
-- testar a regra principal com testes automatizados;
-- visualizar uma demonstração web interativa do conceito.
+- alterar manualmente a quantidade de dias trabalhados e dias de folga;
+- listar escalas favoritas salvas;
+- aplicar uma escala salva como escala atual;
+- cadastrar novas escalas pelo terminal;
+- bloquear cadastro com nome duplicado;
+- bloquear cadastro com mesma configuração de dias trabalhados e folga;
+- persistir dados em arquivo JSON;
+- testar a lógica principal e o armazenamento com testes automatizados.
 
 > [!IMPORTANT]
-> O projeto começa como uma solução CLI, mas foi estruturado com mentalidade de produto: código modular, testes, documentação, visão futura e uma demo acessível para apresentação.
+> O projeto começa como uma solução CLI, mas foi estruturado com mentalidade de produto: código modular, testes, documentação, persistência, visão futura e uma demo acessível para apresentação.
 
 ---
 
@@ -148,8 +155,9 @@ Criar uma ferramenta prática para simular escalas de trabalho de forma automát
 | 📅 Definir data inicial | Informa quando o ciclo da escala começa |
 | 🔎 Consultar uma data | Verifica se o usuário estará trabalhando ou folgando |
 | 📆 Visualizar próximos dias | Gera uma sequência futura da escala |
-| ⚙️ Alterar escala | Permite mudar os dias de trabalho e folga |
-| 🧠 Entender o ciclo | Aplica cálculo modular para localizar a posição dentro da escala |
+| ⚙️ Alterar escala manualmente | Permite mudar os dias de trabalho e folga durante a execução |
+| ⭐ Escalas favoritas | Permite salvar e reutilizar configurações de escala |
+| 💾 Persistência em JSON | Mantém escalas salvas fora do código |
 | 🧪 Validar a lógica | Usa testes automatizados para reduzir erros em futuras alterações |
 | 🌐 Experimentar visualmente | Permite testar o conceito em uma demo web simples |
 
@@ -195,19 +203,67 @@ Representação visual do ciclo:
 
 ---
 
+## ⭐ Escalas favoritas
+
+A partir da versão `v0.2.0`, o projeto passou a permitir o cadastro e reutilização de escalas favoritas.
+
+Exemplo de estrutura salva em JSON:
+
+```json
+[
+    {
+        "nome": "Escala padrão 6x3",
+        "dias_trabalho": 6,
+        "dias_folga": 3
+    },
+    {
+        "nome": "Escala administrativa 5x2",
+        "dias_trabalho": 5,
+        "dias_folga": 2
+    }
+]
+```
+
+Essas escalas ficam armazenadas em:
+
+```text
+data/escalas.json
+```
+
+### Regras aplicadas
+
+| Regra | Comportamento |
+|---|---|
+| Nome duplicado | O sistema bloqueia o cadastro |
+| Configuração duplicada | O sistema bloqueia escalas com mesmos dias de trabalho e folga |
+| Escala válida | A nova escala é salva no JSON |
+| Escala salva | Pode ser aplicada como escala atual pelo menu |
+
+> [!NOTE]
+> Na versão atual, duas escalas com a mesma quantidade de dias trabalhados e dias de folga são consideradas duplicadas. Em versões futuras, essa regra poderá evoluir para considerar turnos, horários, rotação e tipo de escala.
+
+---
+
 ## ⚙️ Funcionalidades
 
 | Funcionalidade | Status |
 |---|---|
 | Consultar uma data específica | ✅ Implementado |
 | Gerar próximos dias da escala | ✅ Implementado |
-| Alterar escala pelo menu | ✅ Implementado |
+| Alterar escala manualmente pelo menu | ✅ Implementado |
 | Validação de datas | ✅ Implementado |
 | Validação de entradas numéricas | ✅ Implementado |
 | Validação de opções do menu | ✅ Implementado |
 | Interface organizada em módulo próprio | ✅ Implementado |
 | Formatação visual de status no terminal | ✅ Implementado |
+| Persistência em JSON | ✅ Implementado |
+| Listar escalas salvas | ✅ Implementado |
+| Aplicar escala salva como escala atual | ✅ Implementado |
+| Cadastrar nova escala pelo terminal | ✅ Implementado |
+| Bloquear nome duplicado | ✅ Implementado |
+| Bloquear configuração duplicada | ✅ Implementado |
 | Testes automatizados da lógica principal | ✅ Implementado |
+| Testes automatizados do armazenamento | ✅ Implementado |
 | Demo web interativa | ✅ Implementado |
 | GitHub Pages para demo | ✅ Implementado |
 | README profissional | ✅ Implementado |
@@ -216,9 +272,10 @@ Representação visual do ciclo:
 | Licença de uso não comercial | ✅ Implementado |
 | Calendário mensal visual | 🔜 Planejado |
 | Cadastro de funcionários | 🔜 Planejado |
-| Persistência em JSON | 🔜 Planejado |
 | Exportação de relatórios | 🔜 Planejado |
 | Interface gráfica ou web completa | 🔜 Planejado |
+| Escalas por hora, como 12x36 | 🔜 Planejado |
+| Escalas com rotação de turno | 🔜 Planejado |
 
 ---
 
@@ -233,20 +290,28 @@ Escala atual: 6x3
 1 - Consultar uma data
 2 - Ver próximos dias
 3 - Alterar escala
-4 - Sair
+4 - Ver escalas salvas
+5 - Cadastrar nova escala
+6 - Sair
 ==========================================
+```
 
+### Consultar uma data
+
+```text
 Escolha uma opção: 1
+
 Digite a data inicial da escala (dd/mm/aaaa): 01/05/2026
 Digite a data que deseja consultar (dd/mm/aaaa): 07/05/2026
 
 Na data 07/05/2026, você estará: 🌙 Folga
 ```
 
-Exemplo de visualização dos próximos dias:
+### Ver próximos dias
 
 ```text
 ==== PRÓXIMOS DIAS ====
+
 01/05/2026: 🟢 Trabalhando
 02/05/2026: 🟢 Trabalhando
 03/05/2026: 🟢 Trabalhando
@@ -259,6 +324,30 @@ Exemplo de visualização dos próximos dias:
 10/05/2026: 🟢 Trabalhando
 ```
 
+### Listar escalas salvas
+
+```text
+==== ESCALAS SALVAS ====
+
+1 - Escala padrão 6x3
+    Dias trabalhados: 6
+    Dias de folga: 3
+
+2 - Escala administrativa 5x2
+    Dias trabalhados: 5
+    Dias de folga: 2
+```
+
+### Cadastrar nova escala
+
+```text
+Digite o nome da escala: Escala teste 3x2
+Digite a quantidade de dias trabalhados: 3
+Digite a quantidade de dias de folga: 2
+
+Escala cadastrada com sucesso!
+```
+
 ---
 
 ## 🧩 Organograma técnico
@@ -266,13 +355,17 @@ Exemplo de visualização dos próximos dias:
 ```mermaid
 flowchart TD
     A[Usuário] --> B[main.py]
+
     B --> C[validacoes.py]
     B --> D[escala.py]
     B --> E[interface.py]
+    B --> F[armazenamento.py]
 
     C --> C1[Valida datas]
     C --> C2[Valida números]
-    C --> C3[Valida opções do menu]
+    C --> C3[Valida opções]
+    C --> C4[Valida índice de lista]
+    C --> C5[Valida texto obrigatório]
 
     D --> D1[Calcula status]
     D --> D2[Gera próximos dias]
@@ -280,10 +373,57 @@ flowchart TD
 
     E --> E1[Exibe menu]
     E --> E2[Exibe resultados]
-    E --> E3[Formata status]
+    E --> E3[Exibe escalas salvas]
+    E --> E4[Formata status]
 
-    D --> F[Resultado lógico]
-    E --> G[Resultado visual no terminal]
+    F --> F1[Carrega escalas]
+    F --> F2[Salva escalas]
+    F --> F3[Adiciona nova escala]
+    F --> F4[Valida duplicidades]
+    F --> G[(data/escalas.json)]
+```
+
+---
+
+## 🔄 Fluxo de funcionamento
+
+```mermaid
+flowchart LR
+    A[Início] --> B[Menu principal]
+    B --> C{Opção escolhida}
+
+    C -->|1| D[Consultar data]
+    C -->|2| E[Gerar próximos dias]
+    C -->|3| F[Alterar escala manualmente]
+    C -->|4| G[Ver escalas salvas]
+    C -->|5| H[Cadastrar nova escala]
+    C -->|6| I[Sair]
+
+    D --> J[Validar datas]
+    J --> K[Calcular status]
+    K --> L[Exibir resultado]
+
+    E --> M[Validar data inicial]
+    M --> N[Validar quantidade]
+    N --> O[Gerar lista de dias]
+    O --> P[Exibir próximos dias]
+
+    F --> Q[Validar dias de trabalho e folga]
+    Q --> R[Atualizar escala atual]
+
+    G --> S[Carregar JSON]
+    S --> T[Exibir escalas]
+    T --> U[Selecionar escala]
+    U --> R
+
+    H --> V[Validar nome e números]
+    V --> W[Verificar duplicidade]
+    W --> X[Salvar no JSON]
+
+    L --> B
+    P --> B
+    R --> B
+    X --> B
 ```
 
 ---
@@ -296,6 +436,9 @@ simulador-escala-trabalho/
 ├── assets/
 │   └── banner.png
 │
+├── data/
+│   └── escalas.json
+│
 ├── docs/
 │   ├── visao_produto.md
 │   └── demo/
@@ -304,8 +447,10 @@ simulador-escala-trabalho/
 │       └── script.js
 │
 ├── tests/
-│   └── test_escala.py
+│   ├── test_escala.py
+│   └── test_armazenamento.py
 │
+├── armazenamento.py
 ├── escala.py
 ├── interface.py
 ├── main.py
@@ -323,11 +468,15 @@ simulador-escala-trabalho/
 |---|---|
 | `assets/` | Armazena recursos visuais do projeto |
 | `banner.png` | Banner principal utilizado no README |
+| `data/` | Armazena dados utilizados pelo sistema |
+| `escalas.json` | Guarda as escalas favoritas cadastradas |
 | `docs/` | Documentação complementar e visão futura do produto |
 | `docs/demo/` | Demo web interativa publicada via GitHub Pages |
 | `visao_produto.md` | Documento estratégico sobre evolução do projeto |
 | `tests/` | Testes automatizados do projeto |
 | `test_escala.py` | Testes da lógica principal de escala |
+| `test_armazenamento.py` | Testes de leitura, salvamento e cadastro de escalas |
+| `armazenamento.py` | Carrega, salva e cadastra escalas em JSON |
 | `escala.py` | Contém a lógica de cálculo da escala |
 | `interface.py` | Centraliza menus, mensagens e exibição no terminal |
 | `validacoes.py` | Centraliza validações de entrada do usuário |
@@ -337,37 +486,6 @@ simulador-escala-trabalho/
 | `LICENSE` | Licença proprietária de uso não comercial |
 | `CHANGELOG.md` | Histórico de alterações do projeto |
 | `README.md` | Documentação principal do projeto |
-
----
-
-## 🔄 Fluxo de funcionamento
-
-```mermaid
-flowchart LR
-    A[Início] --> B[Usuário escolhe opção]
-    B --> C{Opção selecionada}
-
-    C -->|1| D[Consultar uma data]
-    C -->|2| E[Gerar próximos dias]
-    C -->|3| F[Alterar escala]
-    C -->|4| G[Sair]
-
-    D --> H[Validar datas]
-    H --> I[Calcular status]
-    I --> J[Exibir Trabalho ou Folga]
-
-    E --> K[Validar data inicial]
-    K --> L[Validar quantidade de dias]
-    L --> M[Gerar lista de datas]
-    M --> N[Exibir próximos dias]
-
-    F --> O[Validar nova escala]
-    O --> P[Atualizar dias de trabalho e folga]
-
-    J --> B
-    N --> B
-    P --> B
-```
 
 ---
 
@@ -399,15 +517,43 @@ Senão:
     Folga
 ```
 
-Essa abordagem permite reaproveitar a mesma lógica para diferentes modelos de escala, como:
-
-- `6x3`
-- `5x2`
-- `4x4`
-- modelos personalizados definidos pelo usuário.
+Essa abordagem permite reaproveitar a mesma lógica para diferentes modelos de escala baseados em dias completos.
 
 > [!WARNING]
-> Escalas baseadas em horas, como `12x36`, exigem uma lógica diferente da atual, pois envolvem controle por horário e não apenas por dias completos.
+> Escalas baseadas em horas, como `12x36`, ainda exigem uma lógica diferente da atual, pois envolvem controle por horário e não apenas por dias completos.
+
+---
+
+## 💾 Como funciona a persistência
+
+A persistência foi adicionada para permitir que escalas sejam salvas fora do código.
+
+O arquivo responsável pelo armazenamento é:
+
+```text
+data/escalas.json
+```
+
+O módulo responsável por manipular esse arquivo é:
+
+```text
+armazenamento.py
+```
+
+### Fluxo de persistência
+
+```mermaid
+flowchart TD
+    A[Usuário cadastra escala] --> B[main.py]
+    B --> C[armazenamento.py]
+    C --> D[carregar_escalas]
+    D --> E[Verifica duplicidade]
+    E --> F{Pode cadastrar?}
+    F -->|Sim| G[adicionar_escala]
+    G --> H[salvar_escalas]
+    H --> I[(data/escalas.json)]
+    F -->|Não| J[Retorna erro de duplicidade]
+```
 
 ---
 
@@ -416,7 +562,8 @@ Essa abordagem permite reaproveitar a mesma lógica para diferentes modelos de e
 <p align="center">
   <img src="https://img.shields.io/badge/Python-061A2B?style=for-the-badge&logo=python&logoColor=FFD43B">
   <img src="https://img.shields.io/badge/Datetime-0077B6?style=for-the-badge">
-  <img src="https://img.shields.io/badge/Pytest-00B4D8?style=for-the-badge&logo=pytest&logoColor=white">
+  <img src="https://img.shields.io/badge/JSON-00B4D8?style=for-the-badge&logo=json&logoColor=white">
+  <img src="https://img.shields.io/badge/Pytest-90E0EF?style=for-the-badge&logo=pytest&logoColor=061A2B">
   <img src="https://img.shields.io/badge/CLI-48CAE4?style=for-the-badge">
   <img src="https://img.shields.io/badge/HTML5-061A2B?style=for-the-badge&logo=html5&logoColor=E34F26">
   <img src="https://img.shields.io/badge/CSS3-0077B6?style=for-the-badge&logo=css3&logoColor=white">
@@ -434,6 +581,8 @@ Essa abordagem permite reaproveitar a mesma lógica para diferentes modelos de e
 - estruturas condicionais;
 - estruturas de repetição;
 - validação de entrada;
+- leitura e escrita de arquivos JSON;
+- persistência de dados;
 - cálculo de ciclos;
 - testes automatizados;
 - organização de projeto;
@@ -480,7 +629,7 @@ python3 main.py
 
 ## 🧪 Testes automatizados
 
-O projeto possui testes com `pytest` para validar a lógica principal da escala.
+O projeto possui testes com `pytest` para validar tanto a lógica de escala quanto o armazenamento em JSON.
 
 ### Executar os testes
 
@@ -488,33 +637,37 @@ O projeto possui testes com `pytest` para validar a lógica principal da escala.
 python -m pytest
 ```
 
-Exemplo de saída esperada:
-
-```text
-collected 3 items
-
-tests/test_escala.py ...
-```
-
 ### O que está sendo testado
 
-| Função | O que o teste valida |
+| Arquivo de teste | O que valida |
 |---|---|
-| `calcular_status()` | Se uma data retorna corretamente `Trabalhando` ou `Folga` |
-| `gerar_proximos_dias()` | Se a sequência gerada respeita o ciclo da escala |
-| Escala `6x3` | Se os primeiros 6 dias são trabalho e os 3 seguintes são folga |
+| `tests/test_escala.py` | Cálculo de trabalho e folga |
+| `tests/test_escala.py` | Geração dos próximos dias da escala |
+| `tests/test_armazenamento.py` | Salvamento e carregamento de escalas |
+| `tests/test_armazenamento.py` | Cadastro de nova escala |
+| `tests/test_armazenamento.py` | Bloqueio de nome duplicado |
+| `tests/test_armazenamento.py` | Bloqueio de configuração duplicada |
+
+### Exemplo de saída esperada
+
+```text
+tests/test_escala.py ...
+tests/test_armazenamento.py ....
+```
 
 ---
 
 ## 🧪 Testes manuais sugeridos
 
-| Data inicial | Escala | Data consultada | Resultado esperado |
-|---|---|---|---|
-| `01/05/2026` | `6x3` | `01/05/2026` | Trabalhando |
-| `01/05/2026` | `6x3` | `06/05/2026` | Trabalhando |
-| `01/05/2026` | `6x3` | `07/05/2026` | Folga |
-| `01/05/2026` | `6x3` | `09/05/2026` | Folga |
-| `01/05/2026` | `6x3` | `10/05/2026` | Trabalhando |
+| Cenário | Entrada | Resultado esperado |
+|---|---|---|
+| Consultar primeiro dia da escala | `01/05/2026` em escala `6x3` | Trabalhando |
+| Consultar sexto dia da escala | `06/05/2026` em escala `6x3` | Trabalhando |
+| Consultar sétimo dia da escala | `07/05/2026` em escala `6x3` | Folga |
+| Aplicar escala salva | Selecionar `5x2` | Menu passa a exibir `5x2` |
+| Cadastrar escala nova | Nome novo + configuração nova | Cadastro realizado |
+| Cadastrar nome repetido | Mesmo nome de uma escala existente | Cadastro bloqueado |
+| Cadastrar configuração repetida | Nome diferente + mesmos dias | Cadastro bloqueado |
 
 ---
 
@@ -525,32 +678,43 @@ timeline
     title Evolução planejada do projeto
     v0.1.0 : CLI funcional
            : Validações
-           : Testes com pytest
+           : Testes da lógica de escala
            : Demo web publicada
-    v0.1.1 : Ajustes de documentação
-           : Melhorias visuais na demo
     v0.2.0 : Persistência em JSON
            : Escalas favoritas
+           : Cadastro de escalas
+           : Testes de armazenamento
     v0.3.0 : Visualização mensal
            : Melhorias na experiência do usuário
+           : Melhorias na demo web
     v0.4.0 : Cadastro simples de funcionários
            : Cadastro de turnos
+           : Escalas por colaborador
     Futuro : Banco de dados
            : API
            : Interface web completa
+           : Dashboards
            : Gestão corporativa de escalas
 ```
 
-### Versão atual
+### Implementado até a versão atual
 
 - [x] Criar lógica de cálculo de escala
 - [x] Consultar status de uma data
 - [x] Gerar próximos dias da escala
 - [x] Criar menu interativo
-- [x] Permitir alteração da escala no terminal
+- [x] Permitir alteração manual da escala
 - [x] Separar validações em módulo próprio
 - [x] Separar exibições em módulo próprio
-- [x] Adicionar testes automatizados
+- [x] Criar módulo de armazenamento
+- [x] Salvar escalas em JSON
+- [x] Listar escalas salvas
+- [x] Aplicar escala salva como escala atual
+- [x] Cadastrar nova escala pelo terminal
+- [x] Bloquear nome duplicado
+- [x] Bloquear configuração duplicada
+- [x] Adicionar testes automatizados da lógica principal
+- [x] Adicionar testes automatizados do armazenamento
 - [x] Criar documentação de visão do produto
 - [x] Adicionar licença de uso não comercial
 - [x] Criar demo web inicial
@@ -558,14 +722,16 @@ timeline
 
 ### Próximas melhorias
 
-- [ ] Criar cadastro simples de escalas favoritas
-- [ ] Salvar configurações em arquivo JSON
 - [ ] Criar visualização mensal da escala
+- [ ] Permitir editar escalas salvas
+- [ ] Permitir excluir escalas salvas
+- [ ] Melhorar mensagens visuais da interface CLI
 - [ ] Adicionar suporte para múltiplos funcionários
 - [ ] Permitir cadastro de turnos
+- [ ] Estudar escalas com rotação de turno
+- [ ] Estudar escalas baseadas em horas, como `12x36`
 - [ ] Exportar resultados em `.txt`, `.csv` ou `.pdf`
-- [ ] Criar interface gráfica
-- [ ] Criar versão web completa
+- [ ] Criar interface gráfica ou web completa
 - [ ] Evoluir para sistema corporativo de gestão de escalas
 
 ---
@@ -591,8 +757,8 @@ Este projeto demonstra habilidades importantes para desenvolvimento de software:
   </tr>
   <tr>
     <td align="center">
-      <strong>🖥️ CLI</strong><br>
-      Interação via terminal
+      <strong>💾 JSON</strong><br>
+      Persistência de dados
     </td>
     <td align="center">
       <strong>🧪 Testes</strong><br>
@@ -606,7 +772,7 @@ Este projeto demonstra habilidades importantes para desenvolvimento de software:
 </table>
 
 > [!IMPORTANT]
-> O objetivo não é apenas criar um script, mas desenvolver um projeto apresentável, organizado, testável e com potencial de evolução.
+> O objetivo não é apenas criar um script, mas desenvolver um projeto apresentável, organizado, testável e com potencial de evolução para um sistema real.
 
 ---
 
@@ -625,7 +791,9 @@ A ideia futura envolve:
 - relatórios individuais e gerais;
 - integração com sistemas de ponto;
 - painel para empresa;
-- painel para colaborador.
+- painel para colaborador;
+- dashboards para acompanhamento;
+- alertas e notificações.
 
 Leia mais em:
 
@@ -683,8 +851,8 @@ Para mais detalhes, consulte o arquivo [LICENSE](./LICENSE).
   <a href="https://dinox75.github.io/simulador-escala-trabalho/demo/" target="_blank">
     <img src="https://img.shields.io/badge/%F0%9F%8C%90%20Abrir%20Demo-00B4D8?style=for-the-badge&labelColor=061A2B">
   </a>
-  <img src="https://img.shields.io/badge/Personalize-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/Simule-0077B6?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/Salve%20Escalas-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/Planeje-03045E?style=for-the-badge&labelColor=061A2B">
 </p>
 
