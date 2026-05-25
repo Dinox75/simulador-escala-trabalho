@@ -3,58 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo | Simulador de Escala de Trabalho</title>
-
+    <title>Simulador de Escala de Trabalho | Demo v0.2.0</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-theme="dark">
+    <div class="background-elements" aria-hidden="true">
+        <span class="float-item item-1">⏰</span>
+        <span class="float-item item-2">📅</span>
+        <span class="float-item item-3">🔁</span>
+        <span class="float-item item-4">⭐</span>
+        <span class="float-item item-5">💼</span>
+        <span class="float-item item-6">🧭</span>
+    </div>
 
     <main class="container">
-        <section class="hero">
-            <span class="badge">Demo interativa</span>
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-icon">⏰</span>
+                <div>
+                    <strong>Simulador de Escala</strong>
+                    <small>Demo web • v0.2.0</small>
+                </div>
+            </div>
 
-            <h1>Simulador de Escala de Trabalho</h1>
+            <button id="botao-tema" class="theme-button" type="button">
+                🌙 Tema escuro
+            </button>
+        </header>
+
+        <section class="hero">
+            <span class="badge">Demo interativa • Escalas favoritas</span>
+
+            <h1>Planeje sua escala de trabalho com mais clareza</h1>
 
             <p>
-                Consulte dias de trabalho e folga com base em escalas como
-                <strong>6x3</strong>, <strong>5x2</strong> e outras variações.
+                Consulte dias de trabalho e folga, use escalas favoritas, cadastre novas configurações
+                e visualize o resultado em formato de calendário.
             </p>
+
+            <div class="hero-actions">
+                <a href="https://github.com/Dinox75/simulador-escala-trabalho" target="_blank">
+                    Ver projeto no GitHub
+                </a>
+
+                <a href="#calendario" class="secondary-link">
+                    Ver calendário
+                </a>
+            </div>
         </section>
 
-        <section class="card">
-            <h2>Configurar escala</h2>
+        <section class="summary-grid">
+            <article class="summary-card">
+                <span>Escala atual</span>
+                <strong id="escala-atual-texto">6x3</strong>
+                <small>Configuração ativa para simulação</small>
+            </article>
 
-            <form id="form-escala">
-                <label>
-                    Data inicial da escala
-                    <input type="date" id="data-inicial" required>
-                </label>
+            <article class="summary-card">
+                <span>Persistência</span>
+                <strong>localStorage</strong>
+                <small>Simulação visual da persistência em JSON</small>
+            </article>
 
-                <label>
-                    Dias de trabalho
-                    <input type="number" id="dias-trabalho" min="1" value="6" required>
-                </label>
-
-                <label>
-                    Dias de folga
-                    <input type="number" id="dias-folga" min="1" value="3" required>
-                </label>
-
-                <label>
-                    Quantidade de dias para visualizar
-                    <input type="number" id="quantidade-dias" min="1" value="15" required>
-                </label>
-
-                <button type="submit">Gerar escala</button>
-            </form>
+            <article class="summary-card">
+                <span>Status</span>
+                <strong>v0.2.0</strong>
+                <small>Escalas favoritas e cadastro</small>
+            </article>
         </section>
 
-        <section class="resultado">
-            <h2>Resultado</h2>
+        <section class="grid">
+            <section class="card main-card">
+                <div class="card-header">
+                    <span class="section-label">Simulação</span>
+                    <h2>Gerar escala</h2>
+                    <p>Defina a data inicial, os dias trabalhados, os dias de folga e o período de visualização.</p>
+                </div>
 
-            <div id="lista-resultados" class="lista-resultados">
-                <p class="mensagem-inicial">
-                    Preencha os dados acima e gere uma simulação da escala.
+                <form id="form-escala">
+                    <div class="form-group">
+                        <label for="data-inicial">Data inicial da escala</label>
+                        <input type="date" id="data-inicial" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dias-trabalho">Dias trabalhados</label>
+                            <input type="number" id="dias-trabalho" min="1" value="6" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dias-folga">Dias de folga</label>
+                            <input type="number" id="dias-folga" min="1" value="3" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantidade-dias">Quantidade de dias para visualizar</label>
+                        <input type="number" id="quantidade-dias" min="1" value="30" required>
+                    </div>
+
+                    <button type="submit">Gerar calendário</button>
+                </form>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <span class="section-label">Favoritas</span>
+                    <h2>Escalas salvas</h2>
+                    <p>Escolha uma escala cadastrada e aplique automaticamente na simulação.</p>
+                </div>
+
+                <div id="lista-escalas" class="lista-escalas"></div>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <span class="section-label">Cadastro</span>
+                    <h2>Nova escala</h2>
+                    <p>Cadastre uma nova configuração e reutilize depois.</p>
+                </div>
+
+                <form id="form-nova-escala">
+                    <div class="form-group">
+                        <label for="nome-escala">Nome da escala</label>
+                        <input type="text" id="nome-escala" placeholder="Ex: Escala turno B 6x3" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="novo-dias-trabalho">Dias trabalhados</label>
+                            <input type="number" id="novo-dias-trabalho" min="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="novo-dias-folga">Dias de folga</label>
+                            <input type="number" id="novo-dias-folga" min="1" required>
+                        </div>
+                    </div>
+
+                    <button type="submit">Cadastrar escala</button>
+                </form>
+
+                <div id="mensagem" class="mensagem"></div>
+            </section>
+        </section>
+
+        <section class="calendar-section" id="calendario">
+            <div class="calendar-header">
+                <div>
+                    <span class="section-label">Calendário</span>
+                    <h2>Dias de trabalho e folga</h2>
+                    <p>
+                        Visualização organizada por mês, com cada dia identificado conforme a escala atual.
+                    </p>
+                </div>
+
+                <div class="legend">
+                    <span><i class="dot trabalho-dot"></i> Trabalhando</span>
+                    <span><i class="dot folga-dot"></i> Folga</span>
+                </div>
+            </div>
+
+            <div id="calendarios" class="calendarios">
+                <p class="estado-vazio">
+                    Configure uma escala e clique em <strong>Gerar calendário</strong>.
                 </p>
             </div>
         </section>
