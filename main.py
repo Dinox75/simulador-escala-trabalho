@@ -70,12 +70,16 @@ def main():
                 exibir_escala_alterada(dias_trabalho, dias_folga)
 
         elif menu == "5":
-            nome = ler_texto("Digite o nome da nova escala: ")
-            dias_trabalho = ler_numero("Quantos dias de trabalho? ")
-            dias_folga = ler_numero("Quantos dias de folga? ")
+            nome = ler_texto("Digite o nome da escala: ")
+            dias_trabalho = ler_numero("Digite a quantidade de dias trabalhados: ")
+            dias_folga = ler_numero("Digite a quantidade de dias de folga: ")
 
-            adicionar_escala(nome, dias_trabalho, dias_folga)
-            print(f"Escala '{nome}' adicionada com sucesso!")
+            cadastro_realizado = adicionar_escala(nome, dias_trabalho, dias_folga)
+
+            if cadastro_realizado:
+                print("Escala cadastrada com sucesso!")
+            else:
+                print(f"A escala '{nome}' já existe.")
 
         elif menu == "6":
             print("Volte sempre!")

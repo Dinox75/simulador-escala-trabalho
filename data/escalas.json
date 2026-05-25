@@ -23,5 +23,10 @@
         "nome": "2x2",
         "dias_trabalho": 2,
         "dias_folga": 2
+    },
+    {
+        "nome": "2",
+        "dias_trabalho": 2,
+        "dias_folga": 2
     }
 ]
