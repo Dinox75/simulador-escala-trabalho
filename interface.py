@@ -33,4 +33,3 @@ def exibir_resultado_consulta(data_consulta, status):
 
 def exibir_escala_alterada(dias_trabalho, dias_folga):
     print(f"\nEscala alterada para {dias_trabalho}x{dias_folga}.")
-
