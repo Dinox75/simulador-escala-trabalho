@@ -119,3 +119,91 @@ def test_remover_escala_com_indice_invalido(tmp_path, monkeypatch):
     escalas = armazenamento.carregar_escalas()
 
     assert len(escalas) == 1
+
+def test_editar_escala_com_sucesso(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_iniciais = [
+        {
+            "nome": "Escala padrão 6x3",
+            "dias_trabalho": 6,
+            "dias_folga": 3
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_iniciais)
+
+    resultado = armazenamento.editar_escala(0, "Escala atualizada 5x2", 5, 2)
+
+    assert resultado == "sucesso"
+
+    escalas = armazenamento.carregar_escalas()
+
+    assert escalas[0]["nome"] == "Escala atualizada 5x2"
+    assert escalas[0]["dias_trabalho"] == 5
+    assert escalas[0]["dias_folga"] == 2
+
+def test_editar_escala_com_indice_invalido(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_iniciais = [
+        {
+            "nome": "Escala padrão 6x3",
+            "dias_trabalho": 6,
+            "dias_folga": 3
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_iniciais)
+
+    resultado = armazenamento.editar_escala(10, "Nova escala", 4, 2)
+
+    assert resultado == "indice_invalido"
+
+def test_editar_escala_com_nome_duplicado(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_iniciais = [
+        {
+            "nome": "Escala padrão 6x3",
+            "dias_trabalho": 6,
+            "dias_folga": 3
+        },
+        {
+            "nome": "Escala administrativa 5x2",
+            "dias_trabalho": 5,
+            "dias_folga": 2
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_iniciais)
+
+    resultado = armazenamento.editar_escala(0, "Escala administrativa 5x2", 4, 4)
+
+    assert resultado == "nome_duplicado"
+
+def test_editar_escala_com_configuracao_duplicada(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_iniciais = [
+        {
+            "nome": "Escala padrão 6x3",
+            "dias_trabalho": 6,
+            "dias_folga": 3
+        },
+        {
+            "nome": "Escala administrativa 5x2",
+            "dias_trabalho": 5,
+            "dias_folga": 2
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_iniciais)
+
+    resultado = armazenamento.editar_escala(0, "Escala nova", 5, 2)
+
+    assert resultado == "configuracao_duplicada"

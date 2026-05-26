@@ -54,3 +54,31 @@ def remover_escala(indice):
 
     return True
     
+def editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga):
+    escalas = carregar_escalas()
+
+    if indice < 0 or indice >= len(escalas):
+        return "indice_invalido"
+
+    novo_nome_limpo = novo_nome.strip()
+    novo_nome_normalizado = novo_nome_limpo.lower()
+
+    for posicao, escala in enumerate(escalas):
+        if posicao != indice:
+            nome_existente = escala["nome"].lower().strip()
+
+            if nome_existente == novo_nome_normalizado:
+                return "nome_duplicado"
+
+            if escala["dias_trabalho"] == novos_dias_trabalho and escala["dias_folga"] == novos_dias_folga:
+                return "configuracao_duplicada"
+
+    escalas[indice] = {
+        "nome": novo_nome,
+        "dias_trabalho": novos_dias_trabalho,
+        "dias_folga": novos_dias_folga
+    }
+
+    salvar_escalas(escalas)
+
+    return "sucesso"
