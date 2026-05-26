@@ -41,7 +41,16 @@ def adicionar_escala(nome, dias_trabalho, dias_folga):
     salvar_escalas(escalas)
 
     return "sucesso"
-if __name__ == "__main__":
+
+def remover_escala(indice):
     escalas = carregar_escalas()
+
+    if indice < 0 or indice >= len(escalas):
+        return False
+
+    escalas.pop(indice)
+
     salvar_escalas(escalas)
-    print("Escalas salvas com sucesso.")
+
+    return True
+    

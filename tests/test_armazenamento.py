@@ -69,3 +69,53 @@ def test_adicionar_escala_com_configuracao_duplicada(tmp_path, monkeypatch):
     resultado = armazenamento.adicionar_escala("Minha escala nova", 6, 3)
 
     assert resultado == "configuracao_duplicada"
+
+def test_remover_escala_com_sucesso(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_iniciais = [
+        {
+            "nome": "Escala padrão 6x3",
+            "dias_trabalho": 6,
+            "dias_folga": 3
+        },
+        {
+            "nome": "Escala administrativa 5x2",
+            "dias_trabalho": 5,
+            "dias_folga": 2
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_iniciais)
+
+    resultado = armazenamento.remover_escala(0)
+
+    assert resultado == True
+
+    escalas = armazenamento.carregar_escalas()
+
+    assert len(escalas) == 1
+    assert escalas[0]["nome"] == "Escala administrativa 5x2"
+
+def test_remover_escala_com_indice_invalido(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_iniciais = [
+        {
+            "nome": "Escala padrão 6x3",
+            "dias_trabalho": 6,
+            "dias_folga": 3
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_iniciais)
+
+    resultado = armazenamento.remover_escala(10)
+
+    assert resultado == False
+
+    escalas = armazenamento.carregar_escalas()
+
+    assert len(escalas) == 1
