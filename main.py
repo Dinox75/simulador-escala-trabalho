@@ -104,12 +104,38 @@ def main():
                 novos_dias_trabalho = ler_numero("Digite a nova quantidade de dias trabalhados: ")
                 novos_dias_folga = ler_numero("Digite a nova quantidade de dias de folga: ")
 
+                print("\nResumo da alteração:")
+                print(f"Nome: {escala_atual['nome']} -> {novo_nome}")
+                print(f"Dias trabalhados: {escala_atual['dias_trabalho']} -> {novos_dias_trabalho}")
+                print(f"Dias de folga: {escala_atual['dias_folga']} -> {novos_dias_folga}")
+
+                confirmacao = input("Deseja salvar essa alteração? [s/n]: ").lower().strip()
+
                 resultado = editar_escala(
                     indice,
                     novo_nome,
                     novos_dias_trabalho,
                     novos_dias_folga
                 )
+
+                if confirmacao == "s":
+                    resultado = editar_escala(
+                        indice,
+                        novo_nome,
+                        novos_dias_trabalho,
+                        novos_dias_folga
+                    )
+
+                if resultado == "sucesso":
+                    print("Escala editada com sucesso!")
+                elif resultado == "indice_invalido":
+                    print("Índice inválido.")
+                elif resultado == "nome_duplicado":
+                    print("Já existe uma escala com esse nome.")
+                elif resultado == "configuracao_duplicada":
+                    print("Já existe uma escala com essa configuração.")
+            else:
+                print("Edição cancelada.")
 
                 if resultado == "sucesso":
                     print("Escala editada com sucesso!")
