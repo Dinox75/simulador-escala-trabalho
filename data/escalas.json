@@ -10,8 +10,8 @@
         "dias_folga": 2
     },
     {
-        "nome": "Escala 6x1",
-        "dias_trabalho": 6,
-        "dias_folga": 1
+        "nome": "Demo",
+        "dias_trabalho": 4,
+        "dias_folga": 3
     }
 ]

@@ -92,27 +92,33 @@ def main():
 
             if escalas:
                 indice = ler_indice_lista("Escolha uma escala para editar: ", len(escalas))
-                escala_selecionada = escalas[indice]
 
-                print(f"Editando a escala '{escala_selecionada['nome']}'")
+                escala_atual = escalas[indice]
+
+                print("\nEscala selecionada:")
+                print(f"Nome atual: {escala_atual['nome']}")
+                print(f"Dias trabalhados atuais: {escala_atual['dias_trabalho']}")
+                print(f"Dias de folga atuais: {escala_atual['dias_folga']}")
 
                 novo_nome = ler_texto("Digite o novo nome da escala: ")
                 novos_dias_trabalho = ler_numero("Digite a nova quantidade de dias trabalhados: ")
                 novos_dias_folga = ler_numero("Digite a nova quantidade de dias de folga: ")
 
-                resultado = editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga)
+                resultado = editar_escala(
+                    indice,
+                    novo_nome,
+                    novos_dias_trabalho,
+                    novos_dias_folga
+                )
 
                 if resultado == "sucesso":
                     print("Escala editada com sucesso!")
-
                 elif resultado == "indice_invalido":
-                    print("Índice selecionado é inválido.")
-
+                    print("Índice inválido.")
                 elif resultado == "nome_duplicado":
-                    print(f"A escala '{novo_nome}' já existe.")
-
+                    print("Já existe uma escala com esse nome.")
                 elif resultado == "configuracao_duplicada":
-                    print("Já existe uma escala com essa mesma quantidade de dias trabalhados e dias de folga.")
+                    print("Já existe uma escala com essa configuração.")
 
         elif menu == "7":
             escalas = carregar_escalas()
