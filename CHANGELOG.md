@@ -1,3 +1,26 @@
+## [v0.3.0] - CRUD completo de escalas salvas
+
+### Adicionado
+- Opção para editar escalas salvas.
+- Opção para excluir escalas salvas.
+- Confirmação antes de editar uma escala.
+- Confirmação antes de excluir uma escala.
+- Função `editar_escala()` no módulo de armazenamento.
+- Função `remover_escala()` no módulo de armazenamento.
+- Função `confirmar_acao()` para centralizar confirmações do usuário.
+
+### Melhorado
+- Menu principal atualizado com novas opções.
+- Fluxo de edição mais claro, exibindo os dados atuais antes da alteração.
+- Separação de responsabilidades entre menu, validações e armazenamento.
+
+### Testes
+- Testes para remoção de escalas.
+- Testes para edição de escalas.
+- Validação de índice inválido.
+- Validação de nome duplicado.
+- Validação de configuração duplicada.
+
 ## [v0.2.0] - Escalas favoritas com persistência em JSON
 
 ### Adicionado
