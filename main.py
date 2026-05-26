@@ -93,12 +93,17 @@ def main():
                 indice = ler_indice_lista("Escolha uma escala para excluir: ", len(escalas))
                 nome_escala = escalas[indice]["nome"]
 
-                removido = remover_escala(indice)
+                confirmacao = input(f"Tem certeza que deseja excluir a escala '{nome_escala}'? [s/n]: ").lower().strip()
 
-                if removido:
-                    print(f"Escala '{nome_escala}' removida com sucesso!")
+                if confirmacao == "s":
+                    removido = remover_escala(indice)
+
+                    if removido:
+                        print(f"Escala '{nome_escala}' removida com sucesso!")
+                    else:
+                        print("Não foi possível remover a escala.")
                 else:
-                    print("Não foi possível remover a escala.")
+                    print("Exclusão cancelada.")
 
         elif menu == "7":
             print("Saindo...")
