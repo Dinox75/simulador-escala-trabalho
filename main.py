@@ -7,7 +7,7 @@ from interface import (
     exibir_escala_alterada,
     exibir_escalas_salvas
 )
-from armazenamento import carregar_escalas, adicionar_escala
+from armazenamento import carregar_escalas, adicionar_escala, remover_escala
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
     while True:
         exibir_menu(dias_trabalho, dias_folga)
 
-        menu = ler_opcao_menu("\nEscolha uma opção: ", ["1", "2", "3", "4", "5", "6"])
+        menu = ler_opcao_menu("\nEscolha uma opção: ", ["1", "2", "3", "4", "5", "6", "7"])
 
         if menu == "1":
             data_inicio = ler_data("Digite a data inicial da escala (dd/mm/aaaa): ")
@@ -86,7 +86,22 @@ def main():
                 print("Já existe uma escala com essa mesma quantidade de dias trabalhados e dias de folga.")
 
         elif menu == "6":
-            print("Volte sempre!")
+            escalas = carregar_escalas()
+            exibir_escalas_salvas(escalas)
+
+            if escalas:
+                indice = ler_indice_lista("Escolha uma escala para excluir: ", len(escalas))
+                nome_escala = escalas[indice]["nome"]
+
+                removido = remover_escala(indice)
+
+                if removido:
+                    print(f"Escala '{nome_escala}' removida com sucesso!")
+                else:
+                    print("Não foi possível remover a escala.")
+
+        elif menu == "7":
+            print("Saindo...")
             break
 
 if __name__ == "__main__":
