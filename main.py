@@ -7,7 +7,7 @@ from interface import (
     exibir_escala_alterada,
     exibir_escalas_salvas
 )
-from armazenamento import carregar_escalas, adicionar_escala, remover_escala
+from armazenamento import carregar_escalas, adicionar_escala, remover_escala, editar_escala
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
     while True:
         exibir_menu(dias_trabalho, dias_folga)
 
-        menu = ler_opcao_menu("\nEscolha uma opção: ", ["1", "2", "3", "4", "5", "6", "7"])
+        menu = ler_opcao_menu("\nEscolha uma opção: ", ["1", "2", "3", "4", "5", "6", "7", "8"])
 
         if menu == "1":
             data_inicio = ler_data("Digite a data inicial da escala (dd/mm/aaaa): ")
@@ -85,7 +85,36 @@ def main():
             elif resultado == "configuracao_duplicada":
                 print("Já existe uma escala com essa mesma quantidade de dias trabalhados e dias de folga.")
 
+        
         elif menu == "6":
+            escalas = carregar_escalas()
+            exibir_escalas_salvas(escalas)
+
+            if escalas:
+                indice = ler_indice_lista("Escolha uma escala para editar: ", len(escalas))
+                escala_selecionada = escalas[indice]
+
+                print(f"Editando a escala '{escala_selecionada['nome']}'")
+
+                novo_nome = ler_texto("Digite o novo nome da escala: ")
+                novos_dias_trabalho = ler_numero("Digite a nova quantidade de dias trabalhados: ")
+                novos_dias_folga = ler_numero("Digite a nova quantidade de dias de folga: ")
+
+                resultado = editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga)
+
+                if resultado == "sucesso":
+                    print("Escala editada com sucesso!")
+
+                elif resultado == "indice_invalido":
+                    print("Índice selecionado é inválido.")
+
+                elif resultado == "nome_duplicado":
+                    print(f"A escala '{novo_nome}' já existe.")
+
+                elif resultado == "configuracao_duplicada":
+                    print("Já existe uma escala com essa mesma quantidade de dias trabalhados e dias de folga.")
+
+        elif menu == "7":
             escalas = carregar_escalas()
             exibir_escalas_salvas(escalas)
 
@@ -105,7 +134,7 @@ def main():
                 else:
                     print("Exclusão cancelada.")
 
-        elif menu == "7":
+        elif menu == "8":
             print("Saindo...")
             break
 
