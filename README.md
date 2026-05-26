@@ -5,19 +5,20 @@
 <h1 align="center">⏰ Simulador de Escala de Trabalho</h1>
 
 <p align="center">
-  <strong>Aplicação em Python para consultar, simular, salvar e reutilizar escalas de trabalho como 6x3, 5x2, 4x4 e outras variações baseadas em ciclos.</strong>
+  <strong>Aplicação em Python para consultar, simular, salvar, reutilizar, editar e excluir escalas de trabalho como 6x3, 5x2, 4x4 e outras variações baseadas em ciclos.</strong>
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=950&lines=Simule+dias+de+trabalho+e+folga+com+Python;Cadastre+e+reutilize+escalas+favoritas+em+JSON;Projeto+CLI+modular+com+testes+automatizados;Demo+web+interativa+publicada+com+GitHub+Pages" alt="Typing SVG">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=950&lines=Simule+dias+de+trabalho+e+folga+com+Python;Gerencie+escalas+favoritas+com+CRUD+completo;Persist%C3%AAncia+em+JSON+com+testes+automatizados;Projeto+CLI+modular+com+vis%C3%A3o+de+produto;Demo+web+interativa+publicada+com+GitHub+Pages" alt="Typing SVG">
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.2.0-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.3.0-00B4D8?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/STATUS-EM%20DESENVOLVIMENTO-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PYTHON-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=061A2B">
   <img src="https://img.shields.io/badge/INTERFACE-CLI-00C2FF?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PERSIST%C3%8ANCIA-JSON-90E0EF?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/CRUD-ESCALAS%20SALVAS-00B4D8?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/TESTES-PYTEST-CAF0F8?style=for-the-badge&logo=pytest&logoColor=061A2B&labelColor=061A2B">
 </p>
 
@@ -46,8 +47,8 @@
       <p>Informa se uma data será de trabalho ou folga.</p>
     </td>
     <td width="25%" align="center">
-      <h3>💾 JSON</h3>
-      <p>Permite salvar, listar e reutilizar escalas favoritas.</p>
+      <h3>⭐ CRUD</h3>
+      <p>Permite criar, listar, usar, editar e excluir escalas salvas.</p>
     </td>
     <td width="25%" align="center">
       <h3>🧪 Testes</h3>
@@ -60,9 +61,11 @@
 
 ## 📌 Versão atual
 
-> **v0.2.0 - Escalas favoritas com persistência em JSON**
+> **v0.3.0 - CRUD completo de escalas salvas**
 
-A versão atual evolui o projeto de uma calculadora simples de escala para uma aplicação com **persistência de dados**, permitindo cadastrar, listar e reutilizar escalas favoritas salvas em arquivo JSON.
+A versão atual transforma o gerenciamento de escalas favoritas em um fluxo mais completo dentro da aplicação CLI.
+
+Agora o usuário pode **cadastrar, listar, aplicar, editar e excluir escalas salvas**, com persistência em JSON, validações de duplicidade, confirmações de segurança e testes automatizados.
 
 ### Destaques da versão
 
@@ -71,8 +74,9 @@ A versão atual evolui o projeto de uma calculadora simples de escala para uma a
 | 🐍 Aplicação principal | CLI em Python |
 | 🔁 Lógica de escala | Cálculo de trabalho e folga por ciclo |
 | 💾 Persistência | Leitura e gravação em `data/escalas.json` |
-| ⭐ Escalas favoritas | Cadastro, listagem e aplicação de escalas salvas |
-| 🧠 Validações | Bloqueio de nome duplicado e configuração duplicada |
+| ⭐ Escalas favoritas | Cadastro, listagem, aplicação, edição e exclusão |
+| 🧠 Validações | Nome obrigatório, números válidos, índice de lista e confirmação de ações |
+| 🛡️ Segurança no uso | Confirmação antes de editar ou excluir escalas |
 | 🧪 Testes | Testes automatizados com `pytest` |
 | 🌐 Demo web | Versão interativa em HTML, CSS e JavaScript |
 | 🚀 Publicação | Demo hospedada com GitHub Pages |
@@ -103,7 +107,7 @@ A versão atual evolui o projeto de uma calculadora simples de escala para uma a
 </table>
 
 > [!NOTE]
-> A demo web funciona como uma vitrine visual do conceito. A aplicação principal do projeto continua sendo a versão em Python executada pelo terminal.
+> A aplicação principal do projeto é executada em Python pelo terminal. A demo web funciona como uma vitrine visual do conceito e poderá receber as melhorias mais recentes da CLI em versões futuras.
 
 ---
 
@@ -118,7 +122,8 @@ Em ambientes com turnos, revezamentos e escalas diferentes, essa consulta pode g
 - dificuldade para planejar compromissos;
 - erros de comunicação;
 - dependência de planilhas, murais ou consultas manuais;
-- dificuldade para reutilizar configurações de escala já conhecidas.
+- dificuldade para reutilizar configurações de escala já conhecidas;
+- dificuldade para corrigir ou remover escalas cadastradas incorretamente.
 
 Este projeto foi criado a partir de uma necessidade real observada no ambiente de trabalho: simplificar a consulta de escalas e transformar uma regra repetitiva em uma ferramenta prática, testável e expansível.
 
@@ -126,7 +131,7 @@ Este projeto foi criado a partir de uma necessidade real observada no ambiente d
 
 ## ✅ Solução proposta
 
-O **Simulador de Escala de Trabalho** é uma aplicação em **Python** que permite consultar, simular, cadastrar e reutilizar escalas de trabalho baseadas em ciclos.
+O **Simulador de Escala de Trabalho** é uma aplicação em **Python** que permite consultar, simular e gerenciar escalas de trabalho baseadas em ciclos.
 
 A versão atual permite:
 
@@ -136,6 +141,9 @@ A versão atual permite:
 - listar escalas favoritas salvas;
 - aplicar uma escala salva como escala atual;
 - cadastrar novas escalas pelo terminal;
+- editar escalas já cadastradas;
+- excluir escalas salvas;
+- confirmar ações sensíveis antes de salvar ou remover dados;
 - bloquear cadastro com nome duplicado;
 - bloquear cadastro com mesma configuração de dias trabalhados e folga;
 - persistir dados em arquivo JSON;
@@ -148,7 +156,7 @@ A versão atual permite:
 
 ## 🎯 Objetivo do projeto
 
-Criar uma ferramenta prática para simular escalas de trabalho de forma automática, reduzindo consultas manuais e facilitando o planejamento do usuário.
+Criar uma ferramenta prática para simular e gerenciar escalas de trabalho de forma automática, reduzindo consultas manuais e facilitando o planejamento do usuário.
 
 | Recurso | Descrição |
 |---|---|
@@ -157,6 +165,9 @@ Criar uma ferramenta prática para simular escalas de trabalho de forma automát
 | 📆 Visualizar próximos dias | Gera uma sequência futura da escala |
 | ⚙️ Alterar escala manualmente | Permite mudar os dias de trabalho e folga durante a execução |
 | ⭐ Escalas favoritas | Permite salvar e reutilizar configurações de escala |
+| ✏️ Editar escalas salvas | Permite corrigir nome, dias trabalhados e dias de folga |
+| 🗑️ Excluir escalas salvas | Remove escalas que não são mais necessárias |
+| 🛡️ Confirmação de ações | Evita alterações e exclusões acidentais |
 | 💾 Persistência em JSON | Mantém escalas salvas fora do código |
 | 🧪 Validar a lógica | Usa testes automatizados para reduzir erros em futuras alterações |
 | 🌐 Experimentar visualmente | Permite testar o conceito em uma demo web simples |
@@ -207,6 +218,8 @@ Representação visual do ciclo:
 
 A partir da versão `v0.2.0`, o projeto passou a permitir o cadastro e reutilização de escalas favoritas.
 
+Na versão `v0.3.0`, esse recurso evoluiu para um **CRUD completo de escalas salvas**, permitindo criar, listar, aplicar, editar e excluir configurações persistidas em JSON.
+
 Exemplo de estrutura salva em JSON:
 
 ```json
@@ -230,13 +243,26 @@ Essas escalas ficam armazenadas em:
 data/escalas.json
 ```
 
+### Operações disponíveis
+
+| Operação | Comportamento |
+|---|---|
+| Criar escala | Cadastra uma nova escala no JSON |
+| Listar escalas | Exibe todas as escalas salvas |
+| Usar escala | Aplica uma escala salva como escala atual |
+| Editar escala | Atualiza nome, dias trabalhados e dias de folga |
+| Excluir escala | Remove uma escala salva |
+| Confirmar ação | Solicita confirmação antes de editar ou excluir |
+
 ### Regras aplicadas
 
 | Regra | Comportamento |
 |---|---|
-| Nome duplicado | O sistema bloqueia o cadastro |
+| Nome duplicado | O sistema bloqueia o cadastro ou edição |
 | Configuração duplicada | O sistema bloqueia escalas com mesmos dias de trabalho e folga |
-| Escala válida | A nova escala é salva no JSON |
+| Índice inválido | O sistema impede operação fora da lista |
+| Confirmação negativa | A edição ou exclusão é cancelada |
+| Escala válida | A escala é salva ou atualizada no JSON |
 | Escala salva | Pode ser aplicada como escala atual pelo menu |
 
 > [!NOTE]
@@ -254,12 +280,17 @@ data/escalas.json
 | Validação de datas | ✅ Implementado |
 | Validação de entradas numéricas | ✅ Implementado |
 | Validação de opções do menu | ✅ Implementado |
+| Validação de índice em listas | ✅ Implementado |
+| Validação de texto obrigatório | ✅ Implementado |
+| Confirmação de ações sensíveis | ✅ Implementado |
 | Interface organizada em módulo próprio | ✅ Implementado |
 | Formatação visual de status no terminal | ✅ Implementado |
 | Persistência em JSON | ✅ Implementado |
 | Listar escalas salvas | ✅ Implementado |
 | Aplicar escala salva como escala atual | ✅ Implementado |
 | Cadastrar nova escala pelo terminal | ✅ Implementado |
+| Editar escala salva pelo terminal | ✅ Implementado |
+| Excluir escala salva pelo terminal | ✅ Implementado |
 | Bloquear nome duplicado | ✅ Implementado |
 | Bloquear configuração duplicada | ✅ Implementado |
 | Testes automatizados da lógica principal | ✅ Implementado |
@@ -270,7 +301,8 @@ data/escalas.json
 | Documento de visão futura do produto | ✅ Implementado |
 | Changelog | ✅ Implementado |
 | Licença de uso não comercial | ✅ Implementado |
-| Calendário mensal visual | 🔜 Planejado |
+| Atualizar demo web com edição e exclusão | 🔜 Planejado |
+| Calendário mensal visual avançado | 🔜 Planejado |
 | Cadastro de funcionários | 🔜 Planejado |
 | Exportação de relatórios | 🔜 Planejado |
 | Interface gráfica ou web completa | 🔜 Planejado |
@@ -292,7 +324,9 @@ Escala atual: 6x3
 3 - Alterar escala
 4 - Ver escalas salvas
 5 - Cadastrar nova escala
-6 - Sair
+6 - Editar escala salva
+7 - Excluir escala salva
+8 - Sair
 ==========================================
 ```
 
@@ -348,6 +382,40 @@ Digite a quantidade de dias de folga: 2
 Escala cadastrada com sucesso!
 ```
 
+### Editar escala salva
+
+```text
+Escolha uma escala para editar: 1
+
+Escala selecionada:
+Nome atual: Escala padrão 6x3
+Dias trabalhados atuais: 6
+Dias de folga atuais: 3
+
+Digite o novo nome da escala: Escala principal 6x3
+Digite a nova quantidade de dias trabalhados: 6
+Digite a nova quantidade de dias de folga: 3
+
+Resumo da alteração:
+Nome: Escala padrão 6x3 -> Escala principal 6x3
+Dias trabalhados: 6 -> 6
+Dias de folga: 3 -> 3
+
+Deseja salvar essa alteração? [s/n]: s
+
+Escala editada com sucesso!
+```
+
+### Excluir escala salva
+
+```text
+Escolha uma escala para excluir: 2
+
+Tem certeza que deseja excluir a escala 'Escala administrativa 5x2'? [s/n]: s
+
+Escala 'Escala administrativa 5x2' removida com sucesso!
+```
+
 ---
 
 ## 🧩 Organograma técnico
@@ -366,6 +434,7 @@ flowchart TD
     C --> C3[Valida opções]
     C --> C4[Valida índice de lista]
     C --> C5[Valida texto obrigatório]
+    C --> C6[Confirma ações do usuário]
 
     D --> D1[Calcula status]
     D --> D2[Gera próximos dias]
@@ -379,7 +448,9 @@ flowchart TD
     F --> F1[Carrega escalas]
     F --> F2[Salva escalas]
     F --> F3[Adiciona nova escala]
-    F --> F4[Valida duplicidades]
+    F --> F4[Edita escala existente]
+    F --> F5[Remove escala salva]
+    F --> F6[Valida duplicidades]
     F --> G[(data/escalas.json)]
 ```
 
@@ -397,33 +468,51 @@ flowchart LR
     C -->|3| F[Alterar escala manualmente]
     C -->|4| G[Ver escalas salvas]
     C -->|5| H[Cadastrar nova escala]
-    C -->|6| I[Sair]
+    C -->|6| I[Editar escala salva]
+    C -->|7| J[Excluir escala salva]
+    C -->|8| K[Sair]
 
-    D --> J[Validar datas]
-    J --> K[Calcular status]
-    K --> L[Exibir resultado]
+    D --> L[Validar datas]
+    L --> M[Calcular status]
+    M --> N[Exibir resultado]
 
-    E --> M[Validar data inicial]
-    M --> N[Validar quantidade]
-    N --> O[Gerar lista de dias]
-    O --> P[Exibir próximos dias]
+    E --> O[Validar data inicial]
+    O --> P[Validar quantidade]
+    P --> Q[Gerar lista de dias]
+    Q --> R[Exibir próximos dias]
 
-    F --> Q[Validar dias de trabalho e folga]
-    Q --> R[Atualizar escala atual]
+    F --> S[Validar dias de trabalho e folga]
+    S --> T[Atualizar escala atual]
 
-    G --> S[Carregar JSON]
-    S --> T[Exibir escalas]
-    T --> U[Selecionar escala]
-    U --> R
+    G --> U[Carregar JSON]
+    U --> V[Exibir escalas]
+    V --> W[Selecionar escala]
+    W --> T
 
-    H --> V[Validar nome e números]
-    V --> W[Verificar duplicidade]
-    W --> X[Salvar no JSON]
+    H --> X[Validar nome e números]
+    X --> Y[Verificar duplicidade]
+    Y --> Z[Salvar no JSON]
 
-    L --> B
-    P --> B
+    I --> AA[Selecionar escala]
+    AA --> AB[Exibir dados atuais]
+    AB --> AC[Informar novos dados]
+    AC --> AD[Confirmar alteração]
+    AD -->|Sim| AE[Editar no JSON]
+    AD -->|Não| AF[Cancelar edição]
+
+    J --> AG[Selecionar escala]
+    AG --> AH[Confirmar exclusão]
+    AH -->|Sim| AI[Remover do JSON]
+    AH -->|Não| AJ[Cancelar exclusão]
+
+    N --> B
     R --> B
-    X --> B
+    T --> B
+    Z --> B
+    AE --> B
+    AF --> B
+    AI --> B
+    AJ --> B
 ```
 
 ---
@@ -475,11 +564,11 @@ simulador-escala-trabalho/
 | `visao_produto.md` | Documento estratégico sobre evolução do projeto |
 | `tests/` | Testes automatizados do projeto |
 | `test_escala.py` | Testes da lógica principal de escala |
-| `test_armazenamento.py` | Testes de leitura, salvamento e cadastro de escalas |
-| `armazenamento.py` | Carrega, salva e cadastra escalas em JSON |
+| `test_armazenamento.py` | Testes de leitura, salvamento, cadastro, edição e remoção de escalas |
+| `armazenamento.py` | Carrega, salva, cadastra, edita e remove escalas em JSON |
 | `escala.py` | Contém a lógica de cálculo da escala |
 | `interface.py` | Centraliza menus, mensagens e exibição no terminal |
-| `validacoes.py` | Centraliza validações de entrada do usuário |
+| `validacoes.py` | Centraliza validações e confirmações de entrada do usuário |
 | `main.py` | Controla o fluxo principal da aplicação |
 | `pytest.ini` | Configuração para execução dos testes |
 | `requirements.txt` | Lista dependências do projeto |
@@ -540,19 +629,44 @@ O módulo responsável por manipular esse arquivo é:
 armazenamento.py
 ```
 
+### Funções principais do armazenamento
+
+| Função | Responsabilidade |
+|---|---|
+| `carregar_escalas()` | Lê as escalas salvas no JSON |
+| `salvar_escalas(escalas)` | Salva a lista de escalas no JSON |
+| `adicionar_escala(nome, dias_trabalho, dias_folga)` | Cadastra uma nova escala |
+| `editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga)` | Edita uma escala existente |
+| `remover_escala(indice)` | Remove uma escala salva |
+
 ### Fluxo de persistência
 
 ```mermaid
 flowchart TD
-    A[Usuário cadastra escala] --> B[main.py]
-    B --> C[armazenamento.py]
-    C --> D[carregar_escalas]
-    D --> E[Verifica duplicidade]
-    E --> F{Pode cadastrar?}
-    F -->|Sim| G[adicionar_escala]
-    G --> H[salvar_escalas]
-    H --> I[(data/escalas.json)]
-    F -->|Não| J[Retorna erro de duplicidade]
+    A[Usuário gerencia escala] --> B[main.py]
+    B --> C[validacoes.py]
+    B --> D[armazenamento.py]
+
+    C --> E[Valida entradas e confirma ações]
+
+    D --> F[carregar_escalas]
+    F --> G[Verificar operação]
+
+    G --> H{Tipo de ação}
+    H -->|Cadastrar| I[adicionar_escala]
+    H -->|Editar| J[editar_escala]
+    H -->|Excluir| K[remover_escala]
+
+    I --> L[Verificar duplicidades]
+    J --> L
+    K --> M[Atualizar lista]
+
+    L --> N{Pode salvar?}
+    N -->|Sim| O[salvar_escalas]
+    N -->|Não| P[Retornar erro]
+
+    M --> O
+    O --> Q[(data/escalas.json)]
 ```
 
 ---
@@ -583,7 +697,9 @@ flowchart TD
 - validação de entrada;
 - leitura e escrita de arquivos JSON;
 - persistência de dados;
+- CRUD em arquivo JSON;
 - cálculo de ciclos;
+- confirmação de ações do usuário;
 - testes automatizados;
 - organização de projeto;
 - documentação para portfólio;
@@ -645,15 +761,21 @@ python -m pytest
 | `tests/test_escala.py` | Geração dos próximos dias da escala |
 | `tests/test_armazenamento.py` | Salvamento e carregamento de escalas |
 | `tests/test_armazenamento.py` | Cadastro de nova escala |
+| `tests/test_armazenamento.py` | Remoção de escala salva |
+| `tests/test_armazenamento.py` | Edição de escala salva |
 | `tests/test_armazenamento.py` | Bloqueio de nome duplicado |
 | `tests/test_armazenamento.py` | Bloqueio de configuração duplicada |
+| `tests/test_armazenamento.py` | Validação de índice inválido |
 
 ### Exemplo de saída esperada
 
 ```text
+tests/test_armazenamento.py ..........
 tests/test_escala.py ...
-tests/test_armazenamento.py ....
 ```
+
+> [!NOTE]
+> A quantidade exata de testes pode variar conforme novas validações forem adicionadas ao projeto.
 
 ---
 
@@ -668,6 +790,10 @@ tests/test_armazenamento.py ....
 | Cadastrar escala nova | Nome novo + configuração nova | Cadastro realizado |
 | Cadastrar nome repetido | Mesmo nome de uma escala existente | Cadastro bloqueado |
 | Cadastrar configuração repetida | Nome diferente + mesmos dias | Cadastro bloqueado |
+| Editar escala válida | Selecionar escala + novos dados válidos | Escala atualizada |
+| Cancelar edição | Digitar `n` na confirmação | Nenhuma alteração salva |
+| Excluir escala válida | Selecionar escala + confirmar com `s` | Escala removida |
+| Cancelar exclusão | Digitar `n` na confirmação | Escala permanece salva |
 
 ---
 
@@ -684,10 +810,15 @@ timeline
            : Escalas favoritas
            : Cadastro de escalas
            : Testes de armazenamento
-    v0.3.0 : Visualização mensal
-           : Melhorias na experiência do usuário
-           : Melhorias na demo web
-    v0.4.0 : Cadastro simples de funcionários
+    v0.3.0 : CRUD completo de escalas salvas
+           : Edição de escalas
+           : Exclusão de escalas
+           : Confirmação de ações
+           : Testes de edição e remoção
+    v0.4.0 : Atualização da demo web
+           : Melhorias visuais da interface
+           : Visualização mensal mais completa
+    v0.5.0 : Cadastro simples de funcionários
            : Cadastro de turnos
            : Escalas por colaborador
     Futuro : Banco de dados
@@ -711,10 +842,16 @@ timeline
 - [x] Listar escalas salvas
 - [x] Aplicar escala salva como escala atual
 - [x] Cadastrar nova escala pelo terminal
+- [x] Editar escala salva pelo terminal
+- [x] Excluir escala salva pelo terminal
+- [x] Confirmar edição antes de salvar alteração
+- [x] Confirmar exclusão antes de remover escala
 - [x] Bloquear nome duplicado
 - [x] Bloquear configuração duplicada
 - [x] Adicionar testes automatizados da lógica principal
 - [x] Adicionar testes automatizados do armazenamento
+- [x] Adicionar testes de edição de escalas
+- [x] Adicionar testes de remoção de escalas
 - [x] Criar documentação de visão do produto
 - [x] Adicionar licença de uso não comercial
 - [x] Criar demo web inicial
@@ -722,10 +859,11 @@ timeline
 
 ### Próximas melhorias
 
-- [ ] Criar visualização mensal da escala
-- [ ] Permitir editar escalas salvas
-- [ ] Permitir excluir escalas salvas
+- [ ] Atualizar a demo web com edição de escalas salvas
+- [ ] Atualizar a demo web com exclusão de escalas salvas
 - [ ] Melhorar mensagens visuais da interface CLI
+- [ ] Permitir salvar a escala atual escolhida como preferência
+- [ ] Criar visualização mensal mais completa
 - [ ] Adicionar suporte para múltiplos funcionários
 - [ ] Permitir cadastro de turnos
 - [ ] Estudar escalas com rotação de turno
@@ -767,6 +905,20 @@ Este projeto demonstra habilidades importantes para desenvolvimento de software:
     <td align="center">
       <strong>🌐 Demo Web</strong><br>
       Apresentação visual do conceito
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>⭐ CRUD</strong><br>
+      Gerenciamento completo de escalas
+    </td>
+    <td align="center">
+      <strong>🛡️ Validações</strong><br>
+      Prevenção de erros de uso
+    </td>
+    <td align="center">
+      <strong>📚 Documentação</strong><br>
+      Organização para portfólio
     </td>
   </tr>
 </table>
@@ -811,6 +963,14 @@ As mudanças do projeto são registradas no arquivo:
 CHANGELOG.md
 ```
 
+Versões principais:
+
+| Versão | Entrega |
+|---|---|
+| `v0.1.0` | CLI funcional, lógica de escala, validações e testes iniciais |
+| `v0.2.0` | Escalas favoritas com persistência em JSON |
+| `v0.3.0` | CRUD completo de escalas salvas |
+
 ---
 
 ## 👨‍💻 Autor
@@ -852,7 +1012,7 @@ Para mais detalhes, consulte o arquivo [LICENSE](./LICENSE).
     <img src="https://img.shields.io/badge/%F0%9F%8C%90%20Abrir%20Demo-00B4D8?style=for-the-badge&labelColor=061A2B">
   </a>
   <img src="https://img.shields.io/badge/Simule-0077B6?style=for-the-badge&labelColor=061A2B">
-  <img src="https://img.shields.io/badge/Salve%20Escalas-48CAE4?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/Gerencie%20Escalas-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/Planeje-03045E?style=for-the-badge&labelColor=061A2B">
 </p>
 
