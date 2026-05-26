@@ -1,5 +1,6 @@
-const STORAGE_KEY = "simulador_escalas_favoritas_v020";
-const THEME_KEY = "simulador_tema_v020";
+const STORAGE_KEY = "simulador_escalas_favoritas_v030";
+const STORAGE_KEY_ANTIGA = "simulador_escalas_favoritas_v020";
+const THEME_KEY = "simulador_tema_v030";
 
 const escalasPadrao = [
     {
@@ -19,6 +20,8 @@ const escalasPadrao = [
     }
 ];
 
+let indiceEdicao = null;
+
 const formEscala = document.getElementById("form-escala");
 const formNovaEscala = document.getElementById("form-nova-escala");
 
@@ -37,20 +40,38 @@ const escalaAtualTexto = document.getElementById("escala-atual-texto");
 const calendarios = document.getElementById("calendarios");
 const botaoTema = document.getElementById("botao-tema");
 
+const tituloFormEscala = document.getElementById("titulo-form-escala");
+const descricaoFormEscala = document.getElementById("descricao-form-escala");
+const botaoSalvarEscala = document.getElementById("botao-salvar-escala");
+const botaoCancelarEdicao = document.getElementById("botao-cancelar-edicao");
+
 function carregarEscalas() {
     const escalasSalvas = localStorage.getItem(STORAGE_KEY);
 
-    if (!escalasSalvas) {
-        salvarEscalas(escalasPadrao);
-        return escalasPadrao;
+    if (escalasSalvas) {
+        try {
+            return JSON.parse(escalasSalvas);
+        } catch {
+            salvarEscalas(escalasPadrao);
+            return escalasPadrao;
+        }
     }
 
-    try {
-        return JSON.parse(escalasSalvas);
-    } catch {
-        salvarEscalas(escalasPadrao);
-        return escalasPadrao;
+    const escalasAntigas = localStorage.getItem(STORAGE_KEY_ANTIGA);
+
+    if (escalasAntigas) {
+        try {
+            const escalasMigradas = JSON.parse(escalasAntigas);
+            salvarEscalas(escalasMigradas);
+            return escalasMigradas;
+        } catch {
+            salvarEscalas(escalasPadrao);
+            return escalasPadrao;
+        }
     }
+
+    salvarEscalas(escalasPadrao);
+    return escalasPadrao;
 }
 
 function salvarEscalas(escalas) {
@@ -59,6 +80,15 @@ function salvarEscalas(escalas) {
 
 function normalizarTexto(texto) {
     return texto.toLowerCase().trim();
+}
+
+function escaparHTML(texto) {
+    return texto
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 function atualizarEscalaAtual() {
@@ -106,23 +136,57 @@ function renderizarEscalas() {
 
     listaEscalas.innerHTML = "";
 
+    if (escalas.length === 0) {
+        listaEscalas.innerHTML = `
+            <p class="estado-vazio">Nenhuma escala salva no momento.</p>
+        `;
+        return;
+    }
+
     escalas.forEach((escala, indice) => {
         const card = document.createElement("div");
         card.className = "escala-card";
 
         card.innerHTML = `
-            <h3>${indice + 1} - ${escala.nome}</h3>
+            <h3>${indice + 1} - ${escaparHTML(escala.nome)}</h3>
             <p>${escala.dias_trabalho} dias trabalhando • ${escala.dias_folga} dias de folga</p>
-            <button type="button" data-indice="${indice}">Usar escala</button>
+
+            <div class="escala-actions">
+                <button class="botao-usar" type="button" data-indice="${indice}">
+                    Usar
+                </button>
+
+                <button class="botao-editar" type="button" data-indice="${indice}">
+                    Editar
+                </button>
+
+                <button class="botao-excluir" type="button" data-indice="${indice}">
+                    Excluir
+                </button>
+            </div>
         `;
 
         listaEscalas.appendChild(card);
     });
 
-    document.querySelectorAll(".escala-card button").forEach((botao) => {
+    document.querySelectorAll(".botao-usar").forEach((botao) => {
         botao.addEventListener("click", () => {
             const indice = Number(botao.dataset.indice);
             aplicarEscala(indice);
+        });
+    });
+
+    document.querySelectorAll(".botao-editar").forEach((botao) => {
+        botao.addEventListener("click", () => {
+            const indice = Number(botao.dataset.indice);
+            prepararEdicaoEscala(indice);
+        });
+    });
+
+    document.querySelectorAll(".botao-excluir").forEach((botao) => {
+        botao.addEventListener("click", () => {
+            const indice = Number(botao.dataset.indice);
+            excluirEscala(indice);
         });
     });
 }
@@ -130,6 +194,11 @@ function renderizarEscalas() {
 function aplicarEscala(indice) {
     const escalas = carregarEscalas();
     const escala = escalas[indice];
+
+    if (!escala) {
+        mostrarMensagem("Escala não encontrada.", "erro");
+        return;
+    }
 
     inputDiasTrabalho.value = escala.dias_trabalho;
     inputDiasFolga.value = escala.dias_folga;
@@ -140,39 +209,77 @@ function aplicarEscala(indice) {
     mostrarMensagem(`Escala "${escala.nome}" aplicada com sucesso.`, "sucesso");
 }
 
-function cadastrarEscala(evento) {
-    evento.preventDefault();
-
+function obterDadosFormularioEscala() {
     const nome = inputNomeEscala.value.trim();
     const diasTrabalho = Number(inputNovoDiasTrabalho.value);
     const diasFolga = Number(inputNovoDiasFolga.value);
 
+    return {
+        nome,
+        diasTrabalho,
+        diasFolga
+    };
+}
+
+function validarDadosEscala(nome, diasTrabalho, diasFolga) {
     if (!nome) {
         mostrarMensagem("O nome da escala não pode ficar vazio.", "erro");
-        return;
+        return false;
     }
 
     if (diasTrabalho <= 0 || diasFolga <= 0) {
         mostrarMensagem("Os dias trabalhados e de folga precisam ser maiores que zero.", "erro");
+        return false;
+    }
+
+    return true;
+}
+
+function existeNomeDuplicado(escalas, nome, indiceIgnorado = null) {
+    return escalas.some((escala, indice) => {
+        if (indice === indiceIgnorado) {
+            return false;
+        }
+
+        return normalizarTexto(escala.nome) === normalizarTexto(nome);
+    });
+}
+
+function existeConfiguracaoDuplicada(escalas, diasTrabalho, diasFolga, indiceIgnorado = null) {
+    return escalas.some((escala, indice) => {
+        if (indice === indiceIgnorado) {
+            return false;
+        }
+
+        return escala.dias_trabalho === diasTrabalho && escala.dias_folga === diasFolga;
+    });
+}
+
+function salvarFormularioEscala(evento) {
+    evento.preventDefault();
+
+    if (indiceEdicao === null) {
+        cadastrarEscala();
+    } else {
+        salvarEdicaoEscala();
+    }
+}
+
+function cadastrarEscala() {
+    const { nome, diasTrabalho, diasFolga } = obterDadosFormularioEscala();
+
+    if (!validarDadosEscala(nome, diasTrabalho, diasFolga)) {
         return;
     }
 
     const escalas = carregarEscalas();
 
-    const nomeDuplicado = escalas.some((escala) => {
-        return normalizarTexto(escala.nome) === normalizarTexto(nome);
-    });
-
-    if (nomeDuplicado) {
+    if (existeNomeDuplicado(escalas, nome)) {
         mostrarMensagem(`A escala "${nome}" já existe.`, "erro");
         return;
     }
 
-    const configuracaoDuplicada = escalas.some((escala) => {
-        return escala.dias_trabalho === diasTrabalho && escala.dias_folga === diasFolga;
-    });
-
-    if (configuracaoDuplicada) {
+    if (existeConfiguracaoDuplicada(escalas, diasTrabalho, diasFolga)) {
         mostrarMensagem("Já existe uma escala com essa mesma configuração.", "erro");
         return;
     }
@@ -186,10 +293,129 @@ function cadastrarEscala(evento) {
     escalas.push(novaEscala);
     salvarEscalas(escalas);
 
-    formNovaEscala.reset();
+    limparFormularioEscala();
     renderizarEscalas();
 
     mostrarMensagem("Escala cadastrada com sucesso.", "sucesso");
+}
+
+function prepararEdicaoEscala(indice) {
+    const escalas = carregarEscalas();
+    const escala = escalas[indice];
+
+    if (!escala) {
+        mostrarMensagem("Escala não encontrada para edição.", "erro");
+        return;
+    }
+
+    indiceEdicao = indice;
+
+    inputNomeEscala.value = escala.nome;
+    inputNovoDiasTrabalho.value = escala.dias_trabalho;
+    inputNovoDiasFolga.value = escala.dias_folga;
+
+    tituloFormEscala.textContent = "Editar escala";
+    descricaoFormEscala.textContent = "Altere os dados da escala selecionada e salve a atualização.";
+    botaoSalvarEscala.textContent = "Salvar alteração";
+    botaoCancelarEdicao.classList.remove("hidden");
+
+    inputNomeEscala.focus();
+
+    mostrarMensagem(`Editando a escala "${escala.nome}".`, "aviso");
+}
+
+function salvarEdicaoEscala() {
+    const escalas = carregarEscalas();
+    const escalaAtual = escalas[indiceEdicao];
+
+    if (!escalaAtual) {
+        mostrarMensagem("Escala não encontrada para salvar edição.", "erro");
+        cancelarEdicao();
+        return;
+    }
+
+    const { nome, diasTrabalho, diasFolga } = obterDadosFormularioEscala();
+
+    if (!validarDadosEscala(nome, diasTrabalho, diasFolga)) {
+        return;
+    }
+
+    if (existeNomeDuplicado(escalas, nome, indiceEdicao)) {
+        mostrarMensagem(`A escala "${nome}" já existe.`, "erro");
+        return;
+    }
+
+    if (existeConfiguracaoDuplicada(escalas, diasTrabalho, diasFolga, indiceEdicao)) {
+        mostrarMensagem("Já existe uma escala com essa mesma configuração.", "erro");
+        return;
+    }
+
+    const confirmarEdicao = confirm(
+        `Deseja salvar as alterações da escala "${escalaAtual.nome}"?`
+    );
+
+    if (!confirmarEdicao) {
+        mostrarMensagem("Edição cancelada.", "aviso");
+        return;
+    }
+
+    escalas[indiceEdicao] = {
+        nome: nome,
+        dias_trabalho: diasTrabalho,
+        dias_folga: diasFolga
+    };
+
+    salvarEscalas(escalas);
+    limparFormularioEscala();
+    renderizarEscalas();
+
+    mostrarMensagem("Escala editada com sucesso.", "sucesso");
+}
+
+function excluirEscala(indice) {
+    const escalas = carregarEscalas();
+    const escala = escalas[indice];
+
+    if (!escala) {
+        mostrarMensagem("Escala não encontrada para exclusão.", "erro");
+        return;
+    }
+
+    const confirmarExclusao = confirm(
+        `Tem certeza que deseja excluir a escala "${escala.nome}"?`
+    );
+
+    if (!confirmarExclusao) {
+        mostrarMensagem("Exclusão cancelada.", "aviso");
+        return;
+    }
+
+    escalas.splice(indice, 1);
+    salvarEscalas(escalas);
+
+    if (indiceEdicao === indice) {
+        limparFormularioEscala();
+    }
+
+    renderizarEscalas();
+
+    mostrarMensagem(`Escala "${escala.nome}" excluída com sucesso.`, "sucesso");
+}
+
+function cancelarEdicao() {
+    limparFormularioEscala();
+    mostrarMensagem("Edição cancelada.", "aviso");
+}
+
+function limparFormularioEscala() {
+    indiceEdicao = null;
+
+    formNovaEscala.reset();
+
+    tituloFormEscala.textContent = "Nova escala";
+    descricaoFormEscala.textContent = "Cadastre uma nova configuração e reutilize depois.";
+    botaoSalvarEscala.textContent = "Cadastrar escala";
+    botaoCancelarEdicao.classList.add("hidden");
 }
 
 function gerarCalendario(evento) {
@@ -336,7 +562,8 @@ function definirDataInicialPadrao() {
 }
 
 formEscala.addEventListener("submit", gerarCalendario);
-formNovaEscala.addEventListener("submit", cadastrarEscala);
+formNovaEscala.addEventListener("submit", salvarFormularioEscala);
+botaoCancelarEdicao.addEventListener("click", cancelarEdicao);
 botaoTema.addEventListener("click", alternarTema);
 
 inputDiasTrabalho.addEventListener("input", () => {

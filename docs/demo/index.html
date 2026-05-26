@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Escala de Trabalho | Demo v0.2.0</title>
+    <title>Simulador de Escala de Trabalho | Demo v0.3.0</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="dark">
@@ -22,7 +22,7 @@
                 <span class="brand-icon">⏰</span>
                 <div>
                     <strong>Simulador de Escala</strong>
-                    <small>Demo web • v0.2.0</small>
+                    <small>Demo web • v0.3.0</small>
                 </div>
             </div>
 
@@ -32,12 +32,12 @@
         </header>
 
         <section class="hero">
-            <span class="badge">Demo interativa • Escalas favoritas</span>
+            <span class="badge">Demo interativa • CRUD de escalas</span>
 
             <h1>Planeje sua escala de trabalho com mais clareza</h1>
 
             <p>
-                Consulte dias de trabalho e folga, use escalas favoritas, cadastre novas configurações
+                Consulte dias de trabalho e folga, use escalas favoritas, cadastre, edite e exclua configurações
                 e visualize o resultado em formato de calendário.
             </p>
 
@@ -67,8 +67,8 @@
 
             <article class="summary-card">
                 <span>Status</span>
-                <strong>v0.2.0</strong>
-                <small>Escalas favoritas e cadastro</small>
+                <strong>v0.3.0</strong>
+                <small>CRUD completo de escalas salvas</small>
             </article>
         </section>
 
@@ -111,7 +111,7 @@
                 <div class="card-header">
                     <span class="section-label">Favoritas</span>
                     <h2>Escalas salvas</h2>
-                    <p>Escolha uma escala cadastrada e aplique automaticamente na simulação.</p>
+                    <p>Use, edite ou exclua escalas cadastradas diretamente pela demo.</p>
                 </div>
 
                 <div id="lista-escalas" class="lista-escalas"></div>
@@ -120,8 +120,8 @@
             <section class="card">
                 <div class="card-header">
                     <span class="section-label">Cadastro</span>
-                    <h2>Nova escala</h2>
-                    <p>Cadastre uma nova configuração e reutilize depois.</p>
+                    <h2 id="titulo-form-escala">Nova escala</h2>
+                    <p id="descricao-form-escala">Cadastre uma nova configuração e reutilize depois.</p>
                 </div>
 
                 <form id="form-nova-escala">
@@ -142,7 +142,8 @@
                         </div>
                     </div>
 
-                    <button type="submit">Cadastrar escala</button>
+                    <button id="botao-salvar-escala" type="submit">Cadastrar escala</button>
+                    <button id="botao-cancelar-edicao" class="secondary-button hidden" type="button">Cancelar edição</button>
                 </form>
 
                 <div id="mensagem" class="mensagem"></div>
