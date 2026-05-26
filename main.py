@@ -1,5 +1,5 @@
 from escala import calcular_status, gerar_proximos_dias
-from validacoes import ler_numero, ler_data, ler_opcao_menu, ler_indice_lista, ler_texto
+from validacoes import ler_numero, ler_data, ler_opcao_menu, ler_indice_lista, ler_texto, confirmar_acao
 from interface import (
     exibir_menu,
     exibir_proximos_dias,
@@ -109,16 +109,9 @@ def main():
                 print(f"Dias trabalhados: {escala_atual['dias_trabalho']} -> {novos_dias_trabalho}")
                 print(f"Dias de folga: {escala_atual['dias_folga']} -> {novos_dias_folga}")
 
-                confirmacao = input("Deseja salvar essa alteração? [s/n]: ").lower().strip()
+                confirmacao = confirmar_acao("Deseja salvar essa alteração?")
 
-                resultado = editar_escala(
-                    indice,
-                    novo_nome,
-                    novos_dias_trabalho,
-                    novos_dias_folga
-                )
-
-                if confirmacao == "s":
+                if confirmacao:
                     resultado = editar_escala(
                         indice,
                         novo_nome,
@@ -126,25 +119,16 @@ def main():
                         novos_dias_folga
                     )
 
-                if resultado == "sucesso":
-                    print("Escala editada com sucesso!")
-                elif resultado == "indice_invalido":
-                    print("Índice inválido.")
-                elif resultado == "nome_duplicado":
-                    print("Já existe uma escala com esse nome.")
-                elif resultado == "configuracao_duplicada":
-                    print("Já existe uma escala com essa configuração.")
-            else:
-                print("Edição cancelada.")
-
-                if resultado == "sucesso":
-                    print("Escala editada com sucesso!")
-                elif resultado == "indice_invalido":
-                    print("Índice inválido.")
-                elif resultado == "nome_duplicado":
-                    print("Já existe uma escala com esse nome.")
-                elif resultado == "configuracao_duplicada":
-                    print("Já existe uma escala com essa configuração.")
+                    if resultado == "sucesso":
+                        print("Escala editada com sucesso!")
+                    elif resultado == "indice_invalido":
+                        print("Índice inválido.")
+                    elif resultado == "nome_duplicado":
+                        print("Já existe uma escala com esse nome.")
+                    elif resultado == "configuracao_duplicada":
+                        print("Já existe uma escala com essa configuração.")
+                else:
+                    print("Edição cancelada.")
 
         elif menu == "7":
             escalas = carregar_escalas()
@@ -154,9 +138,9 @@ def main():
                 indice = ler_indice_lista("Escolha uma escala para excluir: ", len(escalas))
                 nome_escala = escalas[indice]["nome"]
 
-                confirmacao = input(f"Tem certeza que deseja excluir a escala '{nome_escala}'? [s/n]: ").lower().strip()
+                confirmacao = confirmar_acao(f"Tem certeza que deseja excluir a escala '{nome_escala}'?")
 
-                if confirmacao == "s":
+                if confirmacao:
                     removido = remover_escala(indice)
 
                     if removido:

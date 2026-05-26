@@ -62,3 +62,15 @@ def ler_texto(mensagem):
             return texto
 
         print("O texto não pode ficar vazio.")
+
+def confirmar_acao(mensagem):
+    while True:
+        resposta = input(f"{mensagem} [s/n]: ").lower().strip()
+
+        if resposta == "s":
+            return True
+        elif resposta == "n":
+            return False
+        else:
+            print("Opção inválida. Digite 's' para sim ou 'n' para não.")
+            
