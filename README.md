@@ -5,20 +5,21 @@
 <h1 align="center">⏰ Simulador de Escala de Trabalho</h1>
 
 <p align="center">
-  <strong>Aplicação em Python para consultar, simular, salvar, reutilizar, editar e excluir escalas de trabalho como 6x3, 5x2, 4x4 e outras variações baseadas em ciclos.</strong>
+  <strong>Aplicação em Python para consultar, simular, salvar, reutilizar, editar e excluir escalas de trabalho, com base preparada para múltiplos tipos de escala como ciclos por dias, ciclos por horas e turnos rotativos.</strong>
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=950&lines=Simule+dias+de+trabalho+e+folga+com+Python;Gerencie+escalas+favoritas+com+CRUD+completo;Persist%C3%AAncia+em+JSON+com+testes+automatizados;Projeto+CLI+modular+com+vis%C3%A3o+de+produto;Demo+web+interativa+publicada+com+GitHub+Pages" alt="Typing SVG">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=950&lines=Simule+dias+de+trabalho+e+folga+com+Python;Gerencie+escalas+favoritas+com+CRUD+completo;Base+preparada+para+m%C3%BAltiplos+tipos+de+escala;Persist%C3%AAncia+em+JSON+com+testes+automatizados;Projeto+CLI+modular+com+vis%C3%A3o+de+produto" alt="Typing SVG">
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.3.0-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.4.0-00B4D8?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/STATUS-EM%20DESENVOLVIMENTO-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PYTHON-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=061A2B">
   <img src="https://img.shields.io/badge/INTERFACE-CLI-00C2FF?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PERSIST%C3%8ANCIA-JSON-90E0EF?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/CRUD-ESCALAS%20SALVAS-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/TIPOS-DE%20ESCALA-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/TESTES-PYTEST-CAF0F8?style=for-the-badge&logo=pytest&logoColor=061A2B&labelColor=061A2B">
 </p>
 
@@ -51,8 +52,8 @@
       <p>Permite criar, listar, usar, editar e excluir escalas salvas.</p>
     </td>
     <td width="25%" align="center">
-      <h3>🧪 Testes</h3>
-      <p>Valida a lógica principal e o armazenamento com pytest.</p>
+      <h3>🧩 Tipos</h3>
+      <p>Base preparada para múltiplos tipos de escala.</p>
     </td>
   </tr>
 </table>
@@ -61,11 +62,19 @@
 
 ## 📌 Versão atual
 
-> **v0.3.0 - CRUD completo de escalas salvas**
+> **v0.4.0 - Preparação para múltiplos tipos de escala**
 
-A versão atual transforma o gerenciamento de escalas favoritas em um fluxo mais completo dentro da aplicação CLI.
+A versão `v0.4.0` prepara a arquitetura do projeto para evoluir além das escalas simples baseadas apenas em dias trabalhados e dias de folga.
 
-Agora o usuário pode **cadastrar, listar, aplicar, editar e excluir escalas salvas**, com persistência em JSON, validações de duplicidade, confirmações de segurança e testes automatizados.
+Agora o sistema trabalha com o conceito de **tipo de escala**, permitindo que a base atual evolua futuramente para modelos mais avançados, como:
+
+- `ciclo_dias` — escalas como `6x3`, `5x2`, `4x4` e variações baseadas em dias completos;
+- `ciclo_horas` — base futura para escalas como `12x36`;
+- `turno_rotativo` — base futura para escalas com manhã, tarde, noite e folga.
+
+> [!IMPORTANT]
+> Esta versão ainda não implementa o funcionamento completo de escalas `12x36` ou turnos rotativos.  
+> Ela consolida a estrutura necessária para essas funcionalidades serem adicionadas nas próximas versões sem quebrar a base atual.
 
 ### Destaques da versão
 
@@ -73,11 +82,13 @@ Agora o usuário pode **cadastrar, listar, aplicar, editar e excluir escalas sal
 |---|---|
 | 🐍 Aplicação principal | CLI em Python |
 | 🔁 Lógica de escala | Cálculo de trabalho e folga por ciclo |
+| 🧩 Tipos de escala | Base para `ciclo_dias`, `ciclo_horas` e `turno_rotativo` |
 | 💾 Persistência | Leitura e gravação em `data/escalas.json` |
+| 🔄 Migração | Normalização automática de escalas antigas sem `tipo` |
 | ⭐ Escalas favoritas | Cadastro, listagem, aplicação, edição e exclusão |
-| 🧠 Validações | Nome obrigatório, números válidos, índice de lista e confirmação de ações |
+| 🧠 Validações | Nome obrigatório, números válidos, índice de lista, tipo de escala e confirmação de ações |
 | 🛡️ Segurança no uso | Confirmação antes de editar ou excluir escalas |
-| 🧪 Testes | Testes automatizados com `pytest` |
+| 🧪 Testes | Testes automatizados reorganizados por responsabilidade |
 | 🌐 Demo web | Versão interativa em HTML, CSS e JavaScript |
 | 🚀 Publicação | Demo hospedada com GitHub Pages |
 | 📚 Documentação | README, visão de produto e changelog |
@@ -123,7 +134,8 @@ Em ambientes com turnos, revezamentos e escalas diferentes, essa consulta pode g
 - erros de comunicação;
 - dependência de planilhas, murais ou consultas manuais;
 - dificuldade para reutilizar configurações de escala já conhecidas;
-- dificuldade para corrigir ou remover escalas cadastradas incorretamente.
+- dificuldade para corrigir ou remover escalas cadastradas incorretamente;
+- dificuldade para lidar com diferentes modelos de escala em um mesmo sistema.
 
 Este projeto foi criado a partir de uma necessidade real observada no ambiente de trabalho: simplificar a consulta de escalas e transformar uma regra repetitiva em uma ferramenta prática, testável e expansível.
 
@@ -147,7 +159,10 @@ A versão atual permite:
 - bloquear cadastro com nome duplicado;
 - bloquear cadastro com mesma configuração de dias trabalhados e folga;
 - persistir dados em arquivo JSON;
-- testar a lógica principal e o armazenamento com testes automatizados.
+- identificar o tipo da escala salva;
+- normalizar escalas antigas sem campo `tipo`;
+- migrar automaticamente dados antigos para o novo formato;
+- testar a lógica principal, os tipos de escala e o armazenamento com testes automatizados.
 
 > [!IMPORTANT]
 > O projeto começa como uma solução CLI, mas foi estruturado com mentalidade de produto: código modular, testes, documentação, persistência, visão futura e uma demo acessível para apresentação.
@@ -168,6 +183,8 @@ Criar uma ferramenta prática para simular e gerenciar escalas de trabalho de fo
 | ✏️ Editar escalas salvas | Permite corrigir nome, dias trabalhados e dias de folga |
 | 🗑️ Excluir escalas salvas | Remove escalas que não são mais necessárias |
 | 🛡️ Confirmação de ações | Evita alterações e exclusões acidentais |
+| 🧩 Tipos de escala | Prepara o sistema para diferentes modelos de escala |
+| 🔄 Migração automática | Atualiza escalas antigas para o novo formato |
 | 💾 Persistência em JSON | Mantém escalas salvas fora do código |
 | 🧪 Validar a lógica | Usa testes automatizados para reduzir erros em futuras alterações |
 | 🌐 Experimentar visualmente | Permite testar o conceito em uma demo web simples |
@@ -182,6 +199,7 @@ Imagine a seguinte situação:
 |---|---|
 | Data inicial da escala | `01/05/2026` |
 | Modelo de escala | `6x3` |
+| Tipo de escala | `ciclo_dias` |
 | Data consultada | `07/05/2026` |
 
 Resultado esperado:
@@ -214,28 +232,51 @@ Representação visual do ciclo:
 
 ---
 
+## 🧩 Tipos de escala
+
+A partir da versão `v0.4.0`, o projeto passou a trabalhar com o conceito de **tipo de escala**.
+
+Essa mudança prepara a aplicação para crescer sem depender apenas de `dias_trabalho` e `dias_folga`.
+
+### Tipos preparados
+
+| Tipo técnico | Nome amigável | Status | Objetivo |
+|---|---|---|---|
+| `ciclo_dias` | Ciclo por dias | ✅ Base atual | Escalas como `6x3`, `5x2`, `4x4` |
+| `ciclo_horas` | Ciclo por horas | 🔜 Preparado | Base futura para `12x36` |
+| `turno_rotativo` | Turno rotativo | 🔜 Preparado | Base futura para manhã, tarde, noite e folga |
+
+### Exemplo de escala no novo formato
+
+```json
+[
+    {
+        "nome": "Escala padrão 6x3",
+        "tipo": "ciclo_dias",
+        "dias_trabalho": 6,
+        "dias_folga": 3
+    },
+    {
+        "nome": "Escala administrativa 5x2",
+        "tipo": "ciclo_dias",
+        "dias_trabalho": 5,
+        "dias_folga": 2
+    }
+]
+```
+
+> [!NOTE]
+> Escalas antigas que não possuem o campo `tipo` são corrigidas automaticamente para `ciclo_dias`.
+
+---
+
 ## ⭐ Escalas favoritas
 
 A partir da versão `v0.2.0`, o projeto passou a permitir o cadastro e reutilização de escalas favoritas.
 
 Na versão `v0.3.0`, esse recurso evoluiu para um **CRUD completo de escalas salvas**, permitindo criar, listar, aplicar, editar e excluir configurações persistidas em JSON.
 
-Exemplo de estrutura salva em JSON:
-
-```json
-[
-    {
-        "nome": "Escala padrão 6x3",
-        "dias_trabalho": 6,
-        "dias_folga": 3
-    },
-    {
-        "nome": "Escala administrativa 5x2",
-        "dias_trabalho": 5,
-        "dias_folga": 2
-    }
-]
-```
+Na versão `v0.4.0`, as escalas salvas passaram a receber o campo `tipo`, preparando a aplicação para múltiplos modelos de escala.
 
 Essas escalas ficam armazenadas em:
 
@@ -253,6 +294,8 @@ data/escalas.json
 | Editar escala | Atualiza nome, dias trabalhados e dias de folga |
 | Excluir escala | Remove uma escala salva |
 | Confirmar ação | Solicita confirmação antes de editar ou excluir |
+| Normalizar escala | Adiciona `tipo` quando a escala antiga não possui esse campo |
+| Migrar JSON | Atualiza automaticamente o arquivo antigo para o novo formato |
 
 ### Regras aplicadas
 
@@ -261,6 +304,8 @@ data/escalas.json
 | Nome duplicado | O sistema bloqueia o cadastro ou edição |
 | Configuração duplicada | O sistema bloqueia escalas com mesmos dias de trabalho e folga |
 | Índice inválido | O sistema impede operação fora da lista |
+| Tipo ausente | O sistema define automaticamente como `ciclo_dias` |
+| Tipo inválido | O sistema corrige para o tipo padrão |
 | Confirmação negativa | A edição ou exclusão é cancelada |
 | Escala válida | A escala é salva ou atualizada no JSON |
 | Escala salva | Pode ser aplicada como escala atual pelo menu |
@@ -293,21 +338,30 @@ data/escalas.json
 | Excluir escala salva pelo terminal | ✅ Implementado |
 | Bloquear nome duplicado | ✅ Implementado |
 | Bloquear configuração duplicada | ✅ Implementado |
+| Campo `tipo` nas escalas salvas | ✅ Implementado |
+| Normalização de escalas antigas sem `tipo` | ✅ Implementado |
+| Migração automática do JSON antigo | ✅ Implementado |
+| Validação de tipos de escala suportados | ✅ Implementado |
+| Nomes amigáveis para tipos de escala | ✅ Implementado |
+| Motor inicial de cálculo por tipo de escala | ✅ Implementado |
+| `main.py` usando escala atual como dicionário | ✅ Implementado |
 | Testes automatizados da lógica principal | ✅ Implementado |
 | Testes automatizados do armazenamento | ✅ Implementado |
+| Testes automatizados dos tipos de escala | ✅ Implementado |
 | Demo web interativa | ✅ Implementado |
 | GitHub Pages para demo | ✅ Implementado |
 | README profissional | ✅ Implementado |
 | Documento de visão futura do produto | ✅ Implementado |
 | Changelog | ✅ Implementado |
 | Licença de uso não comercial | ✅ Implementado |
-| Atualizar demo web com edição e exclusão | 🔜 Planejado |
+| Implementar `12x36` real | 🔜 Planejado |
+| Implementar `ciclo_horas` no cálculo | 🔜 Planejado |
+| Implementar turnos rotativos | 🔜 Planejado |
+| Atualizar demo web com tipos de escala | 🔜 Planejado |
 | Calendário mensal visual avançado | 🔜 Planejado |
 | Cadastro de funcionários | 🔜 Planejado |
 | Exportação de relatórios | 🔜 Planejado |
 | Interface gráfica ou web completa | 🔜 Planejado |
-| Escalas por hora, como 12x36 | 🔜 Planejado |
-| Escalas com rotação de turno | 🔜 Planejado |
 
 ---
 
@@ -364,10 +418,12 @@ Na data 07/05/2026, você estará: 🌙 Folga
 ==== ESCALAS SALVAS ====
 
 1 - Escala padrão 6x3
+    Tipo: Ciclo por dias
     Dias trabalhados: 6
     Dias de folga: 3
 
 2 - Escala administrativa 5x2
+    Tipo: Ciclo por dias
     Dias trabalhados: 5
     Dias de folga: 2
 ```
@@ -389,6 +445,7 @@ Escolha uma escala para editar: 1
 
 Escala selecionada:
 Nome atual: Escala padrão 6x3
+Tipo atual: Ciclo por dias
 Dias trabalhados atuais: 6
 Dias de folga atuais: 3
 
@@ -398,6 +455,7 @@ Digite a nova quantidade de dias de folga: 3
 
 Resumo da alteração:
 Nome: Escala padrão 6x3 -> Escala principal 6x3
+Tipo: Ciclo por dias
 Dias trabalhados: 6 -> 6
 Dias de folga: 3 -> 3
 
@@ -428,6 +486,7 @@ flowchart TD
     B --> D[escala.py]
     B --> E[interface.py]
     B --> F[armazenamento.py]
+    B --> H[tipos_escala.py]
 
     C --> C1[Valida datas]
     C --> C2[Valida números]
@@ -439,11 +498,13 @@ flowchart TD
     D --> D1[Calcula status]
     D --> D2[Gera próximos dias]
     D --> D3[Aplica regra do ciclo]
+    D --> D4[Calcula por tipo de escala]
 
     E --> E1[Exibe menu]
     E --> E2[Exibe resultados]
     E --> E3[Exibe escalas salvas]
     E --> E4[Formata status]
+    E --> E5[Exibe tipo amigável]
 
     F --> F1[Carrega escalas]
     F --> F2[Salva escalas]
@@ -451,7 +512,13 @@ flowchart TD
     F --> F4[Edita escala existente]
     F --> F5[Remove escala salva]
     F --> F6[Valida duplicidades]
+    F --> F7[Normaliza escalas antigas]
+    F --> F8[Migra JSON antigo]
     F --> G[(data/escalas.json)]
+
+    H --> H1[Centraliza tipos suportados]
+    H --> H2[Valida tipo de escala]
+    H --> H3[Retorna nome amigável]
 ```
 
 ---
@@ -473,31 +540,32 @@ flowchart LR
     C -->|8| K[Sair]
 
     D --> L[Validar datas]
-    L --> M[Calcular status]
+    L --> M[Calcular status por escala]
     M --> N[Exibir resultado]
 
     E --> O[Validar data inicial]
     O --> P[Validar quantidade]
-    P --> Q[Gerar lista de dias]
+    P --> Q[Gerar próximos dias por escala]
     Q --> R[Exibir próximos dias]
 
     F --> S[Validar dias de trabalho e folga]
-    S --> T[Atualizar escala atual]
+    S --> T[Atualizar escala atual como dicionário]
 
     G --> U[Carregar JSON]
-    U --> V[Exibir escalas]
+    U --> U1[Normalizar tipo da escala]
+    U1 --> V[Exibir escalas]
     V --> W[Selecionar escala]
     W --> T
 
     H --> X[Validar nome e números]
     X --> Y[Verificar duplicidade]
-    Y --> Z[Salvar no JSON]
+    Y --> Z[Salvar no JSON com tipo padrão]
 
     I --> AA[Selecionar escala]
     AA --> AB[Exibir dados atuais]
     AB --> AC[Informar novos dados]
     AC --> AD[Confirmar alteração]
-    AD -->|Sim| AE[Editar no JSON]
+    AD -->|Sim| AE[Editar no JSON mantendo tipo]
     AD -->|Não| AF[Cancelar edição]
 
     J --> AG[Selecionar escala]
@@ -537,12 +605,14 @@ simulador-escala-trabalho/
 │
 ├── tests/
 │   ├── test_escala.py
-│   └── test_armazenamento.py
+│   ├── test_armazenamento.py
+│   └── test_tipos_escalas.py
 │
 ├── armazenamento.py
 ├── escala.py
 ├── interface.py
 ├── main.py
+├── tipos_escala.py
 ├── validacoes.py
 ├── pytest.ini
 ├── requirements.txt
@@ -563,13 +633,15 @@ simulador-escala-trabalho/
 | `docs/demo/` | Demo web interativa publicada via GitHub Pages |
 | `visao_produto.md` | Documento estratégico sobre evolução do projeto |
 | `tests/` | Testes automatizados do projeto |
-| `test_escala.py` | Testes da lógica principal de escala |
-| `test_armazenamento.py` | Testes de leitura, salvamento, cadastro, edição e remoção de escalas |
-| `armazenamento.py` | Carrega, salva, cadastra, edita e remove escalas em JSON |
-| `escala.py` | Contém a lógica de cálculo da escala |
+| `test_escala.py` | Testes da lógica principal e do motor inicial por tipo de escala |
+| `test_armazenamento.py` | Testes de leitura, salvamento, cadastro, edição, remoção, normalização e migração |
+| `test_tipos_escalas.py` | Testes dos tipos de escala suportados e nomes amigáveis |
+| `armazenamento.py` | Carrega, salva, cadastra, edita, remove, normaliza e migra escalas em JSON |
+| `escala.py` | Contém a lógica de cálculo da escala e funções por tipo de escala |
 | `interface.py` | Centraliza menus, mensagens e exibição no terminal |
-| `validacoes.py` | Centraliza validações e confirmações de entrada do usuário |
 | `main.py` | Controla o fluxo principal da aplicação |
+| `tipos_escala.py` | Centraliza tipos suportados, validação de tipos e nomes amigáveis |
+| `validacoes.py` | Centraliza validações e confirmações de entrada do usuário |
 | `pytest.ini` | Configuração para execução dos testes |
 | `requirements.txt` | Lista dependências do projeto |
 | `LICENSE` | Licença proprietária de uso não comercial |
@@ -608,6 +680,33 @@ Senão:
 
 Essa abordagem permite reaproveitar a mesma lógica para diferentes modelos de escala baseados em dias completos.
 
+### Motor inicial por tipo de escala
+
+Na versão `v0.4.0`, o projeto passou a preparar funções que recebem uma escala completa:
+
+```python
+calcular_status_por_escala(escala, data_inicio, data_consulta)
+gerar_proximos_dias_por_escala(escala, data_inicio, quantidade_dias)
+```
+
+Isso permite que o sistema deixe de depender apenas de variáveis soltas como:
+
+```python
+dias_trabalho = 6
+dias_folga = 3
+```
+
+E passe a trabalhar com uma estrutura mais completa:
+
+```python
+escala_atual = {
+    "nome": "Escala manual",
+    "tipo": "ciclo_dias",
+    "dias_trabalho": 6,
+    "dias_folga": 3
+}
+```
+
 > [!WARNING]
 > Escalas baseadas em horas, como `12x36`, ainda exigem uma lógica diferente da atual, pois envolvem controle por horário e não apenas por dias completos.
 
@@ -635,9 +734,10 @@ armazenamento.py
 |---|---|
 | `carregar_escalas()` | Lê as escalas salvas no JSON |
 | `salvar_escalas(escalas)` | Salva a lista de escalas no JSON |
-| `adicionar_escala(nome, dias_trabalho, dias_folga)` | Cadastra uma nova escala |
-| `editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga)` | Edita uma escala existente |
+| `adicionar_escala(nome, dias_trabalho, dias_folga)` | Cadastra uma nova escala com tipo padrão |
+| `editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga)` | Edita uma escala existente mantendo o tipo |
 | `remover_escala(indice)` | Remove uma escala salva |
+| `normalizar_escala(escala)` | Garante que a escala possua um tipo válido |
 
 ### Fluxo de persistência
 
@@ -646,27 +746,36 @@ flowchart TD
     A[Usuário gerencia escala] --> B[main.py]
     B --> C[validacoes.py]
     B --> D[armazenamento.py]
+    D --> T[tipos_escala.py]
 
     C --> E[Valida entradas e confirma ações]
 
     D --> F[carregar_escalas]
-    F --> G[Verificar operação]
+    F --> F1[normalizar_escala]
+    F1 --> F2{Escala tem tipo válido?}
 
-    G --> H{Tipo de ação}
-    H -->|Cadastrar| I[adicionar_escala]
-    H -->|Editar| J[editar_escala]
-    H -->|Excluir| K[remover_escala]
+    F2 -->|Sim| G[Manter tipo]
+    F2 -->|Não| H[Definir ciclo_dias]
 
-    I --> L[Verificar duplicidades]
-    J --> L
-    K --> M[Atualizar lista]
+    G --> I[Retornar escalas]
+    H --> J[Migrar JSON antigo]
+    J --> I
 
-    L --> N{Pode salvar?}
-    N -->|Sim| O[salvar_escalas]
-    N -->|Não| P[Retornar erro]
+    D --> K{Tipo de ação}
+    K -->|Cadastrar| L[adicionar_escala]
+    K -->|Editar| M[editar_escala]
+    K -->|Excluir| N[remover_escala]
 
+    L --> O[Verificar duplicidades]
     M --> O
-    O --> Q[(data/escalas.json)]
+    N --> P[Atualizar lista]
+
+    O --> Q{Pode salvar?}
+    Q -->|Sim| R[salvar_escalas]
+    Q -->|Não| S[Retornar erro]
+
+    P --> R
+    R --> U[(data/escalas.json)]
 ```
 
 ---
@@ -700,6 +809,9 @@ flowchart TD
 - CRUD em arquivo JSON;
 - cálculo de ciclos;
 - confirmação de ações do usuário;
+- migração de dados antigos;
+- normalização de dados;
+- separação de responsabilidades;
 - testes automatizados;
 - organização de projeto;
 - documentação para portfólio;
@@ -745,7 +857,7 @@ python3 main.py
 
 ## 🧪 Testes automatizados
 
-O projeto possui testes com `pytest` para validar tanto a lógica de escala quanto o armazenamento em JSON.
+O projeto possui testes com `pytest` para validar a lógica de escala, os tipos de escala e o armazenamento em JSON.
 
 ### Executar os testes
 
@@ -759,19 +871,30 @@ python -m pytest
 |---|---|
 | `tests/test_escala.py` | Cálculo de trabalho e folga |
 | `tests/test_escala.py` | Geração dos próximos dias da escala |
+| `tests/test_escala.py` | Motor inicial de cálculo por tipo de escala |
+| `tests/test_escala.py` | Tratamento de tipo ainda não implementado |
 | `tests/test_armazenamento.py` | Salvamento e carregamento de escalas |
 | `tests/test_armazenamento.py` | Cadastro de nova escala |
 | `tests/test_armazenamento.py` | Remoção de escala salva |
 | `tests/test_armazenamento.py` | Edição de escala salva |
 | `tests/test_armazenamento.py` | Bloqueio de nome duplicado |
 | `tests/test_armazenamento.py` | Bloqueio de configuração duplicada |
-| `tests/test_armazenamento.py` | Validação de índice inválido |
+| `tests/test_armazenamento.py` | Normalização de escala antiga sem tipo |
+| `tests/test_armazenamento.py` | Migração automática do JSON antigo |
+| `tests/test_armazenamento.py` | Correção de tipo inválido para padrão |
+| `tests/test_tipos_escalas.py` | Validação dos tipos suportados |
+| `tests/test_tipos_escalas.py` | Nomes amigáveis dos tipos de escala |
 
 ### Exemplo de saída esperada
 
 ```text
-tests/test_armazenamento.py ..........
-tests/test_escala.py ...
+collected 26 items
+
+tests/test_armazenamento.py ...............
+tests/test_escala.py .....
+tests/test_tipos_escalas.py ........
+
+26 passed
 ```
 
 > [!NOTE]
@@ -794,6 +917,8 @@ tests/test_escala.py ...
 | Cancelar edição | Digitar `n` na confirmação | Nenhuma alteração salva |
 | Excluir escala válida | Selecionar escala + confirmar com `s` | Escala removida |
 | Cancelar exclusão | Digitar `n` na confirmação | Escala permanece salva |
+| Carregar escala antiga sem tipo | JSON antigo sem `tipo` | Sistema define `ciclo_dias` |
+| Exibir escala salva | Escala com tipo | Terminal mostra nome amigável do tipo |
 
 ---
 
@@ -815,15 +940,20 @@ timeline
            : Exclusão de escalas
            : Confirmação de ações
            : Testes de edição e remoção
-    v0.4.0 : Atualização da demo web
-           : Melhorias visuais da interface
-           : Visualização mensal mais completa
-    v0.5.0 : Cadastro simples de funcionários
-           : Cadastro de turnos
-           : Escalas por colaborador
-    Futuro : Banco de dados
-           : API
-           : Interface web completa
+    v0.4.0 : Campo tipo nas escalas
+           : Tipos de escala preparados
+           : Migração automática do JSON antigo
+           : Motor inicial por tipo de escala
+           : Testes reorganizados
+    v0.5.0 : Implementação real da escala 12x36
+           : Cálculo por horas
+           : Validações para horários
+    v0.6.0 : Turnos rotativos
+           : Manhã, tarde, noite e folga
+           : Ciclos com etapas
+    Futuro : Cadastro de funcionários
+           : Cadastro de empresas
+           : Relatórios
            : Dashboards
            : Gestão corporativa de escalas
 ```
@@ -848,10 +978,19 @@ timeline
 - [x] Confirmar exclusão antes de remover escala
 - [x] Bloquear nome duplicado
 - [x] Bloquear configuração duplicada
+- [x] Adicionar campo `tipo` nas escalas salvas
+- [x] Criar módulo `tipos_escala.py`
+- [x] Validar tipos de escala suportados
+- [x] Criar nomes amigáveis para tipos de escala
+- [x] Exibir tipo da escala no terminal
+- [x] Normalizar escalas antigas sem `tipo`
+- [x] Migrar automaticamente JSON antigo
+- [x] Criar motor inicial de cálculo por tipo de escala
+- [x] Preparar `main.py` para usar escala atual como dicionário
 - [x] Adicionar testes automatizados da lógica principal
 - [x] Adicionar testes automatizados do armazenamento
-- [x] Adicionar testes de edição de escalas
-- [x] Adicionar testes de remoção de escalas
+- [x] Adicionar testes automatizados dos tipos de escala
+- [x] Reorganizar testes por responsabilidade
 - [x] Criar documentação de visão do produto
 - [x] Adicionar licença de uso não comercial
 - [x] Criar demo web inicial
@@ -859,6 +998,12 @@ timeline
 
 ### Próximas melhorias
 
+- [ ] Implementar cálculo real de escala `12x36`
+- [ ] Criar suporte completo para `ciclo_horas`
+- [ ] Adicionar validação de horários
+- [ ] Implementar turnos rotativos
+- [ ] Permitir escolha do tipo de escala no menu
+- [ ] Atualizar a demo web com tipos de escala
 - [ ] Atualizar a demo web com edição de escalas salvas
 - [ ] Atualizar a demo web com exclusão de escalas salvas
 - [ ] Melhorar mensagens visuais da interface CLI
@@ -866,8 +1011,6 @@ timeline
 - [ ] Criar visualização mensal mais completa
 - [ ] Adicionar suporte para múltiplos funcionários
 - [ ] Permitir cadastro de turnos
-- [ ] Estudar escalas com rotação de turno
-- [ ] Estudar escalas baseadas em horas, como `12x36`
 - [ ] Exportar resultados em `.txt`, `.csv` ou `.pdf`
 - [ ] Criar interface gráfica ou web completa
 - [ ] Evoluir para sistema corporativo de gestão de escalas
@@ -917,8 +1060,8 @@ Este projeto demonstra habilidades importantes para desenvolvimento de software:
       Prevenção de erros de uso
     </td>
     <td align="center">
-      <strong>📚 Documentação</strong><br>
-      Organização para portfólio
+      <strong>🧩 Arquitetura</strong><br>
+      Base preparada para evoluir
     </td>
   </tr>
 </table>
@@ -937,6 +1080,9 @@ A ideia futura envolve:
 - cadastro de empresas;
 - cadastro de funcionários;
 - gestão de escalas por colaborador;
+- múltiplos tipos de escala;
+- turnos rotativos;
+- escala `12x36`;
 - feriados;
 - férias;
 - paradas programadas;
@@ -970,6 +1116,7 @@ Versões principais:
 | `v0.1.0` | CLI funcional, lógica de escala, validações e testes iniciais |
 | `v0.2.0` | Escalas favoritas com persistência em JSON |
 | `v0.3.0` | CRUD completo de escalas salvas |
+| `v0.4.0` | Preparação para múltiplos tipos de escala |
 
 ---
 
