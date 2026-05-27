@@ -1,0 +1,15 @@
+TIPO_CICLO_DIAS = "ciclo_dias"
+TIPO_CICLO_HORAS = "ciclo_horas"
+TIPO_TURNO_ROTATIVO = "turno_rotativo"
+
+TIPO_ESCALA_PADRAO = TIPO_CICLO_DIAS
+
+TIPOS_ESCALA_SUPORTADOS = [
+    TIPO_CICLO_DIAS,
+    TIPO_CICLO_HORAS,
+    TIPO_TURNO_ROTATIVO
+]
+
+
+def validar_tipo_escala(tipo):
+    return tipo in TIPOS_ESCALA_SUPORTADOS
