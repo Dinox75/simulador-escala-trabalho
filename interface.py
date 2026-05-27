@@ -1,4 +1,5 @@
 #Responsável por toda a interação com o usuário, exibindo menus e resultados de forma clara e organizada.
+from tipos_escala import obter_nome_tipo
 
 def formatar_status(status):
     if status == "Trabalhando":
@@ -47,9 +48,12 @@ def exibir_escalas_salvas(escalas):
 
     for indice, escala in enumerate(escalas, start=1):
         nome = escala["nome"]
+        tipo = escala.get("tipo", "ciclo_dias")
+        tipo_formatado = obter_nome_tipo(tipo)
         dias_trabalho = escala["dias_trabalho"]
         dias_folga = escala["dias_folga"]
 
         print(f"{indice} - {nome}")
+        print(f"    Tipo: {tipo_formatado}")
         print(f"    Dias trabalhados: {dias_trabalho}")
         print(f"    Dias de folga: {dias_folga}\n")
