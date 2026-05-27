@@ -3,177 +3,507 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Escala de Trabalho | Demo v0.3.0</title>
+    <title>Simulador de Escala de Trabalho | Demo Oficial v0.4.0</title>
+
+    <meta name="description" content="Demo oficial do Simulador de Escala de Trabalho, uma aplicação em Python para consultar, simular e gerenciar escalas de trabalho.">
+    <meta name="author" content="Vinicius Lima">
+
     <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
 </head>
+
 <body data-theme="dark">
-    <div class="background-elements" aria-hidden="true">
-        <span class="float-item item-1">⏰</span>
-        <span class="float-item item-2">📅</span>
-        <span class="float-item item-3">🔁</span>
-        <span class="float-item item-4">⭐</span>
-        <span class="float-item item-5">💼</span>
-        <span class="float-item item-6">🧭</span>
-    </div>
+    <div id="progresso-scroll"></div>
 
-    <main class="container">
-        <header class="topbar">
-            <div class="brand">
-                <span class="brand-icon">⏰</span>
-                <div>
-                    <strong>Simulador de Escala</strong>
-                    <small>Demo web • v0.3.0</small>
+    <div class="background-glow glow-one"></div>
+    <div class="background-glow glow-two"></div>
+    <div class="background-grid"></div>
+
+    <header class="site-header">
+        <a href="#inicio" class="brand" aria-label="Ir para o início">
+            <span class="brand-icon">⏰</span>
+            <span>
+                <strong>Simulador de Escala</strong>
+                <small>Demo Oficial • v0.4.0</small>
+            </span>
+        </a>
+
+        <button id="botao-menu" class="menu-button" type="button" aria-label="Abrir menu">
+            ☰
+        </button>
+
+        <nav id="menu-principal" class="main-nav">
+            <a href="#simulador">Simulador</a>
+            <a href="#documentacao">Documentação</a>
+            <a href="#sobre">Sobre</a>
+            <a href="#roadmap">Roadmap</a>
+            <a href="#termos">Termos</a>
+        </nav>
+
+        <button id="botao-tema" class="theme-button" type="button">
+            🌙 Tema escuro
+        </button>
+    </header>
+
+    <main>
+        <section id="inicio" class="hero section reveal">
+            <div class="hero-content">
+                <span class="eyebrow">Projeto Python • CLI • JSON • Testes • Demo Web</span>
+
+                <h1>
+                    Planeje sua escala de trabalho com clareza, organização e previsibilidade.
+                </h1>
+
+                <p>
+                    Uma demonstração visual do projeto <strong>Simulador de Escala de Trabalho</strong>,
+                    criado em Python para consultar dias de trabalho e folga, gerenciar escalas favoritas
+                    e preparar a base para múltiplos tipos de escala.
+                </p>
+
+                <div class="hero-actions">
+                    <a href="#simulador" class="primary-action">Testar simulador</a>
+                    <a href="https://github.com/Dinox75/simulador-escala-trabalho" target="_blank" class="secondary-action">
+                        Ver no GitHub
+                    </a>
+                </div>
+
+                <div class="version-warning">
+                    <strong>v0.4.0:</strong>
+                    esta versão prepara a arquitetura para múltiplos tipos de escala. Escalas como
+                    <code>12x36</code> ainda serão implementadas nas próximas versões.
                 </div>
             </div>
 
-            <button id="botao-tema" class="theme-button" type="button">
-                🌙 Tema escuro
-            </button>
-        </header>
+            <aside class="hero-panel">
+                <div class="floating-card card-status">
+                    <span>Escala atual</span>
+                    <strong id="escala-atual-texto">6x3</strong>
+                    <small id="tipo-atual-texto">Ciclo por dias</small>
+                </div>
 
-        <section class="hero">
-            <span class="badge">Demo interativa • CRUD de escalas</span>
+                <div class="orbit-card orbit-one">🟢 Trabalho</div>
+                <div class="orbit-card orbit-two">🌙 Folga</div>
+                <div class="orbit-card orbit-three">🧩 Tipos</div>
 
-            <h1>Planeje sua escala de trabalho com mais clareza</h1>
+                <div class="terminal-preview">
+                    <div class="terminal-top">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
 
-            <p>
-                Consulte dias de trabalho e folga, use escalas favoritas, cadastre, edite e exclua configurações
-                e visualize o resultado em formato de calendário.
-            </p>
+                    <pre><code>python main.py
 
-            <div class="hero-actions">
-                <a href="https://github.com/Dinox75/simulador-escala-trabalho" target="_blank">
-                    Ver projeto no GitHub
-                </a>
-
-                <a href="#calendario" class="secondary-link">
-                    Ver calendário
-                </a>
-            </div>
+1 - Consultar data
+2 - Ver próximos dias
+3 - Alterar escala
+4 - Ver escalas salvas</code></pre>
+                </div>
+            </aside>
         </section>
 
-        <section class="summary-grid">
-            <article class="summary-card">
-                <span>Escala atual</span>
-                <strong id="escala-atual-texto">6x3</strong>
-                <small>Configuração ativa para simulação</small>
+        <section class="stats-grid section reveal">
+            <article class="stat-card">
+                <span>Versão</span>
+                <strong>v0.4.0</strong>
+                <small>Base para múltiplos tipos</small>
             </article>
 
-            <article class="summary-card">
+            <article class="stat-card">
                 <span>Persistência</span>
-                <strong>localStorage</strong>
-                <small>Simulação visual da persistência em JSON</small>
+                <strong>JSON</strong>
+                <small>Simulada com localStorage</small>
             </article>
 
-            <article class="summary-card">
-                <span>Status</span>
-                <strong>v0.3.0</strong>
-                <small>CRUD completo de escalas salvas</small>
+            <article class="stat-card">
+                <span>Escalas salvas</span>
+                <strong id="total-escalas">0</strong>
+                <small>Gerenciadas na demo</small>
+            </article>
+
+            <article class="stat-card">
+                <span>Dias simulados</span>
+                <strong id="total-dias-simulados">30</strong>
+                <small>Visualização em calendário</small>
             </article>
         </section>
 
-        <section class="grid">
-            <section class="card main-card">
-                <div class="card-header">
-                    <span class="section-label">Simulação</span>
-                    <h2>Gerar escala</h2>
-                    <p>Defina a data inicial, os dias trabalhados, os dias de folga e o período de visualização.</p>
+        <section id="simulador" class="section reveal">
+            <div class="section-heading">
+                <span class="eyebrow">Demo interativa</span>
+                <h2>Simulador visual de escala</h2>
+                <p>
+                    Configure uma escala, gere o calendário, salve modelos favoritos e simule o comportamento
+                    atual do projeto em uma interface visual.
+                </p>
+            </div>
+
+            <div class="app-grid">
+                <section class="panel simulator-panel">
+                    <div class="panel-header">
+                        <span class="panel-kicker">Simulação</span>
+                        <h3>Gerar calendário</h3>
+                        <p>Informe a data inicial, os dias de trabalho, os dias de folga e o período desejado.</p>
+                    </div>
+
+                    <form id="form-escala" class="form">
+                        <div class="form-group">
+                            <label for="tipo-escala">Tipo de escala</label>
+                            <select id="tipo-escala">
+                                <option value="ciclo_dias">Ciclo por dias</option>
+                                <option value="ciclo_horas" disabled>Ciclo por horas — em breve</option>
+                                <option value="turno_rotativo" disabled>Turno rotativo — em breve</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="data-inicial">Data inicial da escala</label>
+                            <input type="date" id="data-inicial" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="dias-trabalho">Dias trabalhados</label>
+                                <input type="number" id="dias-trabalho" min="1" value="6" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="dias-folga">Dias de folga</label>
+                                <input type="number" id="dias-folga" min="1" value="3" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="quantidade-dias">Quantidade de dias para visualizar</label>
+                            <input type="number" id="quantidade-dias" min="1" max="180" value="30" required>
+                        </div>
+
+                        <button type="submit" class="primary-button">Gerar calendário</button>
+                    </form>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <span class="panel-kicker">Favoritas</span>
+                        <h3>Escalas salvas</h3>
+                        <p>Use, edite ou exclua escalas salvas no navegador.</p>
+                    </div>
+
+                    <div id="lista-escalas" class="saved-list"></div>
+
+                    <div class="panel-actions">
+                        <button id="botao-exportar-json" class="ghost-button" type="button">
+                            Exportar JSON
+                        </button>
+
+                        <button id="botao-limpar-demo" class="danger-button" type="button">
+                            Resetar demo
+                        </button>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <span class="panel-kicker">Cadastro</span>
+                        <h3 id="titulo-form-escala">Nova escala</h3>
+                        <p id="descricao-form-escala">Cadastre uma configuração para reutilizar depois.</p>
+                    </div>
+
+                    <form id="form-nova-escala" class="form">
+                        <div class="form-group">
+                            <label for="nome-escala">Nome da escala</label>
+                            <input type="text" id="nome-escala" placeholder="Ex: Escala turno B 6x3" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tipo-nova-escala">Tipo da escala</label>
+                            <select id="tipo-nova-escala">
+                                <option value="ciclo_dias">Ciclo por dias</option>
+                                <option value="ciclo_horas" disabled>Ciclo por horas — em breve</option>
+                                <option value="turno_rotativo" disabled>Turno rotativo — em breve</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="novo-dias-trabalho">Dias trabalhados</label>
+                                <input type="number" id="novo-dias-trabalho" min="1" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="novo-dias-folga">Dias de folga</label>
+                                <input type="number" id="novo-dias-folga" min="1" required>
+                            </div>
+                        </div>
+
+                        <button id="botao-salvar-escala" class="primary-button" type="submit">
+                            Cadastrar escala
+                        </button>
+
+                        <button id="botao-cancelar-edicao" class="ghost-button hidden" type="button">
+                            Cancelar edição
+                        </button>
+                    </form>
+
+                    <div id="mensagem" class="message"></div>
+                </section>
+            </div>
+
+            <section class="calendar-section reveal" id="calendario">
+                <div class="calendar-top">
+                    <div>
+                        <span class="eyebrow">Calendário</span>
+                        <h3>Dias de trabalho e folga</h3>
+                        <p>Visualização organizada por mês, com cada dia marcado conforme o ciclo informado.</p>
+                    </div>
+
+                    <div class="legend">
+                        <span><i class="dot work-dot"></i> Trabalhando</span>
+                        <span><i class="dot rest-dot"></i> Folga</span>
+                    </div>
                 </div>
 
-                <form id="form-escala">
-                    <div class="form-group">
-                        <label for="data-inicial">Data inicial da escala</label>
-                        <input type="date" id="data-inicial" required>
-                    </div>
+                <div id="timeline" class="timeline"></div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="dias-trabalho">Dias trabalhados</label>
-                            <input type="number" id="dias-trabalho" min="1" value="6" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="dias-folga">Dias de folga</label>
-                            <input type="number" id="dias-folga" min="1" value="3" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="quantidade-dias">Quantidade de dias para visualizar</label>
-                        <input type="number" id="quantidade-dias" min="1" value="30" required>
-                    </div>
-
-                    <button type="submit">Gerar calendário</button>
-                </form>
-            </section>
-
-            <section class="card">
-                <div class="card-header">
-                    <span class="section-label">Favoritas</span>
-                    <h2>Escalas salvas</h2>
-                    <p>Use, edite ou exclua escalas cadastradas diretamente pela demo.</p>
-                </div>
-
-                <div id="lista-escalas" class="lista-escalas"></div>
-            </section>
-
-            <section class="card">
-                <div class="card-header">
-                    <span class="section-label">Cadastro</span>
-                    <h2 id="titulo-form-escala">Nova escala</h2>
-                    <p id="descricao-form-escala">Cadastre uma nova configuração e reutilize depois.</p>
-                </div>
-
-                <form id="form-nova-escala">
-                    <div class="form-group">
-                        <label for="nome-escala">Nome da escala</label>
-                        <input type="text" id="nome-escala" placeholder="Ex: Escala turno B 6x3" required>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="novo-dias-trabalho">Dias trabalhados</label>
-                            <input type="number" id="novo-dias-trabalho" min="1" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="novo-dias-folga">Dias de folga</label>
-                            <input type="number" id="novo-dias-folga" min="1" required>
-                        </div>
-                    </div>
-
-                    <button id="botao-salvar-escala" type="submit">Cadastrar escala</button>
-                    <button id="botao-cancelar-edicao" class="secondary-button hidden" type="button">Cancelar edição</button>
-                </form>
-
-                <div id="mensagem" class="mensagem"></div>
-            </section>
-        </section>
-
-        <section class="calendar-section" id="calendario">
-            <div class="calendar-header">
-                <div>
-                    <span class="section-label">Calendário</span>
-                    <h2>Dias de trabalho e folga</h2>
-                    <p>
-                        Visualização organizada por mês, com cada dia identificado conforme a escala atual.
+                <div id="calendarios" class="calendars">
+                    <p class="empty-state">
+                        Configure uma escala e clique em <strong>Gerar calendário</strong>.
                     </p>
                 </div>
+            </section>
+        </section>
 
-                <div class="legend">
-                    <span><i class="dot trabalho-dot"></i> Trabalhando</span>
-                    <span><i class="dot folga-dot"></i> Folga</span>
-                </div>
+        <section id="documentacao" class="section reveal">
+            <div class="section-heading">
+                <span class="eyebrow">Documentação</span>
+                <h2>Como o projeto funciona</h2>
+                <p>
+                    Esta área resume a lógica do sistema, a evolução da v0.4.0 e o que ainda será implementado.
+                </p>
             </div>
 
-            <div id="calendarios" class="calendarios">
-                <p class="estado-vazio">
-                    Configure uma escala e clique em <strong>Gerar calendário</strong>.
+            <div class="docs-layout">
+                <div class="doc-tabs">
+                    <button class="doc-tab active" type="button" data-target="doc-logica">Lógica</button>
+                    <button class="doc-tab" type="button" data-target="doc-arquitetura">Arquitetura</button>
+                    <button class="doc-tab" type="button" data-target="doc-versao">v0.4.0</button>
+                    <button class="doc-tab" type="button" data-target="doc-limites">Limites</button>
+                </div>
+
+                <article id="doc-logica" class="doc-panel active">
+                    <h3>Lógica de ciclo por dias</h3>
+                    <p>
+                        A escala atual usa uma lógica simples: soma os dias trabalhados com os dias de folga,
+                        encontra a posição da data consultada dentro do ciclo e define o status.
+                    </p>
+
+                    <pre><code>ciclo = dias_trabalho + dias_folga
+dias_passados = data_consulta - data_inicio
+posicao_ciclo = dias_passados % ciclo
+
+se posicao_ciclo &lt; dias_trabalho:
+    Trabalhando
+senão:
+    Folga</code></pre>
+                </article>
+
+                <article id="doc-arquitetura" class="doc-panel">
+                    <h3>Arquitetura atual</h3>
+                    <p>
+                        A versão Python foi separada em módulos para facilitar manutenção, testes e evolução.
+                    </p>
+
+                    <ul class="feature-list">
+                        <li><strong>main.py:</strong> controla o fluxo principal do terminal.</li>
+                        <li><strong>escala.py:</strong> concentra o cálculo das escalas.</li>
+                        <li><strong>armazenamento.py:</strong> manipula o JSON de escalas salvas.</li>
+                        <li><strong>tipos_escala.py:</strong> centraliza os tipos suportados.</li>
+                        <li><strong>validacoes.py:</strong> valida entradas do usuário.</li>
+                        <li><strong>interface.py:</strong> organiza as mensagens exibidas no terminal.</li>
+                    </ul>
+                </article>
+
+                <article id="doc-versao" class="doc-panel">
+                    <h3>O que a v0.4.0 entrega</h3>
+                    <p>
+                        A v0.4.0 prepara a base para múltiplos tipos de escala. Ela não implementa ainda
+                        o cálculo real de 12x36, mas cria o caminho correto para isso.
+                    </p>
+
+                    <div class="mini-grid">
+                        <span>✅ Campo <code>tipo</code></span>
+                        <span>✅ Migração de JSON antigo</span>
+                        <span>✅ Tipos suportados</span>
+                        <span>✅ Motor inicial por tipo</span>
+                        <span>✅ Testes reorganizados</span>
+                        <span>✅ Demo web atualizada</span>
+                    </div>
+                </article>
+
+                <article id="doc-limites" class="doc-panel">
+                    <h3>Limites atuais</h3>
+                    <p>
+                        A versão atual trabalha com ciclos baseados em dias completos. Para escalas por hora,
+                        como 12x36, será necessário trabalhar com data e hora.
+                    </p>
+
+                    <div class="warning-box">
+                        <strong>Importante:</strong>
+                        a escala 12x36 não deve ser forçada dentro da lógica de dias. Ela precisa de
+                        uma função própria usando horas de trabalho, horas de folga e data/hora inicial.
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section id="sobre" class="section about-section reveal">
+            <div class="section-heading">
+                <span class="eyebrow">Sobre</span>
+                <h2>Um projeto de estudo com visão de produto real</h2>
+            </div>
+
+            <div class="about-grid">
+                <article class="about-card">
+                    <h3>Por que existe?</h3>
+                    <p>
+                        O projeto nasceu para resolver uma dor prática: consultar rapidamente se uma data
+                        futura será dia de trabalho ou folga em uma escala cíclica.
+                    </p>
+                </article>
+
+                <article class="about-card">
+                    <h3>Por que é bom para portfólio?</h3>
+                    <p>
+                        Ele mostra fundamentos reais de programação: modularização, validação, persistência,
+                        testes, documentação, versionamento e evolução incremental.
+                    </p>
+                </article>
+
+                <article class="about-card">
+                    <h3>Visão futura</h3>
+                    <p>
+                        O sistema pode evoluir para uma plataforma de gestão de escalas para empresas,
+                        com colaboradores, setores, turnos, férias, folgas e relatórios.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section id="roadmap" class="section reveal">
+            <div class="section-heading">
+                <span class="eyebrow">Roadmap</span>
+                <h2>Próximas versões planejadas</h2>
+                <p>
+                    A evolução deve acontecer em etapas pequenas, preservando o que já funciona.
+                </p>
+            </div>
+
+            <div class="roadmap">
+                <article class="roadmap-item done">
+                    <span>v0.1.0</span>
+                    <h3>CLI funcional</h3>
+                    <p>Consulta de datas, próximos dias e validações básicas.</p>
+                </article>
+
+                <article class="roadmap-item done">
+                    <span>v0.2.0</span>
+                    <h3>Persistência JSON</h3>
+                    <p>Cadastro e reutilização de escalas salvas.</p>
+                </article>
+
+                <article class="roadmap-item done">
+                    <span>v0.3.0</span>
+                    <h3>CRUD completo</h3>
+                    <p>Editar, excluir, confirmar ações e bloquear duplicidades.</p>
+                </article>
+
+                <article class="roadmap-item current">
+                    <span>v0.4.0</span>
+                    <h3>Tipos de escala</h3>
+                    <p>Preparação para ciclos por dias, ciclos por horas e turnos rotativos.</p>
+                </article>
+
+                <article class="roadmap-item future">
+                    <span>v0.5.0</span>
+                    <h3>Escala 12x36</h3>
+                    <p>Implementação real de ciclos por hora usando data e hora.</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="termos" class="section terms-section reveal">
+            <div class="section-heading">
+                <span class="eyebrow">Termos de uso</span>
+                <h2>Uso da demonstração</h2>
+                <p>
+                    Estes termos são um modelo simples para apresentação do projeto e não substituem revisão jurídica.
+                </p>
+            </div>
+
+            <div class="terms-card">
+                <h3>1. Finalidade</h3>
+                <p>
+                    Esta página é uma demonstração educacional e visual do projeto Simulador de Escala de Trabalho.
+                    Ela não substitui sistemas oficiais de RH, folha de pagamento ou controle de jornada.
+                </p>
+
+                <h3>2. Dados armazenados</h3>
+                <p>
+                    As escalas criadas nesta demo são salvas apenas no navegador do usuário usando localStorage.
+                    Nenhum dado é enviado para servidor externo por esta página estática.
+                </p>
+
+                <h3>3. Precisão das informações</h3>
+                <p>
+                    A simulação é baseada nas informações inseridas pelo usuário. Caso a data inicial ou a configuração
+                    da escala esteja incorreta, o resultado também poderá ficar incorreto.
+                </p>
+
+                <h3>4. Uso profissional</h3>
+                <p>
+                    Para uso corporativo real, o projeto precisaria evoluir com autenticação, banco de dados,
+                    controle de permissões, auditoria, tratamento de exceções e validações legais aplicáveis.
+                </p>
+
+                <h3>5. Responsabilidade</h3>
+                <p>
+                    Esta demo tem finalidade de estudo, portfólio e apresentação técnica. A responsabilidade pelo uso
+                    das informações simuladas é do usuário.
                 </p>
             </div>
         </section>
     </main>
 
-    <script src="script.js"></script>
+    <footer class="site-footer">
+        <div>
+            <strong>Simulador de Escala de Trabalho</strong>
+            <p>Projeto Python desenvolvido por Vinicius Lima.</p>
+        </div>
+
+        <div class="footer-links">
+            <a href="#inicio">Início</a>
+            <a href="#documentacao">Documentação</a>
+            <a href="https://github.com/Dinox75/simulador-escala-trabalho" target="_blank">GitHub</a>
+        </div>
+    </footer>
+
+    <div id="toast-area" class="toast-area" aria-live="polite"></div>
+
+    <dialog id="modal-release" class="release-modal">
+        <button id="fechar-release" class="modal-close" type="button">×</button>
+        <h2>Notas da v0.4.0</h2>
+        <p>
+            Esta versão prepara a base do projeto para múltiplos tipos de escala, mantendo a compatibilidade com
+            escalas antigas e preservando o funcionamento das escalas por dias.
+        </p>
+
+        <ul>
+            <li>Campo <code>tipo</code> nas escalas.</li>
+            <li>Normalização de dados antigos.</li>
+            <li>Migração de localStorage antigo na demo.</li>
+            <li>Base visual para documentação profissional.</li>
+            <li>Preparação para futura implementação de 12x36.</li>
+        </ul>
+    </dialog>
 </body>
 </html>
