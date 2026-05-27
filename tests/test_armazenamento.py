@@ -17,7 +17,14 @@ def test_salvar_e_carregar_escalas(tmp_path, monkeypatch):
     armazenamento.salvar_escalas(escalas)
     resultado = armazenamento.carregar_escalas()
 
-    assert resultado == escalas
+    assert resultado == [
+        {
+            "nome": "Escala teste 2x2",
+            "tipo": "ciclo_dias",
+            "dias_trabalho": 2,
+            "dias_folga": 2
+        }
+    ]
 
 def test_adicionar_escala_com_sucesso(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -33,6 +40,7 @@ def test_adicionar_escala_com_sucesso(tmp_path, monkeypatch):
 
     assert len(escalas) == 1
     assert escalas[0]["nome"] == "Escala teste 3x2"
+    assert escalas[0]["tipo"] == "ciclo_dias"
 
 def test_adicionar_escala_com_nome_duplicado(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -207,3 +215,54 @@ def test_editar_escala_com_configuracao_duplicada(tmp_path, monkeypatch):
     resultado = armazenamento.editar_escala(0, "Escala nova", 5, 2)
 
     assert resultado == "configuracao_duplicada"
+
+def test_carregar_escala_antiga_sem_tipo(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_antigas = [
+        {
+            "nome": "Escala antiga 6x3",
+            "dias_trabalho": 6,
+            "dias_folga": 3
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_antigas)
+    resultado = armazenamento.carregar_escalas()
+
+    assert resultado[0]["tipo"] == "ciclo_dias"
+
+def test_adicionar_escala_com_tipo_padrao(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    resultado = armazenamento.adicionar_escala("Escala teste 4x2", 4, 2)
+    escalas = armazenamento.carregar_escalas()
+
+    assert resultado == "sucesso"
+    assert escalas[0]["tipo"] == "ciclo_dias"
+
+def test_editar_escala_mantem_tipo(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas = [
+        {
+            "nome": "Escala teste 5x2",
+            "tipo": "ciclo_dias",
+            "dias_trabalho": 5,
+            "dias_folga": 2
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas)
+
+    resultado = armazenamento.editar_escala(0, "Escala editada 6x3", 6, 3)
+    escalas_atualizadas = armazenamento.carregar_escalas()
+
+    assert resultado == "sucesso"
+    assert escalas_atualizadas[0]["tipo"] == "ciclo_dias"  

@@ -1,12 +1,19 @@
 import json
 
 CAMINHO_ESCALAS = "data/escalas.json"
+TIPO_ESCALA_PADRAO = "ciclo_dias"
+
+def normalizar_escala(escala):
+    if "tipo" not in escala:
+        escala["tipo"] = TIPO_ESCALA_PADRAO
+
+    return escala
 
 def carregar_escalas():
     try:
         with open(CAMINHO_ESCALAS, "r", encoding="utf-8") as file:
             escalas = json.load(file)
-            return escalas
+            return [normalizar_escala(escala) for escala in escalas]
     except FileNotFoundError:
         return []
 
@@ -32,9 +39,10 @@ def adicionar_escala(nome, dias_trabalho, dias_folga):
             return "configuracao_duplicada"
 
     nova_escala = {
-        "nome": nome,
-        "dias_trabalho": dias_trabalho,
-        "dias_folga": dias_folga
+    "nome": nome,
+    "tipo": TIPO_ESCALA_PADRAO,
+    "dias_trabalho": dias_trabalho,
+    "dias_folga": dias_folga
     }
 
     escalas.append(nova_escala)
@@ -73,8 +81,11 @@ def editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga):
             if escala["dias_trabalho"] == novos_dias_trabalho and escala["dias_folga"] == novos_dias_folga:
                 return "configuracao_duplicada"
 
+    tipo_atual = escalas[indice].get("tipo", TIPO_ESCALA_PADRAO)
+
     escalas[indice] = {
-        "nome": novo_nome,
+        "nome": novo_nome_limpo,
+        "tipo": tipo_atual,
         "dias_trabalho": novos_dias_trabalho,
         "dias_folga": novos_dias_folga
     }
