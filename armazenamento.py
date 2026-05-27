@@ -13,7 +13,17 @@ def carregar_escalas():
     try:
         with open(CAMINHO_ESCALAS, "r", encoding="utf-8") as file:
             escalas = json.load(file)
-            return [normalizar_escala(escala) for escala in escalas]
+
+            houve_migracao = any("tipo" not in escala for escala in escalas)
+
+            escalas_normalizadas = [
+                normalizar_escala(escala) for escala in escalas
+            ]
+
+            if houve_migracao:
+                salvar_escalas(escalas_normalizadas)
+
+            return escalas_normalizadas
     except FileNotFoundError:
         return []
 

@@ -1,5 +1,5 @@
 import armazenamento
-
+import json
 
 def test_salvar_e_carregar_escalas(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -266,3 +266,25 @@ def test_editar_escala_mantem_tipo(tmp_path, monkeypatch):
 
     assert resultado == "sucesso"
     assert escalas_atualizadas[0]["tipo"] == "ciclo_dias"  
+
+def test_carregar_escala_antiga_migra_arquivo_json(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_antigas = [
+        {
+            "nome": "Escala antiga 6x3",
+            "dias_trabalho": 6,
+            "dias_folga": 3
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_antigas)
+
+    armazenamento.carregar_escalas()
+
+    with open(arquivo_teste, "r", encoding="utf-8") as arquivo:
+        escalas_salvas = json.load(arquivo)
+
+    assert escalas_salvas[0]["tipo"] == "ciclo_dias"
