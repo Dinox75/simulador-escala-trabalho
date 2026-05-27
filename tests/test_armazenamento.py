@@ -288,3 +288,22 @@ def test_carregar_escala_antiga_migra_arquivo_json(tmp_path, monkeypatch):
         escalas_salvas = json.load(arquivo)
 
     assert escalas_salvas[0]["tipo"] == "ciclo_dias"
+
+def test_carregar_escala_com_tipo_invalido_corrige_para_padrao(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas = [
+        {
+            "nome": "Escala com tipo inválido",
+            "tipo": "tipo_errado",
+            "dias_trabalho": 6,
+            "dias_folga": 3
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas)
+    resultado = armazenamento.carregar_escalas()
+
+    assert resultado[0]["tipo"] == "ciclo_dias"

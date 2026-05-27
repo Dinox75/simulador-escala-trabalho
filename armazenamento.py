@@ -1,13 +1,30 @@
 import json
 
 CAMINHO_ESCALAS = "data/escalas.json"
-TIPO_ESCALA_PADRAO = "ciclo_dias"
+TIPO_CICLO_DIAS = "ciclo_dias"
+TIPO_CICLO_HORAS = "ciclo_horas"
+TIPO_TURNO_ROTATIVO = "turno_rotativo"
+
+TIPOS_ESCALA_SUPORTADOS = [
+    TIPO_CICLO_DIAS,
+    TIPO_CICLO_HORAS,
+    TIPO_TURNO_ROTATIVO
+]
+
+TIPO_ESCALA_PADRAO = TIPO_CICLO_DIAS
 
 def normalizar_escala(escala):
-    if "tipo" not in escala:
-        escala["tipo"] = TIPO_ESCALA_PADRAO
+    tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
+    if not validar_tipo_escala(tipo):
+        tipo = TIPO_ESCALA_PADRAO
+
+    escala["tipo"] = tipo
 
     return escala
+
+def validar_tipo_escala(tipo):
+    return tipo in TIPOS_ESCALA_SUPORTADOS
 
 def carregar_escalas():
     try:
