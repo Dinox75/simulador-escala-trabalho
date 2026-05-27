@@ -2,16 +2,13 @@
     {
         "nome": "Escala 6x3",
         "dias_trabalho": 6,
-        "dias_folga": 3
+        "dias_folga": 3,
+        "tipo": "ciclo_dias"
     },
     {
         "nome": "Escala Administativa 5x2",
         "dias_trabalho": 5,
-        "dias_folga": 2
-    },
-    {
-        "nome": "Demo",
-        "dias_trabalho": 4,
-        "dias_folga": 3
+        "dias_folga": 2,
+        "tipo": "ciclo_dias"
     }
 ]

@@ -1,5 +1,6 @@
 # Responsável pela lógica da escala.
 from datetime import timedelta
+from tipos_escala import TIPO_CICLO_DIAS, TIPO_ESCALA_PADRAO
 
 def calcular_status(data_inicio, data_consulta, dias_trabalho, dias_folga):
     ciclo = dias_trabalho + dias_folga
@@ -12,6 +13,19 @@ def calcular_status(data_inicio, data_consulta, dias_trabalho, dias_folga):
         return "Trabalhando"
     else:
         return "Folga"
+    
+def calcular_status_por_escala(escala, data_inicio, data_consulta):
+    tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
+    if tipo == TIPO_CICLO_DIAS:
+        return calcular_status(
+            data_inicio,
+            data_consulta,
+            escala["dias_trabalho"],
+            escala["dias_folga"]
+        )
+
+    raise NotImplementedError("Tipo de escala ainda não implementado no cálculo.")
 
 
 def gerar_proximos_dias(data_inicio, quantidade_dias, dias_trabalho, dias_folga):
@@ -32,3 +46,16 @@ def gerar_proximos_dias(data_inicio, quantidade_dias, dias_trabalho, dias_folga)
         })
 
     return result
+
+def gerar_proximos_dias_por_escala(escala, data_inicio, quantidade_dias):
+    tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
+    if tipo == TIPO_CICLO_DIAS:
+        return gerar_proximos_dias(
+            data_inicio,
+            quantidade_dias,
+            escala["dias_trabalho"],
+            escala["dias_folga"]
+        )
+
+    raise NotImplementedError("Tipo de escala ainda não implementado na geração de próximos dias.")
