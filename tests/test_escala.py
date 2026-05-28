@@ -9,7 +9,8 @@ from escala import (
     gerar_proximos_dias_por_escala,
     calcular_status_ciclo_horas,
     gerar_proximos_periodos_ciclo_horas,
-    gerar_proximos_periodos_por_escala
+    gerar_proximos_periodos_por_escala,
+    converter_data_hora
 )
 
 from tipos_escala import (
@@ -221,3 +222,14 @@ def test_gerar_proximos_periodos_por_escala_ciclo_horas_12x36():
     assert resultado[1]["inicio"] == datetime(2026, 6, 1, 18, 0)
     assert resultado[1]["fim"] == datetime(2026, 6, 3, 6, 0)
     assert resultado[1]["status"] == "Folga"
+
+def test_converter_data_hora_valida():
+    resultado = converter_data_hora("01/06/2026 06:00")
+
+    assert resultado == datetime(2026, 6, 1, 6, 0)
+
+
+def test_converter_data_hora_invalida():
+    resultado = converter_data_hora("01-06-2026 06:00")
+
+    assert resultado is None

@@ -1,5 +1,5 @@
 # Responsável pela lógica da escala.
-from datetime import timedelta
+from datetime import datetime, timedelta
 from tipos_escala import TIPO_CICLO_DIAS, TIPO_CICLO_HORAS, TIPO_ESCALA_PADRAO
 
 def calcular_status(data_inicio, data_consulta, dias_trabalho, dias_folga):
@@ -115,3 +115,10 @@ def gerar_proximos_periodos_por_escala(escala, data_hora_inicio, quantidade_peri
         )
 
     raise NotImplementedError("Tipo de escala ainda não implementado para geração de períodos.")
+
+def converter_data_hora(data_hora_texto):
+    try:
+        data_hora_convertida = datetime.strptime(data_hora_texto, "%d/%m/%Y %H:%M")
+        return data_hora_convertida
+    except ValueError:
+        return None
