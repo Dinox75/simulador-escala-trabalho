@@ -1,9 +1,10 @@
-from datetime import date
+from datetime import date, datetime
 
 import pytest
 
 from escala import (
     calcular_status,
+    calcular_status_ciclo_horas,
     gerar_proximos_dias,
     calcular_status_por_escala,
     gerar_proximos_dias_por_escala
@@ -103,24 +104,6 @@ def test_gerar_proximos_dias_por_escala_ciclo_dias():
     assert resultado[6]["data"] == date(2026, 5, 7)
     assert resultado[6]["status"] == "Folga"
 
-
-def test_calcular_status_por_escala_ciclo_horas_ainda_nao_implementado():
-    escala = {
-        "nome": "Escala teste 12x36",
-        "tipo": TIPO_CICLO_HORAS
-    }
-
-    data_inicio = date(2026, 5, 1)
-    data_consulta = date(2026, 5, 2)
-
-    with pytest.raises(NotImplementedError):
-        calcular_status_por_escala(
-            escala,
-            data_inicio,
-            data_consulta
-        )
-
-
 def test_gerar_proximos_dias_por_escala_turno_rotativo_ainda_nao_implementado():
     escala = {
         "nome": "Escala turno rotativo",
@@ -135,3 +118,50 @@ def test_gerar_proximos_dias_por_escala_turno_rotativo_ainda_nao_implementado():
             data_inicio,
             10
         )
+
+def test_calcular_status_ciclo_horas_dentro_do_periodo_de_trabalho():
+    data_hora_inicio = datetime(2026, 6, 1, 6, 0)
+    data_hora_consulta = datetime(2026, 6, 1, 10, 0)
+
+    resultado = calcular_status_ciclo_horas(
+        data_hora_inicio,
+        data_hora_consulta,
+        12,
+        36
+    )
+
+    assert resultado == "Trabalhando"
+
+
+def test_calcular_status_ciclo_horas_dentro_do_periodo_de_folga():
+    data_hora_inicio = datetime(2026, 6, 1, 6, 0)
+    data_hora_consulta = datetime(2026, 6, 1, 20, 0)
+
+    resultado = calcular_status_ciclo_horas(
+        data_hora_inicio,
+        data_hora_consulta,
+        12,
+        36
+    )
+
+    assert resultado == "Folga"
+
+
+def test_calcular_status_por_escala_ciclo_horas_12x36():
+    escala = {
+        "nome": "Escala 12x36",
+        "tipo": TIPO_CICLO_HORAS,
+        "horas_trabalho": 12,
+        "horas_folga": 36
+    }
+
+    data_hora_inicio = datetime(2026, 6, 1, 6, 0)
+    data_hora_consulta = datetime(2026, 6, 3, 6, 0)
+
+    resultado = calcular_status_por_escala(
+        escala,
+        data_hora_inicio,
+        data_hora_consulta
+    )
+
+    assert resultado == "Trabalhando"

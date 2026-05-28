@@ -1,6 +1,6 @@
 # Responsável pela lógica da escala.
 from datetime import timedelta
-from tipos_escala import TIPO_CICLO_DIAS, TIPO_ESCALA_PADRAO
+from tipos_escala import TIPO_CICLO_DIAS, TIPO_CICLO_HORAS, TIPO_ESCALA_PADRAO
 
 def calcular_status(data_inicio, data_consulta, dias_trabalho, dias_folga):
     ciclo = dias_trabalho + dias_folga
@@ -14,6 +14,18 @@ def calcular_status(data_inicio, data_consulta, dias_trabalho, dias_folga):
     else:
         return "Folga"
     
+def calcular_status_ciclo_horas(data_hora_inicio, data_hora_consulta, horas_trabalho, horas_folga):
+    ciclo_horas = horas_trabalho + horas_folga
+
+    horas_passadas = (data_hora_consulta - data_hora_inicio).total_seconds() / 3600
+
+    posicao_ciclo = horas_passadas % ciclo_horas
+
+    if posicao_ciclo < horas_trabalho:
+        return "Trabalhando"
+    else:
+        return "Folga"
+    
 def calcular_status_por_escala(escala, data_inicio, data_consulta):
     tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
 
@@ -23,6 +35,14 @@ def calcular_status_por_escala(escala, data_inicio, data_consulta):
             data_consulta,
             escala["dias_trabalho"],
             escala["dias_folga"]
+        )
+
+    if tipo == TIPO_CICLO_HORAS:
+        return calcular_status_ciclo_horas(
+            data_inicio,
+            data_consulta,
+            escala["horas_trabalho"],
+            escala["horas_folga"]
         )
 
     raise NotImplementedError("Tipo de escala ainda não implementado no cálculo.")
