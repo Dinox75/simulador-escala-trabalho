@@ -36,6 +36,24 @@ def ler_data(mensagem):
         except ValueError:
             print("Data inválida. Use o formato dd/mm/aaaa.")
 
+def ler_data_hora(mensagem):
+    while True:
+        data_hora_texto = input(mensagem).strip()
+
+        if data_hora_texto == "":
+            print("Data e hora inválidas. Digite uma data e hora.")
+            continue
+
+        try:
+            data_hora_convertida = datetime.strptime(
+                data_hora_texto,
+                "%d/%m/%Y %H:%M"
+            )
+            return data_hora_convertida
+
+        except ValueError:
+            print("Data e hora inválidas. Use o formato dd/mm/aaaa hh:mm.")
+
 def ler_opcao_menu(mensagem, opcoes_validas):
     while True:
         opcao = input(mensagem).strip()
