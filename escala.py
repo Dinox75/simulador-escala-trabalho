@@ -26,6 +26,30 @@ def calcular_status_ciclo_horas(data_hora_inicio, data_hora_consulta, horas_trab
     else:
         return "Folga"
     
+def gerar_proximos_periodos_ciclo_horas(data_hora_inicio, quantidade_periodos, horas_trabalho, horas_folga):
+    periodos = []
+    inicio_periodo = data_hora_inicio
+
+    for indice in range(quantidade_periodos):
+        if indice % 2 == 0:
+            duracao_horas = horas_trabalho
+            status = "Trabalhando"
+        else:
+            duracao_horas = horas_folga
+            status = "Folga"
+
+        fim_periodo = inicio_periodo + timedelta(hours=duracao_horas)
+
+        periodos.append({
+            "inicio": inicio_periodo,
+            "fim": fim_periodo,
+            "status": status
+        })
+
+        inicio_periodo = fim_periodo
+
+    return periodos
+    
 def calcular_status_por_escala(escala, data_inicio, data_consulta):
     tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
 
@@ -46,7 +70,6 @@ def calcular_status_por_escala(escala, data_inicio, data_consulta):
         )
 
     raise NotImplementedError("Tipo de escala ainda não implementado no cálculo.")
-
 
 def gerar_proximos_dias(data_inicio, quantidade_dias, dias_trabalho, dias_folga):
     result = []

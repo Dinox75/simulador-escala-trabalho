@@ -4,10 +4,11 @@ import pytest
 
 from escala import (
     calcular_status,
-    calcular_status_ciclo_horas,
     gerar_proximos_dias,
     calcular_status_por_escala,
-    gerar_proximos_dias_por_escala
+    gerar_proximos_dias_por_escala,
+    calcular_status_ciclo_horas,
+    gerar_proximos_periodos_ciclo_horas
 )
 
 from tipos_escala import (
@@ -165,3 +166,31 @@ def test_calcular_status_por_escala_ciclo_horas_12x36():
     )
 
     assert resultado == "Trabalhando"
+
+def test_gerar_proximos_periodos_ciclo_horas_12x36():
+    data_hora_inicio = datetime(2026, 6, 1, 6, 0)
+
+    resultado = gerar_proximos_periodos_ciclo_horas(
+        data_hora_inicio,
+        4,
+        12,
+        36
+    )
+
+    assert len(resultado) == 4
+
+    assert resultado[0]["inicio"] == datetime(2026, 6, 1, 6, 0)
+    assert resultado[0]["fim"] == datetime(2026, 6, 1, 18, 0)
+    assert resultado[0]["status"] == "Trabalhando"
+
+    assert resultado[1]["inicio"] == datetime(2026, 6, 1, 18, 0)
+    assert resultado[1]["fim"] == datetime(2026, 6, 3, 6, 0)
+    assert resultado[1]["status"] == "Folga"
+
+    assert resultado[2]["inicio"] == datetime(2026, 6, 3, 6, 0)
+    assert resultado[2]["fim"] == datetime(2026, 6, 3, 18, 0)
+    assert resultado[2]["status"] == "Trabalhando"
+
+    assert resultado[3]["inicio"] == datetime(2026, 6, 3, 18, 0)
+    assert resultado[3]["fim"] == datetime(2026, 6, 5, 6, 0)
+    assert resultado[3]["status"] == "Folga"
