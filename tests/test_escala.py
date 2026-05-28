@@ -8,7 +8,8 @@ from escala import (
     calcular_status_por_escala,
     gerar_proximos_dias_por_escala,
     calcular_status_ciclo_horas,
-    gerar_proximos_periodos_ciclo_horas
+    gerar_proximos_periodos_ciclo_horas,
+    gerar_proximos_periodos_por_escala
 )
 
 from tipos_escala import (
@@ -194,3 +195,29 @@ def test_gerar_proximos_periodos_ciclo_horas_12x36():
     assert resultado[3]["inicio"] == datetime(2026, 6, 3, 18, 0)
     assert resultado[3]["fim"] == datetime(2026, 6, 5, 6, 0)
     assert resultado[3]["status"] == "Folga"
+
+def test_gerar_proximos_periodos_por_escala_ciclo_horas_12x36():
+    escala = {
+        "nome": "Escala 12x36",
+        "tipo": TIPO_CICLO_HORAS,
+        "horas_trabalho": 12,
+        "horas_folga": 36
+    }
+
+    data_hora_inicio = datetime(2026, 6, 1, 6, 0)
+
+    resultado = gerar_proximos_periodos_por_escala(
+        escala,
+        data_hora_inicio,
+        4
+    )
+
+    assert len(resultado) == 4
+
+    assert resultado[0]["inicio"] == datetime(2026, 6, 1, 6, 0)
+    assert resultado[0]["fim"] == datetime(2026, 6, 1, 18, 0)
+    assert resultado[0]["status"] == "Trabalhando"
+
+    assert resultado[1]["inicio"] == datetime(2026, 6, 1, 18, 0)
+    assert resultado[1]["fim"] == datetime(2026, 6, 3, 6, 0)
+    assert resultado[1]["status"] == "Folga"

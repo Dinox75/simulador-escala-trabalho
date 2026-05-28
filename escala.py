@@ -102,3 +102,16 @@ def gerar_proximos_dias_por_escala(escala, data_inicio, quantidade_dias):
         )
 
     raise NotImplementedError("Tipo de escala ainda não implementado na geração de próximos dias.")
+
+def gerar_proximos_periodos_por_escala(escala, data_hora_inicio, quantidade_periodos):
+    tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
+    if tipo == TIPO_CICLO_HORAS:
+        return gerar_proximos_periodos_ciclo_horas(
+            data_hora_inicio,
+            quantidade_periodos,
+            escala["horas_trabalho"],
+            escala["horas_folga"]
+        )
+
+    raise NotImplementedError("Tipo de escala ainda não implementado para geração de períodos.")
