@@ -16,7 +16,7 @@ from interface import (
     exibir_escalas_salvas
 )
 from armazenamento import carregar_escalas, adicionar_escala, remover_escala, editar_escala
-from tipos_escala import TIPO_ESCALA_PADRAO, TIPO_CICLO_HORAS, obter_nome_tipo
+from tipos_escala import TIPO_ESCALA_PADRAO, TIPO_CICLO_DIAS, TIPO_CICLO_HORAS, obter_nome_tipo
 
 
 def criar_escala_manual(dias_trabalho=6, dias_folga=3):
@@ -27,25 +27,44 @@ def criar_escala_manual(dias_trabalho=6, dias_folga=3):
         "dias_folga": dias_folga
     }
 
+def obter_resumo_escala(escala):
+    tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
+    if tipo == TIPO_CICLO_HORAS:
+        return f"{escala['horas_trabalho']}x{escala['horas_folga']} horas"
+
+    return f"{escala['dias_trabalho']}x{escala['dias_folga']} dias"
+
+def obter_resumo_escala(escala):
+    tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
+    if tipo == TIPO_CICLO_HORAS:
+        return f"{escala['horas_trabalho']}x{escala['horas_folga']} horas"
+
+    return f"{escala['dias_trabalho']}x{escala['dias_folga']} dias"
 
 def exibir_escala_atual(escala_atual):
-    tipo_formatado = obter_nome_tipo(escala_atual.get("tipo", TIPO_ESCALA_PADRAO))
+    tipo = escala_atual.get("tipo", TIPO_ESCALA_PADRAO)
+    tipo_formatado = obter_nome_tipo(tipo)
 
     print("\nEscala atual:")
     print(f"Nome: {escala_atual['nome']}")
     print(f"Tipo: {tipo_formatado}")
-    print(f"Dias trabalhados: {escala_atual['dias_trabalho']}")
-    print(f"Dias de folga: {escala_atual['dias_folga']}")
 
+    if tipo == TIPO_CICLO_HORAS:
+        print(f"Horas trabalhadas: {escala_atual['horas_trabalho']}")
+        print(f"Horas de folga: {escala_atual['horas_folga']}")
+    else:
+        print(f"Dias trabalhados: {escala_atual['dias_trabalho']}")
+        print(f"Dias de folga: {escala_atual['dias_folga']}")
 
 def main():
     escala_atual = criar_escala_manual()
 
     while True:
-        exibir_menu(
-            escala_atual["dias_trabalho"],
-            escala_atual["dias_folga"]
-        )
+        resumo_escala_atual = obter_resumo_escala(escala_atual)
+
+        exibir_menu(resumo_escala_atual)
 
         menu = ler_opcao_menu(
             "\nEscolha uma opção: ",

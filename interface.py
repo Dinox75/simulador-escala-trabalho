@@ -19,9 +19,9 @@ def exibir_proximos_dias(proximos_dias):
 
         print(f"{data_formatada}: {status}")
 
-def exibir_menu(dias_trabalho, dias_folga):
+def exibir_menu(resumo_escala):
     print("\n==== SIMULADOR DE ESCALAS ====")
-    print(f"Escala atual: {dias_trabalho}x{dias_folga}")
+    print(f"Escala atual: {resumo_escala}")
     print("\n1 - Consultar uma data")
     print("2 - Ver próximos dias")
     print("3 - Alterar escala")
