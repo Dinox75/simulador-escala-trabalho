@@ -1,5 +1,6 @@
 #Responsável por toda a interação com o usuário, exibindo menus e resultados de forma clara e organizada.
 from tipos_escala import obter_nome_tipo
+from tipos_escala import TIPO_ESCALA_PADRAO, TIPO_CICLO_HORAS, obter_nome_tipo
 
 def formatar_status(status):
     if status == "Trabalhando":
@@ -39,21 +40,24 @@ def exibir_resultado_consulta(data_consulta, status):
 def exibir_escala_alterada(dias_trabalho, dias_folga):
     print(f"\nEscala alterada para {dias_trabalho}x{dias_folga}.")
 
+def formatar_resumo_escala(escala):
+    tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
+    if tipo == TIPO_CICLO_HORAS:
+        return f"{escala['horas_trabalho']}x{escala['horas_folga']} horas"
+
+    return f"{escala['dias_trabalho']}x{escala['dias_folga']} dias"
+
 def exibir_escalas_salvas(escalas):
     if not escalas:
-        print("\nNenhuma escala salva encontrada.")
+        print("\nNenhuma escala salva.")
         return
 
-    print("\n==== ESCALAS SALVAS ====\n")
+    print("\n==== ESCALAS SALVAS ====")
 
     for indice, escala in enumerate(escalas, start=1):
-        nome = escala["nome"]
-        tipo = escala.get("tipo", "ciclo_dias")
+        tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
         tipo_formatado = obter_nome_tipo(tipo)
-        dias_trabalho = escala["dias_trabalho"]
-        dias_folga = escala["dias_folga"]
+        resumo = formatar_resumo_escala(escala)
 
-        print(f"{indice} - {nome}")
-        print(f"    Tipo: {tipo_formatado}")
-        print(f"    Dias trabalhados: {dias_trabalho}")
-        print(f"    Dias de folga: {dias_folga}\n")
+        print(f"{indice} - {escala['nome']} | {tipo_formatado} | {resumo}")
