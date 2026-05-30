@@ -26,6 +26,7 @@ from armazenamento import (
     adicionar_escala,
     adicionar_escala_ciclo_horas,
     remover_escala,
+    editar_escala_ciclo_horas,
     editar_escala
 )
 
@@ -261,41 +262,70 @@ def editar_escala_salva(escala_atual):
     tipo = escala_selecionada.get("tipo", TIPO_ESCALA_PADRAO)
     tipo_formatado = obter_nome_tipo(tipo)
 
-    if tipo == TIPO_CICLO_HORAS:
-        print("\nEdição de escalas por horas ainda não está disponível para escalas salvas.")
-        return escala_atual
-
     print("\nEscala selecionada:")
     print(f"Nome atual: {escala_selecionada['nome']}")
     print(f"Tipo atual: {tipo_formatado}")
-    print(f"Dias trabalhados atuais: {escala_selecionada['dias_trabalho']}")
-    print(f"Dias de folga atuais: {escala_selecionada['dias_folga']}")
 
     novo_nome = ler_texto("Digite o novo nome da escala: ")
-    novos_dias_trabalho = ler_numero("Digite a nova quantidade de dias trabalhados: ")
-    novos_dias_folga = ler_numero("Digite a nova quantidade de dias de folga: ")
 
-    print("\nResumo da alteração:")
-    print(f"Nome: {escala_selecionada['nome']} -> {novo_nome}")
-    print(f"Tipo: {tipo_formatado}")
-    print(f"Dias trabalhados: {escala_selecionada['dias_trabalho']} -> {novos_dias_trabalho}")
-    print(f"Dias de folga: {escala_selecionada['dias_folga']} -> {novos_dias_folga}")
+    if tipo == TIPO_CICLO_HORAS:
+        print(f"Horas trabalhadas atuais: {escala_selecionada['horas_trabalho']}")
+        print(f"Horas de folga atuais: {escala_selecionada['horas_folga']}")
 
-    confirmacao = confirmar_acao("Deseja salvar essa alteração?")
+        novas_horas_trabalho = ler_numero("Digite a nova quantidade de horas trabalhadas: ")
+        novas_horas_folga = ler_numero("Digite a nova quantidade de horas de folga: ")
 
-    if not confirmacao:
-        print("Edição cancelada.")
-        return escala_atual
+        print("\nResumo da alteração:")
+        print(f"Nome: {escala_selecionada['nome']} -> {novo_nome}")
+        print(f"Tipo: {tipo_formatado}")
+        print(f"Horas trabalhadas: {escala_selecionada['horas_trabalho']} -> {novas_horas_trabalho}")
+        print(f"Horas de folga: {escala_selecionada['horas_folga']} -> {novas_horas_folga}")
 
-    resultado = editar_escala(
-        indice,
-        novo_nome,
-        novos_dias_trabalho,
-        novos_dias_folga
-    )
+        confirmacao = confirmar_acao("Deseja salvar essa alteração?")
 
-    if resultado == "sucesso":
-        print("Escala editada com sucesso!")
+        if not confirmacao:
+            print("Edição cancelada.")
+            return escala_atual
+
+        resultado = editar_escala_ciclo_horas(
+            indice,
+            novo_nome,
+            novas_horas_trabalho,
+            novas_horas_folga
+        )
+
+        escala_editada = {
+            "nome": novo_nome,
+            "tipo": TIPO_CICLO_HORAS,
+            "horas_trabalho": novas_horas_trabalho,
+            "horas_folga": novas_horas_folga
+        }
+
+    else:
+        print(f"Dias trabalhados atuais: {escala_selecionada['dias_trabalho']}")
+        print(f"Dias de folga atuais: {escala_selecionada['dias_folga']}")
+
+        novos_dias_trabalho = ler_numero("Digite a nova quantidade de dias trabalhados: ")
+        novos_dias_folga = ler_numero("Digite a nova quantidade de dias de folga: ")
+
+        print("\nResumo da alteração:")
+        print(f"Nome: {escala_selecionada['nome']} -> {novo_nome}")
+        print(f"Tipo: {tipo_formatado}")
+        print(f"Dias trabalhados: {escala_selecionada['dias_trabalho']} -> {novos_dias_trabalho}")
+        print(f"Dias de folga: {escala_selecionada['dias_folga']} -> {novos_dias_folga}")
+
+        confirmacao = confirmar_acao("Deseja salvar essa alteração?")
+
+        if not confirmacao:
+            print("Edição cancelada.")
+            return escala_atual
+
+        resultado = editar_escala(
+            indice,
+            novo_nome,
+            novos_dias_trabalho,
+            novos_dias_folga
+        )
 
         escala_editada = {
             "nome": novo_nome,
@@ -303,6 +333,9 @@ def editar_escala_salva(escala_atual):
             "dias_trabalho": novos_dias_trabalho,
             "dias_folga": novos_dias_folga
         }
+
+    if resultado == "sucesso":
+        print("Escala editada com sucesso!")
 
         if escala_atual == escala_selecionada:
             escala_atual = escala_editada
@@ -318,7 +351,6 @@ def editar_escala_salva(escala_atual):
         print("Já existe uma escala com essa configuração.")
 
     return escala_atual
-
 
 def excluir_escala_salva(escala_atual):
     escalas = carregar_escalas()

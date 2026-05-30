@@ -454,3 +454,153 @@ def test_editar_escala_por_dias_nao_quebra_com_escala_por_horas_existente(tmp_pa
     assert escalas[1]["tipo"] == "ciclo_dias"
     assert escalas[1]["dias_trabalho"] == 5
     assert escalas[1]["dias_folga"] == 2
+
+def test_editar_escala_ciclo_horas_com_sucesso(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_iniciais = [
+        {
+            "nome": "Escala 12x36",
+            "tipo": "ciclo_horas",
+            "horas_trabalho": 12,
+            "horas_folga": 36
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_iniciais)
+
+    resultado = armazenamento.editar_escala_ciclo_horas(
+        0,
+        "Escala 24x72",
+        24,
+        72
+    )
+
+    escalas = armazenamento.carregar_escalas()
+
+    assert resultado == "sucesso"
+    assert escalas[0]["nome"] == "Escala 24x72"
+    assert escalas[0]["tipo"] == "ciclo_horas"
+    assert escalas[0]["horas_trabalho"] == 24
+    assert escalas[0]["horas_folga"] == 72
+
+
+def test_editar_escala_ciclo_horas_com_indice_invalido(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([])
+
+    resultado = armazenamento.editar_escala_ciclo_horas(
+        10,
+        "Escala inválida",
+        12,
+        36
+    )
+
+    assert resultado == "indice_invalido"
+
+
+def test_editar_escala_ciclo_horas_com_nome_duplicado(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_iniciais = [
+        {
+            "nome": "Escala 12x36",
+            "tipo": "ciclo_horas",
+            "horas_trabalho": 12,
+            "horas_folga": 36
+        },
+        {
+            "nome": "Escala 24x72",
+            "tipo": "ciclo_horas",
+            "horas_trabalho": 24,
+            "horas_folga": 72
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_iniciais)
+
+    resultado = armazenamento.editar_escala_ciclo_horas(
+        0,
+        "Escala 24x72",
+        18,
+        54
+    )
+
+    assert resultado == "nome_duplicado"
+
+
+def test_editar_escala_ciclo_horas_com_configuracao_duplicada(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_iniciais = [
+        {
+            "nome": "Escala 12x36",
+            "tipo": "ciclo_horas",
+            "horas_trabalho": 12,
+            "horas_folga": 36
+        },
+        {
+            "nome": "Escala 24x72",
+            "tipo": "ciclo_horas",
+            "horas_trabalho": 24,
+            "horas_folga": 72
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_iniciais)
+
+    resultado = armazenamento.editar_escala_ciclo_horas(
+        0,
+        "Escala nova",
+        24,
+        72
+    )
+
+    assert resultado == "configuracao_duplicada"
+
+
+def test_editar_escala_ciclo_horas_nao_quebra_com_escala_por_dias_existente(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    escalas_iniciais = [
+        {
+            "nome": "Escala 6x3",
+            "tipo": "ciclo_dias",
+            "dias_trabalho": 6,
+            "dias_folga": 3
+        },
+        {
+            "nome": "Escala 12x36",
+            "tipo": "ciclo_horas",
+            "horas_trabalho": 12,
+            "horas_folga": 36
+        }
+    ]
+
+    armazenamento.salvar_escalas(escalas_iniciais)
+
+    resultado = armazenamento.editar_escala_ciclo_horas(
+        1,
+        "Escala 18x54",
+        18,
+        54
+    )
+
+    escalas = armazenamento.carregar_escalas()
+
+    assert resultado == "sucesso"
+    assert escalas[1]["nome"] == "Escala 18x54"
+    assert escalas[1]["tipo"] == "ciclo_horas"
+    assert escalas[1]["horas_trabalho"] == 18
+    assert escalas[1]["horas_folga"] == 54
