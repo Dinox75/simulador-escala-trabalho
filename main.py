@@ -24,6 +24,7 @@ from interface import (
 from armazenamento import (
     carregar_escalas,
     adicionar_escala,
+    adicionar_escala_ciclo_horas,
     remover_escala,
     editar_escala
 )
@@ -207,12 +208,36 @@ def aplicar_escala_salva():
 
 
 def cadastrar_escala():
-    print("\nCadastro de escala por dias")
-    nome = ler_texto("Digite o nome da escala: ")
-    dias_trabalho = ler_numero("Digite a quantidade de dias trabalhados: ")
-    dias_folga = ler_numero("Digite a quantidade de dias de folga: ")
+    print("\nTipo de escala:")
+    print("1 - Ciclo por dias")
+    print("2 - Ciclo por horas")
 
-    resultado = adicionar_escala(nome, dias_trabalho, dias_folga)
+    tipo_escolhido = ler_opcao_menu(
+        "Escolha o tipo de escala para cadastrar: ",
+        ["1", "2"]
+    )
+
+    nome = ler_texto("Digite o nome da escala: ")
+
+    if tipo_escolhido == "1":
+        dias_trabalho = ler_numero("Digite a quantidade de dias trabalhados: ")
+        dias_folga = ler_numero("Digite a quantidade de dias de folga: ")
+
+        resultado = adicionar_escala(
+            nome,
+            dias_trabalho,
+            dias_folga
+        )
+
+    else:
+        horas_trabalho = ler_numero("Digite a quantidade de horas trabalhadas: ")
+        horas_folga = ler_numero("Digite a quantidade de horas de folga: ")
+
+        resultado = adicionar_escala_ciclo_horas(
+            nome,
+            horas_trabalho,
+            horas_folga
+        )
 
     if resultado == "sucesso":
         print("Escala cadastrada com sucesso!")
@@ -221,8 +246,7 @@ def cadastrar_escala():
         print(f"A escala '{nome}' já existe.")
 
     elif resultado == "configuracao_duplicada":
-        print("Já existe uma escala com essa mesma quantidade de dias trabalhados e dias de folga.")
-
+        print("Já existe uma escala com essa mesma configuração.")
 
 def editar_escala_salva(escala_atual):
     escalas = carregar_escalas()
