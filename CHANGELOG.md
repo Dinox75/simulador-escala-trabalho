@@ -1,3 +1,23 @@
+## [0.5.0] - Escalas por horas e suporte inicial ao 12x36
+
+### Adicionado
+- Suporte ao tipo de escala `ciclo_horas`.
+- Cálculo real de status para escalas por horas.
+- Suporte inicial à escala 12x36.
+- Geração de próximos períodos para escalas por horas.
+- Cadastro, listagem, aplicação, edição e exclusão de escalas por horas no CLI.
+- Leitura de data e hora no formato `dd/mm/aaaa hh:mm`.
+- Novos testes para cálculo, períodos e armazenamento de escalas por horas.
+
+### Alterado
+- Menu do CLI adaptado para trabalhar com escalas por dias e por horas.
+- Exibição de escalas salvas agora mostra o tipo da escala.
+- Fluxo principal do CLI preparado para múltiplos tipos de escala.
+
+### Mantido
+- Compatibilidade com escalas antigas por dias.
+- Migração automática de escalas antigas sem campo `tipo`.
+
 ## [v0.4.0] - Preparação para múltiplos tipos de escala
 
 ### Adicionado

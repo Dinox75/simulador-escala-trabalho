@@ -12,7 +12,7 @@ def formatar_status(status):
     return status
 
 def exibir_proximos_dias(proximos_dias):
-    print("\n==== PRÓXIMOS DIAS ====")
+    print("\n==== PRÓXIMOS PERÍODOS ====")
 
     for dia in proximos_dias:
         data_formatada = dia['data'].strftime('%d/%m/%Y')
@@ -23,8 +23,8 @@ def exibir_proximos_dias(proximos_dias):
 def exibir_menu(resumo_escala):
     print("\n==== SIMULADOR DE ESCALAS ====")
     print(f"Escala atual: {resumo_escala}")
-    print("\n1 - Consultar uma data")
-    print("2 - Ver próximos dias")
+    print("\n1 - Consultar status")
+    print("2 - Ver próximos dias/períodos")
     print("3 - Alterar escala")
     print("4 - Ver escalas salvas")
     print("5 - Cadastrar nova escala")
