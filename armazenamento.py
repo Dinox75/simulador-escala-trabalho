@@ -1,4 +1,6 @@
 import json
+from pathlib import Path
+
 from tipos_escala import (
     TIPO_ESCALA_PADRAO,
     TIPO_CICLO_DIAS,
@@ -6,18 +8,25 @@ from tipos_escala import (
     validar_tipo_escala
 )
 
+
 CAMINHO_ESCALAS = "data/escalas.json"
 
 
+def normalizar_nome(nome):
+    return str(nome).lower().strip()
+
+
 def normalizar_escala(escala):
-    tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
+    escala_normalizada = escala.copy()
+
+    tipo = escala_normalizada.get("tipo", TIPO_ESCALA_PADRAO)
 
     if not validar_tipo_escala(tipo):
         tipo = TIPO_ESCALA_PADRAO
 
-    escala["tipo"] = tipo
+    escala_normalizada["tipo"] = tipo
 
-    return escala
+    return escala_normalizada
 
 
 def carregar_escalas():
@@ -25,86 +34,158 @@ def carregar_escalas():
         with open(CAMINHO_ESCALAS, "r", encoding="utf-8") as file:
             escalas = json.load(file)
 
-            houve_migracao = any("tipo" not in escala for escala in escalas)
+            if not isinstance(escalas, list):
+                return []
 
-            escalas_normalizadas = [
-                normalizar_escala(escala) for escala in escalas
-            ]
+            escalas_normalizadas = []
+            houve_migracao = False
+
+            for escala in escalas:
+                escala_normalizada = normalizar_escala(escala)
+
+                if escala_normalizada != escala:
+                    houve_migracao = True
+
+                escalas_normalizadas.append(escala_normalizada)
 
             if houve_migracao:
                 salvar_escalas(escalas_normalizadas)
 
             return escalas_normalizadas
+
     except FileNotFoundError:
         return []
 
+    except json.JSONDecodeError:
+        return []
+
+
 def salvar_escalas(escalas):
-    with open(CAMINHO_ESCALAS, "w", encoding="utf-8") as file:
+    caminho = Path(CAMINHO_ESCALAS)
+
+    if caminho.parent != Path("."):
+        caminho.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(caminho, "w", encoding="utf-8") as file:
         json.dump(escalas, file, ensure_ascii=False, indent=4)
 
-def adicionar_escala(nome, dias_trabalho, dias_folga):
-    escalas = carregar_escalas()
 
-    novo_nome = nome.lower().strip()
+def obter_campos_configuracao(tipo):
+    if tipo == TIPO_CICLO_HORAS:
+        return "horas_trabalho", "horas_folga"
 
-    for escala in escalas:
-        nome_existente = escala["nome"].lower().strip()
+    return "dias_trabalho", "dias_folga"
 
-        if novo_nome == nome_existente:
-            return "nome_duplicado"
 
-        tipo_escala = escala.get("tipo", TIPO_ESCALA_PADRAO)
-
-        if (
-            tipo_escala == TIPO_CICLO_DIAS
-            and escala["dias_trabalho"] == dias_trabalho
-            and escala["dias_folga"] == dias_folga
-        ):
-            return "configuracao_duplicada"
-
-    nova_escala = {
-        "nome": nome,
+def criar_escala_ciclo_dias(nome, dias_trabalho, dias_folga):
+    return {
+        "nome": nome.strip(),
         "tipo": TIPO_CICLO_DIAS,
         "dias_trabalho": dias_trabalho,
         "dias_folga": dias_folga
     }
 
-    escalas.append(nova_escala)
-    salvar_escalas(escalas)
 
-    return "sucesso"
-
-def adicionar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
-    escalas = carregar_escalas()
-
-    novo_nome = nome.lower().strip()
-
-    for escala in escalas:
-        nome_existente = escala["nome"].lower().strip()
-
-        if novo_nome == nome_existente:
-            return "nome_duplicado"
-
-        tipo_escala = escala.get("tipo", TIPO_ESCALA_PADRAO)
-
-        if (
-            tipo_escala == TIPO_CICLO_HORAS
-            and escala["horas_trabalho"] == horas_trabalho
-            and escala["horas_folga"] == horas_folga
-        ):
-            return "configuracao_duplicada"
-
-    nova_escala = {
-        "nome": nome,
+def criar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
+    return {
+        "nome": nome.strip(),
         "tipo": TIPO_CICLO_HORAS,
         "horas_trabalho": horas_trabalho,
         "horas_folga": horas_folga
     }
 
+
+def existe_nome_duplicado(escalas, nome, indice_ignorado=None):
+    nome_normalizado = normalizar_nome(nome)
+
+    for indice, escala in enumerate(escalas):
+        if indice == indice_ignorado:
+            continue
+
+        nome_existente = normalizar_nome(escala.get("nome", ""))
+
+        if nome_existente == nome_normalizado:
+            return True
+
+    return False
+
+
+def existe_configuracao_duplicada(
+    escalas,
+    tipo,
+    valor_trabalho,
+    valor_folga,
+    indice_ignorado=None
+):
+    campo_trabalho, campo_folga = obter_campos_configuracao(tipo)
+
+    for indice, escala in enumerate(escalas):
+        if indice == indice_ignorado:
+            continue
+
+        tipo_escala = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
+        if (
+            tipo_escala == tipo
+            and escala.get(campo_trabalho) == valor_trabalho
+            and escala.get(campo_folga) == valor_folga
+        ):
+            return True
+
+    return False
+
+
+def adicionar_escala(nome, dias_trabalho, dias_folga):
+    escalas = carregar_escalas()
+
+    if existe_nome_duplicado(escalas, nome):
+        return "nome_duplicado"
+
+    if existe_configuracao_duplicada(
+        escalas,
+        TIPO_CICLO_DIAS,
+        dias_trabalho,
+        dias_folga
+    ):
+        return "configuracao_duplicada"
+
+    nova_escala = criar_escala_ciclo_dias(
+        nome,
+        dias_trabalho,
+        dias_folga
+    )
+
     escalas.append(nova_escala)
     salvar_escalas(escalas)
 
     return "sucesso"
+
+
+def adicionar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
+    escalas = carregar_escalas()
+
+    if existe_nome_duplicado(escalas, nome):
+        return "nome_duplicado"
+
+    if existe_configuracao_duplicada(
+        escalas,
+        TIPO_CICLO_HORAS,
+        horas_trabalho,
+        horas_folga
+    ):
+        return "configuracao_duplicada"
+
+    nova_escala = criar_escala_ciclo_horas(
+        nome,
+        horas_trabalho,
+        horas_folga
+    )
+
+    escalas.append(nova_escala)
+    salvar_escalas(escalas)
+
+    return "sucesso"
+
 
 def remover_escala(indice):
     escalas = carregar_escalas()
@@ -113,80 +194,68 @@ def remover_escala(indice):
         return False
 
     escalas.pop(indice)
-
     salvar_escalas(escalas)
 
     return True
-    
+
+
 def editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga):
     escalas = carregar_escalas()
 
     if indice < 0 or indice >= len(escalas):
         return "indice_invalido"
 
-    novo_nome_limpo = novo_nome.strip()
-    novo_nome_normalizado = novo_nome_limpo.lower()
+    if existe_nome_duplicado(escalas, novo_nome, indice):
+        return "nome_duplicado"
 
-    for posicao, escala in enumerate(escalas):
-        if posicao != indice:
-            nome_existente = escala["nome"].lower().strip()
+    if existe_configuracao_duplicada(
+        escalas,
+        TIPO_CICLO_DIAS,
+        novos_dias_trabalho,
+        novos_dias_folga,
+        indice
+    ):
+        return "configuracao_duplicada"
 
-            if nome_existente == novo_nome_normalizado:
-                return "nome_duplicado"
-
-            tipo_escala = escala.get("tipo", TIPO_ESCALA_PADRAO)
-
-            if (
-                tipo_escala == TIPO_CICLO_DIAS
-                and escala["dias_trabalho"] == novos_dias_trabalho
-                and escala["dias_folga"] == novos_dias_folga
-            ):
-                return "configuracao_duplicada"
-
-    tipo_atual = escalas[indice].get("tipo", TIPO_ESCALA_PADRAO)
-
-    escalas[indice] = {
-        "nome": novo_nome_limpo,
-        "tipo": tipo_atual,
-        "dias_trabalho": novos_dias_trabalho,
-        "dias_folga": novos_dias_folga
-    }
+    escalas[indice] = criar_escala_ciclo_dias(
+        novo_nome,
+        novos_dias_trabalho,
+        novos_dias_folga
+    )
 
     salvar_escalas(escalas)
 
     return "sucesso"
 
-def editar_escala_ciclo_horas(indice, novo_nome, novas_horas_trabalho, novas_horas_folga):
+
+def editar_escala_ciclo_horas(
+    indice,
+    novo_nome,
+    novas_horas_trabalho,
+    novas_horas_folga
+):
     escalas = carregar_escalas()
 
     if indice < 0 or indice >= len(escalas):
         return "indice_invalido"
 
-    novo_nome_limpo = novo_nome.strip()
-    novo_nome_normalizado = novo_nome_limpo.lower()
+    if existe_nome_duplicado(escalas, novo_nome, indice):
+        return "nome_duplicado"
 
-    for posicao, escala in enumerate(escalas):
-        if posicao != indice:
-            nome_existente = escala["nome"].lower().strip()
+    if existe_configuracao_duplicada(
+        escalas,
+        TIPO_CICLO_HORAS,
+        novas_horas_trabalho,
+        novas_horas_folga,
+        indice
+    ):
+        return "configuracao_duplicada"
 
-            if nome_existente == novo_nome_normalizado:
-                return "nome_duplicado"
-
-            tipo_escala = escala.get("tipo", TIPO_ESCALA_PADRAO)
-
-            if (
-                tipo_escala == TIPO_CICLO_HORAS
-                and escala["horas_trabalho"] == novas_horas_trabalho
-                and escala["horas_folga"] == novas_horas_folga
-            ):
-                return "configuracao_duplicada"
-
-    escalas[indice] = {
-        "nome": novo_nome_limpo,
-        "tipo": TIPO_CICLO_HORAS,
-        "horas_trabalho": novas_horas_trabalho,
-        "horas_folga": novas_horas_folga
-    }
+    escalas[indice] = criar_escala_ciclo_horas(
+        novo_nome,
+        novas_horas_trabalho,
+        novas_horas_folga
+    )
 
     salvar_escalas(escalas)
 
