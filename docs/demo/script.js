@@ -1,1389 +1,1120 @@
-// =========================
-// PORTFÓLIO GAME PROFISSIONAL - VINICIUS LIMA
-// v18 | Dev Profile Book + Project Code Editor + Three.js + GSAP + VanillaTilt + Typed.js
-// =========================
+const STORAGE_KEY = "simulador_escalas_favoritas_v050";
+const STORAGE_KEY_V040 = "simulador_escalas_favoritas_v040";
+const STORAGE_KEY_V030 = "simulador_escalas_favoritas_v030";
+const THEME_KEY = "simulador_tema_v050";
 
-document.addEventListener("DOMContentLoaded", () => {
-  // =========================
-  // CONFIGURAÇÕES
-  // =========================
+const TIPO_CICLO_DIAS = "ciclo_dias";
+const TIPO_CICLO_HORAS = "ciclo_horas";
+const TIPO_TURNO_ROTATIVO = "turno_rotativo";
 
-  const APPS_SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbwDj5sHZk23QTcDtjppGDMa3DanfYhOVPFWs9G4hhTFeMc2qPoVAqOuSMqrJnA2_FUa/exec";
+const NOMES_TIPOS = {
+    [TIPO_CICLO_DIAS]: "Ciclo por dias",
+    [TIPO_CICLO_HORAS]: "Ciclo por horas",
+    [TIPO_TURNO_ROTATIVO]: "Turno rotativo"
+};
 
-  const html = document.documentElement;
-  const body = document.body;
-  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+const escalasPadrao = [
+    {
+        nome: "Escala padrão 6x3",
+        tipo: TIPO_CICLO_DIAS,
+        dias_trabalho: 6,
+        dias_folga: 3
+    },
+    {
+        nome: "Escala administrativa 5x2",
+        tipo: TIPO_CICLO_DIAS,
+        dias_trabalho: 5,
+        dias_folga: 2
+    },
+    {
+        nome: "Escala alternada 4x4",
+        tipo: TIPO_CICLO_DIAS,
+        dias_trabalho: 4,
+        dias_folga: 4
+    },
+    {
+        nome: "Escala 12x36",
+        tipo: TIPO_CICLO_HORAS,
+        horas_trabalho: 12,
+        horas_folga: 36
+    }
+];
 
-  const introGate = document.getElementById("introGate");
-  const introEnter = document.getElementById("introEnter");
-  const introProjects = document.getElementById("introProjects");
+let indiceEdicao = null;
+let ultimoResultadoGerado = [];
+let tipoResultadoAtual = TIPO_CICLO_DIAS;
 
-  const scrollProgress = document.getElementById("scrollProgress");
-  const themeTransition = document.getElementById("themeTransition");
+const $ = (seletor) => document.querySelector(seletor);
 
-  const menuMobile = document.getElementById("menuMobile");
-  const navMenu = document.getElementById("navMenu");
-  const navLinks = document.querySelectorAll(".nav-menu a");
-  const header = document.querySelector(".header");
-  const sections = document.querySelectorAll("section[id]");
+const elementos = {
+    body: document.body,
+    progressoScroll: $("#progresso-scroll"),
 
-  const themeToggle = document.getElementById("themeToggle");
+    botaoMenu: $("#botao-menu"),
+    menuPrincipal: $("#menu-principal"),
+    botaoTema: $("#botao-tema"),
 
-  const mascot = document.getElementById("mascot");
-  const mascotButton = document.getElementById("mascotButton");
-  const mascotBubble = document.getElementById("mascotBubble");
-  const robotHead = document.getElementById("robotHead");
-  const pupilLeft = document.getElementById("pupilLeft");
-  const pupilRight = document.getElementById("pupilRight");
+    formEscala: $("#form-escala"),
+    tipoEscala: $("#tipo-escala"),
+    inputDataInicial: $("#data-inicial"),
+    inputTempoTrabalho: $("#tempo-trabalho"),
+    inputTempoFolga: $("#tempo-folga"),
+    inputQuantidadeItens: $("#quantidade-itens"),
+    labelDataInicial: $("#label-data-inicial"),
+    labelTempoTrabalho: $("#label-tempo-trabalho"),
+    labelTempoFolga: $("#label-tempo-folga"),
+    labelQuantidadeItens: $("#label-quantidade-itens"),
+    descricaoSimulador: $("#descricao-simulador"),
+    botaoGerar: $("#botao-gerar"),
 
-  const projectEditor = document.getElementById("projectEditor");
-  const fileButtons = document.querySelectorAll(".file-item");
-  const projectTabName = document.getElementById("projectTabName");
-  const projectFileName = document.getElementById("projectFileName");
-  const projectCodeLines = document.getElementById("projectCodeLines");
-  const projectStatus = document.getElementById("projectStatus");
-  const projectIcon = document.getElementById("projectIcon");
-  const projectTitle = document.getElementById("projectTitle");
-  const projectDescription = document.getElementById("projectDescription");
-  const projectPain = document.getElementById("projectPain");
-  const projectSolution = document.getElementById("projectSolution");
-  const projectTechList = document.getElementById("projectTechList");
-  const projectActions = document.getElementById("projectActions");
+    escalaAtualTexto: $("#escala-atual-texto"),
+    tipoAtualTexto: $("#tipo-atual-texto"),
+    totalEscalas: $("#total-escalas"),
+    totalItensSimulados: $("#total-itens-simulados"),
 
+    listaEscalas: $("#lista-escalas"),
+    botaoExportarJson: $("#botao-exportar-json"),
+    botaoLimparDemo: $("#botao-limpar-demo"),
 
-  // =========================
-  // INTRO
-  // =========================
+    formNovaEscala: $("#form-nova-escala"),
+    tituloFormEscala: $("#titulo-form-escala"),
+    descricaoFormEscala: $("#descricao-form-escala"),
+    inputNomeEscala: $("#nome-escala"),
+    inputTipoNovaEscala: $("#tipo-nova-escala"),
+    inputNovoTempoTrabalho: $("#novo-tempo-trabalho"),
+    inputNovoTempoFolga: $("#novo-tempo-folga"),
+    labelNovoTempoTrabalho: $("#label-novo-tempo-trabalho"),
+    labelNovoTempoFolga: $("#label-novo-tempo-folga"),
+    botaoSalvarEscala: $("#botao-salvar-escala"),
+    botaoCancelarEdicao: $("#botao-cancelar-edicao"),
+    mensagem: $("#mensagem"),
 
-  let introEncerrada = false;
+    kickerResultado: $("#kicker-resultado"),
+    tituloResultado: $("#titulo-resultado"),
+    descricaoResultado: $("#descricao-resultado"),
+    timeline: $("#timeline"),
+    calendarios: $("#calendarios"),
 
-  function encerrarIntro() {
-    if (!introGate || introEncerrada) return;
+    toastArea: $("#toast-area"),
 
-    introEncerrada = true;
-    introGate.classList.add("hide");
-    introGate.setAttribute("aria-hidden", "true");
+    modalRelease: $("#modal-release"),
+    fecharRelease: $("#fechar-release")
+};
+
+function obterNomeTipo(tipo) {
+    return NOMES_TIPOS[tipo] || NOMES_TIPOS[TIPO_CICLO_DIAS];
+}
+
+function normalizarTexto(texto) {
+    return String(texto || "").toLowerCase().trim();
+}
+
+function escaparHTML(texto) {
+    return String(texto)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function normalizarEscala(escala) {
+    const tipoValido = Object.keys(NOMES_TIPOS).includes(escala.tipo);
+    const tipo = tipoValido ? escala.tipo : TIPO_CICLO_DIAS;
+
+    if (tipo === TIPO_CICLO_HORAS) {
+        return {
+            nome: escala.nome || "Escala sem nome",
+            tipo,
+            horas_trabalho: Number(escala.horas_trabalho) || Number(escala.dias_trabalho) || 12,
+            horas_folga: Number(escala.horas_folga) || Number(escala.dias_folga) || 36
+        };
+    }
+
+    return {
+        nome: escala.nome || "Escala sem nome",
+        tipo: TIPO_CICLO_DIAS,
+        dias_trabalho: Number(escala.dias_trabalho) || 1,
+        dias_folga: Number(escala.dias_folga) || 1
+    };
+}
+
+function normalizarListaEscalas(escalas) {
+    return escalas.map(normalizarEscala);
+}
+
+function carregarEscalas() {
+    const dadosAtuais = localStorage.getItem(STORAGE_KEY);
+
+    if (dadosAtuais) {
+        try {
+            const escalas = normalizarListaEscalas(JSON.parse(dadosAtuais));
+            salvarEscalas(escalas);
+            return escalas;
+        } catch {
+            salvarEscalas(escalasPadrao);
+            return [...escalasPadrao];
+        }
+    }
+
+    const dadosAntigos = localStorage.getItem(STORAGE_KEY_V040) || localStorage.getItem(STORAGE_KEY_V030);
+
+    if (dadosAntigos) {
+        try {
+            const escalasMigradas = normalizarListaEscalas(JSON.parse(dadosAntigos));
+            const possui12x36 = escalasMigradas.some((escala) => escala.tipo === TIPO_CICLO_HORAS);
+
+            if (!possui12x36) {
+                escalasMigradas.push(escalasPadrao[3]);
+            }
+
+            salvarEscalas(escalasMigradas);
+            mostrarToast("Escalas antigas migradas para o formato v0.5.0.", "success");
+            return escalasMigradas;
+        } catch {
+            salvarEscalas(escalasPadrao);
+            return [...escalasPadrao];
+        }
+    }
+
+    salvarEscalas(escalasPadrao);
+    return [...escalasPadrao];
+}
+
+function salvarEscalas(escalas) {
+    const escalasNormalizadas = normalizarListaEscalas(escalas);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(escalasNormalizadas));
+}
+
+function obterValoresEscala(escala) {
+    if (escala.tipo === TIPO_CICLO_HORAS) {
+        return {
+            trabalho: escala.horas_trabalho,
+            folga: escala.horas_folga,
+            unidade: "horas"
+        };
+    }
+
+    return {
+        trabalho: escala.dias_trabalho,
+        folga: escala.dias_folga,
+        unidade: "dias"
+    };
+}
+
+function formatarResumoEscala(escala) {
+    const valores = obterValoresEscala(escala);
+    return `${valores.trabalho}x${valores.folga} ${valores.unidade}`;
+}
+
+function obterDadosFormularioEscala() {
+    const tipo = elementos.inputTipoNovaEscala.value || TIPO_CICLO_DIAS;
+    const nome = elementos.inputNomeEscala.value.trim();
+    const trabalho = Number(elementos.inputNovoTempoTrabalho.value);
+    const folga = Number(elementos.inputNovoTempoFolga.value);
+
+    if (tipo === TIPO_CICLO_HORAS) {
+        return {
+            nome,
+            tipo,
+            horas_trabalho: trabalho,
+            horas_folga: folga
+        };
+    }
+
+    return {
+        nome,
+        tipo,
+        dias_trabalho: trabalho,
+        dias_folga: folga
+    };
+}
+
+function validarDadosEscala(escala) {
+    const valores = obterValoresEscala(escala);
+
+    if (!escala.nome) {
+        mostrarMensagem("O nome da escala não pode ficar vazio.", "error");
+        return false;
+    }
+
+    if (!Number.isFinite(valores.trabalho) || !Number.isFinite(valores.folga)) {
+        mostrarMensagem("Informe números válidos para trabalho e folga.", "error");
+        return false;
+    }
+
+    if (valores.trabalho <= 0 || valores.folga <= 0) {
+        mostrarMensagem("Os valores de trabalho e folga precisam ser maiores que zero.", "error");
+        return false;
+    }
+
+    return true;
+}
+
+function existeNomeDuplicado(escalas, nome, indiceIgnorado = null) {
+    return escalas.some((escala, indice) => {
+        if (indice === indiceIgnorado) {
+            return false;
+        }
+
+        return normalizarTexto(escala.nome) === normalizarTexto(nome);
+    });
+}
+
+function existeConfiguracaoDuplicada(escalas, novaEscala, indiceIgnorado = null) {
+    return escalas.some((escala, indice) => {
+        if (indice === indiceIgnorado) {
+            return false;
+        }
+
+        if (escala.tipo !== novaEscala.tipo) {
+            return false;
+        }
+
+        if (novaEscala.tipo === TIPO_CICLO_HORAS) {
+            return (
+                escala.horas_trabalho === novaEscala.horas_trabalho &&
+                escala.horas_folga === novaEscala.horas_folga
+            );
+        }
+
+        return (
+            escala.dias_trabalho === novaEscala.dias_trabalho &&
+            escala.dias_folga === novaEscala.dias_folga
+        );
+    });
+}
+
+function atualizarCamposSimulador() {
+    const tipo = elementos.tipoEscala.value;
+
+    if (tipo === TIPO_CICLO_HORAS) {
+        elementos.labelDataInicial.textContent = "Data e hora inicial da escala";
+        elementos.inputDataInicial.type = "datetime-local";
+
+        if (!elementos.inputDataInicial.value.includes("T")) {
+            elementos.inputDataInicial.value = `${obterDataHoje()}T06:00`;
+        }
+
+        elementos.labelTempoTrabalho.textContent = "Horas trabalhadas";
+        elementos.labelTempoFolga.textContent = "Horas de folga";
+        elementos.labelQuantidadeItens.textContent = "Quantidade de períodos para visualizar";
+        elementos.descricaoSimulador.textContent = "Informe a data e hora inicial, as horas de trabalho, as horas de folga e a quantidade de períodos.";
+        elementos.botaoGerar.textContent = "Gerar períodos";
+
+        if (elementos.inputTempoTrabalho.value === "6") {
+            elementos.inputTempoTrabalho.value = 12;
+        }
+
+        if (elementos.inputTempoFolga.value === "3") {
+            elementos.inputTempoFolga.value = 36;
+        }
+
+        elementos.inputQuantidadeItens.max = 80;
+
+        if (Number(elementos.inputQuantidadeItens.value) > 80) {
+            elementos.inputQuantidadeItens.value = 12;
+        }
+    } else {
+        elementos.labelDataInicial.textContent = "Data inicial da escala";
+        elementos.inputDataInicial.type = "date";
+        elementos.inputDataInicial.value = obterDataSemHora(elementos.inputDataInicial.value);
+
+        elementos.labelTempoTrabalho.textContent = "Dias trabalhados";
+        elementos.labelTempoFolga.textContent = "Dias de folga";
+        elementos.labelQuantidadeItens.textContent = "Quantidade de dias para visualizar";
+        elementos.descricaoSimulador.textContent = "Informe a data inicial, os dias de trabalho, os dias de folga e o período desejado.";
+        elementos.botaoGerar.textContent = "Gerar calendário";
+        elementos.inputQuantidadeItens.max = 180;
+    }
+
+    atualizarResumo();
+}
+
+function atualizarCamposCadastro() {
+    const tipo = elementos.inputTipoNovaEscala.value;
+
+    if (tipo === TIPO_CICLO_HORAS) {
+        elementos.labelNovoTempoTrabalho.textContent = "Horas trabalhadas";
+        elementos.labelNovoTempoFolga.textContent = "Horas de folga";
+
+        if (!elementos.inputNovoTempoTrabalho.value) {
+            elementos.inputNovoTempoTrabalho.value = 12;
+        }
+
+        if (!elementos.inputNovoTempoFolga.value) {
+            elementos.inputNovoTempoFolga.value = 36;
+        }
+
+        elementos.inputNomeEscala.placeholder = "Ex: Escala 12x36";
+    } else {
+        elementos.labelNovoTempoTrabalho.textContent = "Dias trabalhados";
+        elementos.labelNovoTempoFolga.textContent = "Dias de folga";
+
+        if (!elementos.inputNovoTempoTrabalho.value) {
+            elementos.inputNovoTempoTrabalho.value = 6;
+        }
+
+        if (!elementos.inputNovoTempoFolga.value) {
+            elementos.inputNovoTempoFolga.value = 3;
+        }
+
+        elementos.inputNomeEscala.placeholder = "Ex: Escala turno B 6x3";
+    }
+}
+
+function atualizarResumo() {
+    const tipo = elementos.tipoEscala.value || TIPO_CICLO_DIAS;
+    const trabalho = Number(elementos.inputTempoTrabalho.value) || 0;
+    const folga = Number(elementos.inputTempoFolga.value) || 0;
+    const quantidadeItens = Number(elementos.inputQuantidadeItens.value) || 0;
+
+    const unidade = tipo === TIPO_CICLO_HORAS ? "h" : "";
+    elementos.escalaAtualTexto.textContent = `${trabalho}x${folga}${unidade}`;
+    elementos.tipoAtualTexto.textContent = obterNomeTipo(tipo);
+    elementos.totalItensSimulados.textContent = quantidadeItens;
+
+    const escalas = carregarEscalas();
+    elementos.totalEscalas.textContent = escalas.length;
+}
+
+function mostrarMensagem(texto, tipo = "") {
+    elementos.mensagem.textContent = texto;
+    elementos.mensagem.className = `message ${tipo}`;
+
+    if (texto) {
+        mostrarToast(texto, tipo);
+    }
 
     setTimeout(() => {
-      introGate.style.display = "none";
-      falarMascote("Bem-vindo ao mapa! Abra o Dev Profile ou o Editor de Projetos.");
-      definirExpressaoMascote("happy");
-    }, 720);
-  }
+        elementos.mensagem.textContent = "";
+        elementos.mensagem.className = "message";
+    }, 3800);
+}
 
-  if (introEnter) {
-    introEnter.addEventListener("click", encerrarIntro);
-  }
+function mostrarToast(texto, tipo = "") {
+    const toast = document.createElement("div");
+    toast.className = `toast ${tipo}`;
+    toast.textContent = texto;
 
-  if (introProjects) {
-    introProjects.addEventListener("click", encerrarIntro);
-  }
+    elementos.toastArea.appendChild(toast);
 
-  setTimeout(encerrarIntro, 4700);
+    setTimeout(() => {
+        toast.remove();
+    }, 4200);
+}
 
-
-  // =========================
-  // PIXELS DA TRANSIÇÃO DE TEMA
-  // =========================
-
-  function criarPixelsDeTema() {
-    if (!themeTransition || themeTransition.children.length > 0) return;
-
-    const colunas = 22;
-    const linhas = 14;
-    const total = colunas * linhas;
-
-    for (let i = 0; i < total; i += 1) {
-      const pixel = document.createElement("span");
-      const coluna = i % colunas;
-      const linha = Math.floor(i / colunas);
-      const atraso = (coluna + linha) * 0.014;
-
-      pixel.className = "theme-pixel";
-      pixel.style.animationDelay = `${atraso}s`;
-
-      themeTransition.appendChild(pixel);
-    }
-  }
-
-  criarPixelsDeTema();
-
-
-  // =========================
-  // TEMA CLARO / ESCURO
-  // =========================
-
-  function obterTemaSalvo() {
-    try {
-      return localStorage.getItem("portfolio-theme") || "dark";
-    } catch {
-      return "dark";
-    }
-  }
-
-  function salvarTema(tema) {
-    try {
-      localStorage.setItem("portfolio-theme", tema);
-    } catch {
-      return;
-    }
-  }
-
-  function atualizarBotaoTema(tema) {
-    if (!themeToggle) return;
-
-    const icone = themeToggle.querySelector(".theme-toggle-icon i");
-    const texto = themeToggle.querySelector(".theme-toggle-text");
+function aplicarTema(tema) {
+    elementos.body.dataset.theme = tema;
+    localStorage.setItem(THEME_KEY, tema);
 
     if (tema === "light") {
-      if (icone) {
-        icone.className = "fa-solid fa-sun";
-      }
-
-      if (texto) {
-        texto.textContent = "Claro";
-      }
-
-      themeToggle.setAttribute("aria-label", "Alternar para tema escuro");
+        elementos.botaoTema.textContent = "☀️ Tema claro";
     } else {
-      if (icone) {
-        icone.className = "fa-solid fa-moon";
-      }
-
-      if (texto) {
-        texto.textContent = "Escuro";
-      }
-
-      themeToggle.setAttribute("aria-label", "Alternar para tema claro");
+        elementos.botaoTema.textContent = "🌙 Tema escuro";
     }
-  }
+}
 
-  function aplicarTema(tema) {
-    html.setAttribute("data-theme", tema);
-    salvarTema(tema);
-    atualizarBotaoTema(tema);
-
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute("content", tema === "light" ? "#eff8ff" : "#020617");
-    }
-  }
-
-  let trocandoTema = false;
-
-  function alternarTemaComTransicao() {
-    if (trocandoTema) return;
-
-    trocandoTema = true;
-
-    const temaAtual = html.getAttribute("data-theme") || "dark";
+function alternarTema() {
+    const temaAtual = elementos.body.dataset.theme;
     const novoTema = temaAtual === "dark" ? "light" : "dark";
+    aplicarTema(novoTema);
+}
 
-    if (themeTransition) {
-      themeTransition.classList.remove("active");
-      void themeTransition.offsetWidth;
-      themeTransition.classList.add("active");
+function carregarTemaSalvo() {
+    const temaSalvo = localStorage.getItem(THEME_KEY) || "dark";
+    aplicarTema(temaSalvo);
+}
+
+function renderizarEscalas() {
+    const escalas = carregarEscalas();
+
+    elementos.listaEscalas.innerHTML = "";
+    elementos.totalEscalas.textContent = escalas.length;
+
+    if (escalas.length === 0) {
+        elementos.listaEscalas.innerHTML = `
+            <p class="empty-state">Nenhuma escala salva no momento.</p>
+        `;
+        return;
     }
 
-    if (novoTema === "light") {
-      falarMascote("Amanhecendo o mapa... tema claro ativado.");
-    } else {
-      falarMascote("Modo noturno ativado. Neon ligado.");
-    }
+    escalas.forEach((escala, indice) => {
+        const card = document.createElement("article");
+        card.className = "saved-card";
 
-    definirExpressaoMascote("thinking");
+        card.innerHTML = `
+            <h4>${indice + 1} - ${escaparHTML(escala.nome)}</h4>
+            <p>${formatarResumoEscala(escala)}</p>
+            <span class="type-badge">${obterNomeTipo(escala.tipo)}</span>
 
-    setTimeout(() => {
-      aplicarTema(novoTema);
-    }, 480);
+            <div class="saved-actions">
+                <button type="button" data-indice="${indice}" class="use-scale">Usar</button>
+                <button type="button" data-indice="${indice}" class="edit-scale">Editar</button>
+                <button type="button" data-indice="${indice}" class="delete-scale">Excluir</button>
+            </div>
+        `;
 
-    setTimeout(() => {
-      if (themeTransition) {
-        themeTransition.classList.remove("active");
-      }
-
-      trocandoTema = false;
-      definirExpressaoMascote("happy");
-    }, 1550);
-  }
-
-  aplicarTema(obterTemaSalvo());
-
-  if (themeToggle) {
-    themeToggle.addEventListener("click", alternarTemaComTransicao);
-  }
-
-
-  // =========================
-  // MENU MOBILE
-  // =========================
-
-  function abrirMenu() {
-    if (!menuMobile || !navMenu) return;
-
-    navMenu.classList.add("active");
-    menuMobile.innerHTML = "✕";
-    menuMobile.setAttribute("aria-label", "Fechar menu");
-  }
-
-  function fecharMenu() {
-    if (!menuMobile || !navMenu) return;
-
-    navMenu.classList.remove("active");
-    menuMobile.innerHTML = "☰";
-    menuMobile.setAttribute("aria-label", "Abrir menu");
-  }
-
-  function alternarMenu() {
-    if (!navMenu) return;
-
-    if (navMenu.classList.contains("active")) {
-      fecharMenu();
-    } else {
-      abrirMenu();
-    }
-  }
-
-  if (menuMobile) {
-    menuMobile.addEventListener("click", (event) => {
-      event.stopPropagation();
-      alternarMenu();
+        elementos.listaEscalas.appendChild(card);
     });
-  }
 
-  navLinks.forEach((link) => {
-    link.addEventListener("click", fecharMenu);
-  });
-
-  document.addEventListener("click", (event) => {
-    if (!menuMobile || !navMenu) return;
-
-    const clicouNoMenu = navMenu.contains(event.target);
-    const clicouNoBotao = menuMobile.contains(event.target);
-
-    if (!clicouNoMenu && !clicouNoBotao) {
-      fecharMenu();
-    }
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      fecharMenu();
-      encerrarIntro();
-    }
-  });
-
-  window.addEventListener("resize", () => {
-    if (window.innerWidth > 980) {
-      fecharMenu();
-    }
-  });
-
-
-  // =========================
-  // MASCOTE
-  // =========================
-
-  const mensagensMascote = [
-    "Clique nos arquivos do editor para trocar o projeto.",
-    "O Dev Profile Book mostra sua trajetória em formato de código.",
-    "O fundo 3D usa Three.js com cubos em pixel style.",
-    "A transição de tema usa blocos pixelados em diagonal.",
-    "Role devagar para ver as animações de entrada.",
-    "Passe o mouse nos cards para sentir o efeito 3D.",
-    "Os projetos com demo têm botão separado para abrir a página."
-  ];
-
-  let timeoutMascote = null;
-  let timeoutExpressao = null;
-  let mascoteLivreParaFalar = true;
-
-  function definirExpressaoMascote(expressao, tempo = 2600) {
-    if (!mascot) return;
-
-    mascot.classList.remove("happy", "thinking", "dizzy");
-
-    if (expressao) {
-      mascot.classList.add(expressao);
-    }
-
-    clearTimeout(timeoutExpressao);
-
-    if (expressao && expressao !== "dizzy") {
-      timeoutExpressao = setTimeout(() => {
-        mascot.classList.remove("happy", "thinking");
-      }, tempo);
-    }
-  }
-
-  function falarMascote(mensagem, tempo = 4200) {
-    if (!mascot || !mascotBubble) return;
-
-    mascotBubble.textContent = mensagem;
-    mascot.classList.add("talking");
-
-    clearTimeout(timeoutMascote);
-
-    timeoutMascote = setTimeout(() => {
-      mascot.classList.remove("talking");
-    }, tempo);
-  }
-
-  function falarMascoteComIntervalo(mensagem) {
-    if (mascoteLivreParaFalar === false) return;
-
-    mascoteLivreParaFalar = false;
-    falarMascote(mensagem, 3600);
-
-    setTimeout(() => {
-      mascoteLivreParaFalar = true;
-    }, 6000);
-  }
-
-  function mensagemAleatoriaMascote() {
-    const indice = Math.floor(Math.random() * mensagensMascote.length);
-    const mensagem = mensagensMascote[indice];
-
-    falarMascote(mensagem);
-    definirExpressaoMascote("happy");
-  }
-
-  function moverOlhosECabecaDoMascote(event) {
-    const prefereMenosMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (prefereMenosMovimento) return;
-
-    const mouseX = (event.clientX / window.innerWidth - 0.5) * 2;
-    const mouseY = (event.clientY / window.innerHeight - 0.5) * 2;
-
-    html.style.setProperty("--mouse-x", mouseX.toFixed(3));
-    html.style.setProperty("--mouse-y", mouseY.toFixed(3));
-
-    if (robotHead) {
-      const rotacao = mouseX * 7;
-      const deslocamento = mouseX * 4;
-
-      robotHead.style.setProperty("--head-rotate", `${rotacao.toFixed(2)}deg`);
-      robotHead.style.setProperty("--head-x", `${deslocamento.toFixed(2)}px`);
-    }
-
-    const pupilas = [pupilLeft, pupilRight].filter(Boolean);
-
-    pupilas.forEach((pupila) => {
-      const rect = pupila.getBoundingClientRect();
-      const centroX = rect.left + rect.width / 2;
-      const centroY = rect.top + rect.height / 2;
-      const angulo = Math.atan2(event.clientY - centroY, event.clientX - centroX);
-      const distancia = 4;
-      const moverX = Math.cos(angulo) * distancia;
-      const moverY = Math.sin(angulo) * distancia;
-
-      pupila.style.transform = `translate(${moverX}px, ${moverY}px)`;
+    document.querySelectorAll(".use-scale").forEach((botao) => {
+        botao.addEventListener("click", () => {
+            aplicarEscala(Number(botao.dataset.indice));
+        });
     });
-  }
 
-  if (mascotButton) {
-    mascotButton.addEventListener("click", mensagemAleatoriaMascote);
-  }
+    document.querySelectorAll(".edit-scale").forEach((botao) => {
+        botao.addEventListener("click", () => {
+            prepararEdicaoEscala(Number(botao.dataset.indice));
+        });
+    });
 
-  document.addEventListener("mousemove", moverOlhosECabecaDoMascote, {
-    passive: true,
-  });
+    document.querySelectorAll(".delete-scale").forEach((botao) => {
+        botao.addEventListener("click", () => {
+            excluirEscala(Number(botao.dataset.indice));
+        });
+    });
+}
 
+function aplicarEscala(indice) {
+    const escalas = carregarEscalas();
+    const escala = escalas[indice];
 
-  // =========================
-  // SCROLL
-  // =========================
+    if (!escala) {
+        mostrarMensagem("Escala não encontrada.", "error");
+        return;
+    }
 
-  let ultimoScrollY = window.scrollY;
-  let ultimoTempoScroll = performance.now();
-  let timeoutZonzo = null;
+    const valores = obterValoresEscala(escala);
 
-  function atualizarScrollProgress() {
-    if (!scrollProgress) return;
+    elementos.tipoEscala.value = escala.tipo;
+    atualizarCamposSimulador();
 
+    elementos.inputTempoTrabalho.value = valores.trabalho;
+    elementos.inputTempoFolga.value = valores.folga;
+
+    atualizarResumo();
+    gerarVisualizacao();
+
+    mostrarMensagem(`Escala "${escala.nome}" aplicada com sucesso.`, "success");
+}
+
+function salvarFormularioEscala(evento) {
+    evento.preventDefault();
+
+    if (indiceEdicao === null) {
+        cadastrarEscala();
+    } else {
+        salvarEdicaoEscala();
+    }
+}
+
+function cadastrarEscala() {
+    const novaEscala = obterDadosFormularioEscala();
+
+    if (!validarDadosEscala(novaEscala)) {
+        return;
+    }
+
+    const escalas = carregarEscalas();
+
+    if (existeNomeDuplicado(escalas, novaEscala.nome)) {
+        mostrarMensagem(`A escala "${novaEscala.nome}" já existe.`, "error");
+        return;
+    }
+
+    if (existeConfiguracaoDuplicada(escalas, novaEscala)) {
+        mostrarMensagem("Já existe uma escala com essa mesma configuração.", "error");
+        return;
+    }
+
+    escalas.push(novaEscala);
+    salvarEscalas(escalas);
+
+    limparFormularioEscala();
+    renderizarEscalas();
+    atualizarResumo();
+
+    mostrarMensagem("Escala cadastrada com sucesso.", "success");
+}
+
+function prepararEdicaoEscala(indice) {
+    const escalas = carregarEscalas();
+    const escala = escalas[indice];
+
+    if (!escala) {
+        mostrarMensagem("Escala não encontrada para edição.", "error");
+        return;
+    }
+
+    const valores = obterValoresEscala(escala);
+
+    indiceEdicao = indice;
+
+    elementos.inputNomeEscala.value = escala.nome;
+    elementos.inputTipoNovaEscala.value = escala.tipo;
+    atualizarCamposCadastro();
+
+    elementos.inputNovoTempoTrabalho.value = valores.trabalho;
+    elementos.inputNovoTempoFolga.value = valores.folga;
+
+    elementos.tituloFormEscala.textContent = "Editar escala";
+    elementos.descricaoFormEscala.textContent = "Altere os dados da escala selecionada e salve a atualização.";
+    elementos.botaoSalvarEscala.textContent = "Salvar alteração";
+    elementos.botaoCancelarEdicao.classList.remove("hidden");
+
+    elementos.inputNomeEscala.focus();
+
+    mostrarMensagem(`Editando a escala "${escala.nome}".`, "warning");
+}
+
+function salvarEdicaoEscala() {
+    const escalas = carregarEscalas();
+    const escalaAtual = escalas[indiceEdicao];
+
+    if (!escalaAtual) {
+        mostrarMensagem("Escala não encontrada para salvar edição.", "error");
+        limparFormularioEscala();
+        return;
+    }
+
+    const escalaEditada = obterDadosFormularioEscala();
+
+    if (!validarDadosEscala(escalaEditada)) {
+        return;
+    }
+
+    if (existeNomeDuplicado(escalas, escalaEditada.nome, indiceEdicao)) {
+        mostrarMensagem(`A escala "${escalaEditada.nome}" já existe.`, "error");
+        return;
+    }
+
+    if (existeConfiguracaoDuplicada(escalas, escalaEditada, indiceEdicao)) {
+        mostrarMensagem("Já existe uma escala com essa mesma configuração.", "error");
+        return;
+    }
+
+    const confirmarEdicao = confirm(`Deseja salvar as alterações da escala "${escalaAtual.nome}"?`);
+
+    if (!confirmarEdicao) {
+        mostrarMensagem("Edição cancelada.", "warning");
+        return;
+    }
+
+    escalas[indiceEdicao] = escalaEditada;
+
+    salvarEscalas(escalas);
+    limparFormularioEscala();
+    renderizarEscalas();
+    atualizarResumo();
+
+    mostrarMensagem("Escala editada com sucesso.", "success");
+}
+
+function excluirEscala(indice) {
+    const escalas = carregarEscalas();
+    const escala = escalas[indice];
+
+    if (!escala) {
+        mostrarMensagem("Escala não encontrada para exclusão.", "error");
+        return;
+    }
+
+    const confirmarExclusao = confirm(`Tem certeza que deseja excluir a escala "${escala.nome}"?`);
+
+    if (!confirmarExclusao) {
+        mostrarMensagem("Exclusão cancelada.", "warning");
+        return;
+    }
+
+    escalas.splice(indice, 1);
+    salvarEscalas(escalas);
+
+    if (indiceEdicao === indice) {
+        limparFormularioEscala();
+    }
+
+    renderizarEscalas();
+    atualizarResumo();
+
+    mostrarMensagem(`Escala "${escala.nome}" excluída com sucesso.`, "success");
+}
+
+function limparFormularioEscala() {
+    indiceEdicao = null;
+
+    elementos.formNovaEscala.reset();
+    elementos.inputTipoNovaEscala.value = TIPO_CICLO_DIAS;
+
+    elementos.tituloFormEscala.textContent = "Nova escala";
+    elementos.descricaoFormEscala.textContent = "Cadastre uma configuração para reutilizar depois.";
+    elementos.botaoSalvarEscala.textContent = "Cadastrar escala";
+    elementos.botaoCancelarEdicao.classList.add("hidden");
+
+    atualizarCamposCadastro();
+}
+
+function cancelarEdicao() {
+    limparFormularioEscala();
+    mostrarMensagem("Edição cancelada.", "warning");
+}
+
+function gerarVisualizacao(evento) {
+    if (evento) {
+        evento.preventDefault();
+    }
+
+    atualizarResumo();
+
+    const tipo = elementos.tipoEscala.value;
+    const trabalho = Number(elementos.inputTempoTrabalho.value);
+    const folga = Number(elementos.inputTempoFolga.value);
+    const quantidadeItens = Number(elementos.inputQuantidadeItens.value);
+
+    if (!Number.isFinite(trabalho) || !Number.isFinite(folga) || !Number.isFinite(quantidadeItens) || trabalho <= 0 || folga <= 0 || quantidadeItens <= 0) {
+        elementos.calendarios.innerHTML = `
+            <p class="empty-state">Preencha todos os campos com valores maiores que zero.</p>
+        `;
+        elementos.timeline.innerHTML = "";
+        return;
+    }
+
+    if (tipo === TIPO_CICLO_HORAS) {
+        gerarVisualizacaoPorHoras(trabalho, folga, quantidadeItens);
+        return;
+    }
+
+    gerarVisualizacaoPorDias(trabalho, folga, quantidadeItens);
+}
+
+function gerarVisualizacaoPorDias(diasTrabalho, diasFolga, quantidadeDias) {
+    const dataInicial = elementos.inputDataInicial.value;
+
+    tipoResultadoAtual = TIPO_CICLO_DIAS;
+
+    elementos.kickerResultado.textContent = "Calendário";
+    elementos.tituloResultado.textContent = "Dias de trabalho e folga";
+    elementos.descricaoResultado.textContent = "Visualização organizada por mês, com cada dia marcado conforme o ciclo informado.";
+
+    if (!dataInicial) {
+        elementos.calendarios.innerHTML = `
+            <p class="empty-state">Informe uma data inicial para gerar o calendário.</p>
+        `;
+        elementos.timeline.innerHTML = "";
+        return;
+    }
+
+    if (quantidadeDias > 180) {
+        elementos.calendarios.innerHTML = `
+            <p class="empty-state">Para manter a demo leve, visualize no máximo 180 dias.</p>
+        `;
+        elementos.timeline.innerHTML = "";
+        return;
+    }
+
+    const diasGerados = gerarDiasDaEscala(dataInicial, diasTrabalho, diasFolga, quantidadeDias);
+    ultimoResultadoGerado = diasGerados;
+
+    renderizarTimeline(diasGerados);
+    renderizarCalendariosPorMes(diasGerados);
+}
+
+function gerarVisualizacaoPorHoras(horasTrabalho, horasFolga, quantidadePeriodos) {
+    const dataHoraInicial = elementos.inputDataInicial.value;
+
+    tipoResultadoAtual = TIPO_CICLO_HORAS;
+
+    elementos.kickerResultado.textContent = "Períodos";
+    elementos.tituloResultado.textContent = "Períodos de trabalho e folga";
+    elementos.descricaoResultado.textContent = "Visualização em blocos com início e fim, ideal para escalas como 12x36.";
+
+    if (!dataHoraInicial) {
+        elementos.calendarios.innerHTML = `
+            <p class="empty-state">Informe uma data e hora inicial para gerar os períodos.</p>
+        `;
+        elementos.timeline.innerHTML = "";
+        return;
+    }
+
+    if (quantidadePeriodos > 80) {
+        elementos.calendarios.innerHTML = `
+            <p class="empty-state">Para manter a demo leve, visualize no máximo 80 períodos.</p>
+        `;
+        elementos.timeline.innerHTML = "";
+        return;
+    }
+
+    const periodosGerados = gerarPeriodosDaEscala(dataHoraInicial, horasTrabalho, horasFolga, quantidadePeriodos);
+    ultimoResultadoGerado = periodosGerados;
+
+    renderizarTimeline(periodosGerados);
+    renderizarPeriodos(periodosGerados);
+}
+
+function gerarDiasDaEscala(dataInicial, diasTrabalho, diasFolga, quantidadeDias) {
+    const dias = [];
+    const ciclo = diasTrabalho + diasFolga;
+
+    for (let indice = 0; indice < quantidadeDias; indice++) {
+        const dataAtual = new Date(`${dataInicial}T00:00:00`);
+        dataAtual.setDate(dataAtual.getDate() + indice);
+
+        const posicaoCiclo = indice % ciclo;
+        const estaTrabalhando = posicaoCiclo < diasTrabalho;
+
+        dias.push({
+            data: dataAtual,
+            dia: dataAtual.getDate(),
+            mes: dataAtual.getMonth(),
+            ano: dataAtual.getFullYear(),
+            status: estaTrabalhando ? "Trabalhando" : "Folga",
+            classe: estaTrabalhando ? "work" : "rest",
+            icone: estaTrabalhando ? "🟢" : "🌙"
+        });
+    }
+
+    return dias;
+}
+
+function gerarPeriodosDaEscala(dataHoraInicial, horasTrabalho, horasFolga, quantidadePeriodos) {
+    const periodos = [];
+    let inicioPeriodo = new Date(dataHoraInicial);
+
+    for (let indice = 0; indice < quantidadePeriodos; indice++) {
+        const estaTrabalhando = indice % 2 === 0;
+        const duracaoHoras = estaTrabalhando ? horasTrabalho : horasFolga;
+        const fimPeriodo = new Date(inicioPeriodo.getTime() + duracaoHoras * 60 * 60 * 1000);
+
+        periodos.push({
+            inicio: new Date(inicioPeriodo),
+            fim: fimPeriodo,
+            status: estaTrabalhando ? "Trabalhando" : "Folga",
+            classe: estaTrabalhando ? "work" : "rest",
+            icone: estaTrabalhando ? "🟢" : "🌙"
+        });
+
+        inicioPeriodo = fimPeriodo;
+    }
+
+    return periodos;
+}
+
+function renderizarTimeline(itensGerados) {
+    elementos.timeline.innerHTML = "";
+
+    const limite = Math.min(itensGerados.length, 60);
+
+    itensGerados.slice(0, limite).forEach((item) => {
+        const ponto = document.createElement("span");
+        ponto.className = `timeline-dot ${item.classe}`;
+
+        if (tipoResultadoAtual === TIPO_CICLO_HORAS) {
+            ponto.title = `${formatarDataHora(item.inicio)} até ${formatarDataHora(item.fim)} - ${item.status}`;
+        } else {
+            ponto.title = `${formatarData(item.data)} - ${item.status}`;
+        }
+
+        elementos.timeline.appendChild(ponto);
+    });
+}
+
+function renderizarCalendariosPorMes(diasGerados) {
+    elementos.calendarios.className = "calendars";
+    elementos.calendarios.innerHTML = "";
+
+    const meses = agruparDiasPorMes(diasGerados);
+
+    Object.keys(meses).forEach((chaveMes) => {
+        const diasDoMes = meses[chaveMes];
+        const primeiroDiaGerado = diasDoMes[0].data;
+
+        const monthCard = document.createElement("article");
+        monthCard.className = "month-card";
+
+        const tituloMes = primeiroDiaGerado.toLocaleDateString("pt-BR", {
+            month: "long",
+            year: "numeric"
+        });
+
+        monthCard.innerHTML = `
+            <div class="month-title">
+                <h4>${tituloMes}</h4>
+            </div>
+
+            <div class="weekdays">
+                <span>Dom</span>
+                <span>Seg</span>
+                <span>Ter</span>
+                <span>Qua</span>
+                <span>Qui</span>
+                <span>Sex</span>
+                <span>Sáb</span>
+            </div>
+
+            <div class="days-grid"></div>
+        `;
+
+        const daysGrid = monthCard.querySelector(".days-grid");
+
+        const primeiroDiaSemana = new Date(
+            primeiroDiaGerado.getFullYear(),
+            primeiroDiaGerado.getMonth(),
+            1
+        ).getDay();
+
+        for (let vazio = 0; vazio < primeiroDiaSemana; vazio++) {
+            const emptyCell = document.createElement("div");
+            emptyCell.className = "day-cell empty";
+            daysGrid.appendChild(emptyCell);
+        }
+
+        diasDoMes.forEach((diaInfo) => {
+            const dayCell = document.createElement("div");
+            dayCell.className = `day-cell ${diaInfo.classe}`;
+            dayCell.title = `${formatarData(diaInfo.data)} - ${diaInfo.status}`;
+
+            dayCell.innerHTML = `
+                <span class="day-number">${diaInfo.dia}</span>
+                <span class="day-status">${diaInfo.icone} ${diaInfo.status}</span>
+            `;
+
+            daysGrid.appendChild(dayCell);
+        });
+
+        elementos.calendarios.appendChild(monthCard);
+    });
+}
+
+function renderizarPeriodos(periodosGerados) {
+    elementos.calendarios.className = "periods-grid";
+    elementos.calendarios.innerHTML = "";
+
+    periodosGerados.forEach((periodo, indice) => {
+        const card = document.createElement("article");
+        card.className = `period-card ${periodo.classe}`;
+
+        card.innerHTML = `
+            <h4>${indice + 1}º período • ${periodo.icone} ${periodo.status}</h4>
+            <p><strong>Início:</strong> ${formatarDataHora(periodo.inicio)}</p>
+            <p><strong>Fim:</strong> ${formatarDataHora(periodo.fim)}</p>
+            <p><strong>Duração:</strong> ${calcularDuracaoHoras(periodo.inicio, periodo.fim)} horas</p>
+        `;
+
+        elementos.calendarios.appendChild(card);
+    });
+}
+
+function agruparDiasPorMes(diasGerados) {
+    return diasGerados.reduce((meses, diaInfo) => {
+        const chave = `${diaInfo.ano}-${String(diaInfo.mes + 1).padStart(2, "0")}`;
+
+        if (!meses[chave]) {
+            meses[chave] = [];
+        }
+
+        meses[chave].push(diaInfo);
+
+        return meses;
+    }, {});
+}
+
+function calcularDuracaoHoras(inicio, fim) {
+    return Math.round((fim - inicio) / (60 * 60 * 1000));
+}
+
+function formatarData(data) {
+    return data.toLocaleDateString("pt-BR");
+}
+
+function formatarDataHora(data) {
+    return data.toLocaleString("pt-BR", {
+        dateStyle: "short",
+        timeStyle: "short"
+    });
+}
+
+function obterDataHoje() {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+    const dia = String(hoje.getDate()).padStart(2, "0");
+
+    return `${ano}-${mes}-${dia}`;
+}
+
+function obterDataSemHora(valor) {
+    if (!valor) {
+        return obterDataHoje();
+    }
+
+    return valor.split("T")[0] || obterDataHoje();
+}
+
+function definirDataInicialPadrao() {
+    elementos.inputDataInicial.value = obterDataHoje();
+}
+
+function exportarJson() {
+    const escalas = carregarEscalas();
+    const conteudo = JSON.stringify(escalas, null, 4);
+    const blob = new Blob([conteudo], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "escalas-demo-v050.json";
+    link.click();
+
+    URL.revokeObjectURL(url);
+
+    mostrarMensagem("JSON exportado com sucesso.", "success");
+}
+
+function resetarDemo() {
+    const confirmar = confirm("Deseja resetar a demo e restaurar as escalas padrão?");
+
+    if (!confirmar) {
+        mostrarMensagem("Reset cancelado.", "warning");
+        return;
+    }
+
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY_V040);
+    localStorage.removeItem(STORAGE_KEY_V030);
+
+    salvarEscalas(escalasPadrao);
+
+    limparFormularioEscala();
+    renderizarEscalas();
+    atualizarCamposSimulador();
+    atualizarResumo();
+    gerarVisualizacao();
+
+    mostrarMensagem("Demo resetada para os dados padrão.", "success");
+}
+
+function configurarTabsDocumentacao() {
+    document.querySelectorAll(".doc-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+            const target = tab.dataset.target;
+
+            document.querySelectorAll(".doc-tab").forEach((item) => {
+                item.classList.remove("active");
+            });
+
+            document.querySelectorAll(".doc-panel").forEach((panel) => {
+                panel.classList.remove("active");
+            });
+
+            tab.classList.add("active");
+            document.getElementById(target).classList.add("active");
+        });
+    });
+}
+
+function configurarAnimacoesDeEntrada() {
+    const itens = document.querySelectorAll(".reveal");
+
+    const observer = new IntersectionObserver((entradas) => {
+        entradas.forEach((entrada) => {
+            if (entrada.isIntersecting) {
+                entrada.target.classList.add("visible");
+            }
+        });
+    }, {
+        threshold: 0.12
+    });
+
+    itens.forEach((item) => observer.observe(item));
+}
+
+function atualizarProgressoScroll() {
     const alturaTotal = document.documentElement.scrollHeight - window.innerHeight;
     const progresso = alturaTotal > 0 ? (window.scrollY / alturaTotal) * 100 : 0;
 
-    scrollProgress.style.width = `${progresso}%`;
-  }
+    elementos.progressoScroll.style.width = `${progresso}%`;
+}
 
-  function controlarHeader() {
-    if (!header) return;
+function configurarMenuMobile() {
+    elementos.botaoMenu.addEventListener("click", () => {
+        const menuAberto = elementos.menuPrincipal.classList.toggle("open");
+        elementos.botaoMenu.setAttribute("aria-expanded", String(menuAberto));
+    });
 
-    if (window.scrollY > 80) {
-      header.classList.add("header-scroll");
-    } else {
-      header.classList.remove("header-scroll");
-    }
-  }
-
-  function ativarLinkMenu() {
-    const scrollAtual = window.scrollY + 140;
-
-    sections.forEach((section) => {
-      const sectionTop = section.offsetTop;
-      const sectionHeight = section.offsetHeight;
-      const sectionId = section.getAttribute("id");
-
-      if (!sectionId) return;
-
-      const linkMenu = document.querySelector(`.nav-menu a[href="#${sectionId}"]`);
-
-      if (scrollAtual >= sectionTop && scrollAtual < sectionTop + sectionHeight) {
-        navLinks.forEach((link) => {
-          link.classList.remove("active-link");
+    elementos.menuPrincipal.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+            elementos.menuPrincipal.classList.remove("open");
+            elementos.botaoMenu.setAttribute("aria-expanded", "false");
         });
+    });
+}
 
-        if (linkMenu) {
-          linkMenu.classList.add("active-link");
+function configurarModalRelease() {
+    const botaoRelease = document.createElement("button");
+    botaoRelease.type = "button";
+    botaoRelease.className = "ghost-button";
+    botaoRelease.textContent = "Notas v0.5.0";
+
+    const heroActions = document.querySelector(".hero-actions");
+    heroActions.appendChild(botaoRelease);
+
+    botaoRelease.addEventListener("click", () => {
+        if (typeof elementos.modalRelease.showModal === "function") {
+            elementos.modalRelease.showModal();
         }
-      }
-    });
-  }
-
-  function reagirVelocidadeScroll() {
-    const agora = performance.now();
-    const deltaY = Math.abs(window.scrollY - ultimoScrollY);
-    const deltaTempo = Math.max(16, agora - ultimoTempoScroll);
-    const velocidade = deltaY / deltaTempo;
-
-    if (velocidade > 2.2 && mascot) {
-      mascot.classList.add("dizzy");
-      falarMascoteComIntervalo("Uau, scroll rápido! Fiquei meio zonzo aqui.");
-
-      clearTimeout(timeoutZonzo);
-
-      timeoutZonzo = setTimeout(() => {
-        mascot.classList.remove("dizzy");
-      }, 1350);
-    }
-
-    ultimoScrollY = window.scrollY;
-    ultimoTempoScroll = agora;
-  }
-
-  function aoRolarPagina() {
-    atualizarScrollProgress();
-    controlarHeader();
-    ativarLinkMenu();
-    reagirVelocidadeScroll();
-  }
-
-  aoRolarPagina();
-
-  window.addEventListener("scroll", aoRolarPagina, {
-    passive: true,
-  });
-
-
-  // =========================
-  // TYPED.JS HERO
-  // =========================
-
-  function iniciarTypedHero() {
-    const typedHero = document.getElementById("typedHero");
-
-    if (!typedHero) return;
-
-    if (typeof Typed === "undefined") {
-      typedHero.textContent = "Desenvolvedor em formação";
-      return;
-    }
-
-    new Typed("#typedHero", {
-      strings: [
-        "Desenvolvedor em formação",
-        "Estudante de Dados e Sistemas",
-        "Criador de projetos em Python",
-        "Explorando automação e Power BI",
-        "Construindo evolução no GitHub"
-      ],
-      typeSpeed: 42,
-      backSpeed: 22,
-      backDelay: 1350,
-      loop: true,
-      smartBackspace: true
-    });
-  }
-
-  iniciarTypedHero();
-
-
-  // =========================
-  // THREE.JS BACKGROUND
-  // =========================
-
-  function iniciarCenaThree() {
-    const canvas = document.getElementById("threeScene");
-
-    if (!canvas || typeof THREE === "undefined") return;
-
-    const scene = new THREE.Scene();
-
-    const camera = new THREE.PerspectiveCamera(
-      60,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
-
-    camera.position.z = 8;
-
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: false,
     });
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-    const group = new THREE.Group();
-    scene.add(group);
-
-    const colors = [0x38bdf8, 0x8b5cf6, 0x22c55e, 0xfacc15];
-    const geometry = new THREE.BoxGeometry(0.38, 0.38, 0.38);
-
-    for (let i = 0; i < 48; i += 1) {
-      const material = new THREE.MeshBasicMaterial({
-        color: colors[i % colors.length],
-        wireframe: i % 5 === 0,
-        transparent: true,
-        opacity: i % 5 === 0 ? 0.45 : 0.72,
-      });
-
-      const cube = new THREE.Mesh(geometry, material);
-
-      cube.position.x = (Math.random() - 0.5) * 16;
-      cube.position.y = (Math.random() - 0.5) * 10;
-      cube.position.z = (Math.random() - 0.5) * 10;
-      cube.rotation.x = Math.random() * Math.PI;
-      cube.rotation.y = Math.random() * Math.PI;
-
-      cube.userData = {
-        speedX: 0.002 + Math.random() * 0.006,
-        speedY: 0.002 + Math.random() * 0.006,
-        floatSpeed: 0.5 + Math.random() * 1.5,
-        baseY: cube.position.y,
-      };
-
-      group.add(cube);
-    }
-
-    let mouseX = 0;
-    let mouseY = 0;
-
-    document.addEventListener(
-      "mousemove",
-      (event) => {
-        mouseX = (event.clientX / window.innerWidth - 0.5) * 2;
-        mouseY = (event.clientY / window.innerHeight - 0.5) * 2;
-      },
-      {
-        passive: true,
-      }
-    );
-
-    function animar() {
-      requestAnimationFrame(animar);
-
-      const tempo = performance.now() * 0.001;
-
-      group.rotation.y += 0.0015;
-      group.rotation.x += 0.0007;
-
-      group.position.x += (mouseX * 0.35 - group.position.x) * 0.02;
-      group.position.y += (-mouseY * 0.25 - group.position.y) * 0.02;
-
-      group.children.forEach((cube) => {
-        cube.rotation.x += cube.userData.speedX;
-        cube.rotation.y += cube.userData.speedY;
-        cube.position.y = cube.userData.baseY + Math.sin(tempo * cube.userData.floatSpeed) * 0.18;
-      });
-
-      renderer.render(scene, camera);
-    }
-
-    animar();
-
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+    elementos.fecharRelease.addEventListener("click", () => {
+        elementos.modalRelease.close();
     });
-  }
+}
 
-  iniciarCenaThree();
+function configurarEventos() {
+    elementos.formEscala.addEventListener("submit", gerarVisualizacao);
+    elementos.formNovaEscala.addEventListener("submit", salvarFormularioEscala);
 
+    elementos.botaoCancelarEdicao.addEventListener("click", cancelarEdicao);
+    elementos.botaoTema.addEventListener("click", alternarTema);
+    elementos.botaoExportarJson.addEventListener("click", exportarJson);
+    elementos.botaoLimparDemo.addEventListener("click", resetarDemo);
 
-  // =========================
-  // GSAP ANIMATIONS
-  // =========================
-
-  function iniciarAnimacoesGSAP() {
-    if (typeof gsap === "undefined") {
-      document
-        .querySelectorAll(".reveal-up, .reveal-scale")
-        .forEach((elemento) => {
-          elemento.classList.add("fallback-show");
-        });
-
-      return;
-    }
-
-    if (typeof ScrollTrigger !== "undefined") {
-      gsap.registerPlugin(ScrollTrigger);
-    }
-
-    gsap.utils.toArray(".reveal-up").forEach((elemento) => {
-      gsap.fromTo(
-        elemento,
-        {
-          opacity: 0,
-          y: 42,
-        },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.9,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: elemento,
-            start: "top 82%",
-          },
-        }
-      );
+    elementos.tipoEscala.addEventListener("change", () => {
+        atualizarCamposSimulador();
+        gerarVisualizacao();
     });
 
-    gsap.utils.toArray(".reveal-scale").forEach((elemento) => {
-      gsap.fromTo(
-        elemento,
-        {
-          opacity: 0,
-          scale: 0.94,
-          rotateX: 4,
-        },
-        {
-          opacity: 1,
-          scale: 1,
-          rotateX: 0,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: elemento,
-            start: "top 82%",
-          },
-        }
-      );
-    });
-
-    gsap.utils.toArray(".skill-hud").forEach((hud, index) => {
-      gsap.to(hud, {
-        y: -12,
-        duration: 2.2 + index * 0.2,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      });
-    });
-  }
-
-  iniciarAnimacoesGSAP();
-
-
-  // =========================
-  // PROJECT CODE EDITOR
-  // =========================
-
-  const projetos = {
-    smartMarket: {
-      file: "smart_market.py",
-      icon: "🛒",
-      title: "Smart Market",
-      status: "Em desenvolvimento",
-      description:
-        "Sistema em Python para controle de compras de mercado, histórico de preços, comparação entre compras e análise de gastos.",
-      pain: "Dificuldade em acompanhar gastos, preços e variações entre compras.",
-      solution:
-        "Registrar compras, comparar preços e identificar aumentos, quedas e novos produtos.",
-      techs: ["Python", "JSON", "Automação"],
-      repo: "https://github.com/Dinox75/Smart_market",
-      demo: "",
-      code: [
-        '<span class="code-keyword">project</span> = <span class="code-string">"Smart Market"</span>',
-        '<span class="code-keyword">status</span> = <span class="code-string">"Em desenvolvimento"</span>',
-        '<span class="code-keyword">stack</span> = [<span class="code-string">"Python"</span>, <span class="code-string">"JSON"</span>, <span class="code-string">"Automação"</span>]',
-        '<span class="code-keyword">pain</span> = <span class="code-string">"Controlar gastos e variações de preço"</span>',
-        '<span class="code-keyword">solution</span> = <span class="code-string">"Histórico + comparação de compras"</span>',
-        '<span class="code-keyword">next_step</span> = <span class="code-string">"Leitura de nota fiscal via XML"</span>'
-      ]
-    },
-
-    workWatch: {
-      file: "workwatch.py",
-      icon: "📊",
-      title: "WorkWatch",
-      status: "Em desenvolvimento",
-      description:
-        "Ferramenta local para monitoramento de produtividade no computador, registrando janelas ativas e atividades em CSV.",
-      pain: "Pouca visibilidade sobre como o tempo é usado no computador.",
-      solution:
-        "Registrar programas e janelas ativas para gerar dados de análise e relatórios.",
-      techs: ["Python", "CSV", "Monitoramento"],
-      repo: "https://github.com/Dinox75/WorkWatch",
-      demo: "",
-      code: [
-        '<span class="code-keyword">project</span> = <span class="code-string">"WorkWatch"</span>',
-        '<span class="code-keyword">status</span> = <span class="code-string">"Em desenvolvimento"</span>',
-        '<span class="code-keyword">stack</span> = [<span class="code-string">"Python"</span>, <span class="code-string">"CSV"</span>, <span class="code-string">"Monitoramento"</span>]',
-        '<span class="code-keyword">goal</span> = <span class="code-string">"Analisar produtividade local"</span>',
-        '<span class="code-keyword">logs</span> = <span class="code-string">"janela ativa + data/hora"</span>',
-        '<span class="code-keyword">future</span> = <span class="code-string">"Dashboard e relatórios"</span>'
-      ]
-    },
-
-    escala: {
-      file: "simulador_escala.py",
-      icon: "📅",
-      title: "Simulador de Escala",
-      status: "Demo publicada",
-      description:
-        "Sistema em Python criado para calcular dias de trabalho e folga com base em escalas configuráveis, como 6x3.",
-      pain: "Dificuldade de prever folgas e dias trabalhados em escalas rotativas.",
-      solution:
-        "Calcular automaticamente o status de uma data e os próximos dias da escala.",
-      techs: ["Python", "CLI", "GitHub Pages"],
-      repo: "https://github.com/Dinox75/simulador-escala-trabalho",
-      demo: "https://dinox75.github.io/simulador-escala-trabalho/demo/",
-      code: [
-        '<span class="code-keyword">project</span> = <span class="code-string">"Simulador de Escala"</span>',
-        '<span class="code-keyword">status</span> = <span class="code-string">"Demo publicada"</span>',
-        '<span class="code-keyword">scale</span> = <span class="code-string">"6x3"</span>',
-        '<span class="code-keyword">function</span> calcular_status(data_inicio, data_consulta):',
-        '    <span class="code-keyword">return</span> <span class="code-string">"Trabalhando ou Folga"</span>',
-        '<span class="code-keyword">demo</span> = <span class="code-string">"GitHub Pages"</span>'
-      ]
-    },
-
-    media: {
-      file: "media_escolar.html",
-      icon: "🎓",
-      title: "Sistema de Média Escolar",
-      status: "Demo publicada",
-      description:
-        "Projeto para cálculo de média escolar, reforçando fundamentos de lógica, entrada de dados, condições e apresentação em página web.",
-      pain: "Praticar fundamentos de programação de forma simples e visual.",
-      solution:
-        "Calcular médias e transformar um exercício em projeto publicável.",
-      techs: ["Python", "HTML", "GitHub Pages"],
-      repo: "https://github.com/Dinox75/Sistema_media_escolar",
-      demo: "https://dinox75.github.io/Sistema_media_escolar/",
-      code: [
-        '<span class="code-keyword">project</span> = <span class="code-string">"Sistema de Média Escolar"</span>',
-        '<span class="code-keyword">status</span> = <span class="code-string">"Demo publicada"</span>',
-        '<span class="code-keyword">base</span> = [<span class="code-string">"lógica"</span>, <span class="code-string">"condições"</span>, <span class="code-string">"média"</span>]',
-        '<span class="code-keyword">origin</span> = <span class="code-string">"Curso em Vídeo - Mundo 2"</span>',
-        '<span class="code-keyword">goal</span> = <span class="code-string">"Reforçar fundamentos"</span>',
-        '<span class="code-keyword">publish</span> = <span class="code-string">"GitHub Pages"</span>'
-      ]
-    },
-
-    bancario: {
-      file: "sistema_bancario.py",
-      icon: "🏦",
-      title: "Sistema Bancário DIO",
-      status: "Desafio DIO",
-      description:
-        "Desafio prático em Python para simular depósito, saque, extrato e controle de regras.",
-      pain: "Praticar lógica aplicada com regras de negócio simples.",
-      solution:
-        "Criar um sistema bancário de terminal com operações controladas.",
-      techs: ["Python", "Funções", "Regras"],
-      repo: "https://github.com/Dinox75/Sistema-bancario-DIO",
-      demo: "",
-      code: [
-        '<span class="code-keyword">project</span> = <span class="code-string">"Sistema Bancário DIO"</span>',
-        '<span class="code-keyword">status</span> = <span class="code-string">"Desafio prático"</span>',
-        '<span class="code-keyword">operations</span> = [<span class="code-string">"depósito"</span>, <span class="code-string">"saque"</span>, <span class="code-string">"extrato"</span>]',
-        '<span class="code-keyword">rules</span> = <span class="code-string">"limites e validações"</span>',
-        '<span class="code-keyword">goal</span> = <span class="code-string">"Treinar lógica aplicada"</span>',
-        '<span class="code-keyword">next</span> = <span class="code-string">"Refatorar com funções"</span>'
-      ]
-    },
-
-    entrevista: {
-      file: "entrevista_bot.py",
-      icon: "💼",
-      title: "Simulador de Entrevista",
-      status: "Projeto prático",
-      description:
-        "Sistema em Python para simular uma entrevista de emprego, coletar respostas e organizar uma avaliação final do candidato.",
-      pain: "Treinar estrutura de perguntas, respostas e análise de perfil.",
-      solution:
-        "Criar um fluxo de entrevista com coleta de dados e avaliação textual.",
-      techs: ["Python", "Validação", "Fluxo"],
-      repo: "https://github.com/Dinox75/Simulador-de-Entrevista",
-      demo: "",
-      code: [
-        '<span class="code-keyword">project</span> = <span class="code-string">"Simulador de Entrevista"</span>',
-        '<span class="code-keyword">status</span> = <span class="code-string">"Projeto prático"</span>',
-        '<span class="code-keyword">flow</span> = [<span class="code-string">"perguntas"</span>, <span class="code-string">"respostas"</span>, <span class="code-string">"avaliação"</span>]',
-        '<span class="code-keyword">goal</span> = <span class="code-string">"Treinar fluxo e validação"</span>',
-        '<span class="code-keyword">analysis</span> = <span class="code-string">"palavras-chave e perfil"</span>',
-        '<span class="code-keyword">future</span> = <span class="code-string">"Interface mais amigável"</span>'
-      ]
-    }
-  };
-
-  function renderizarLinhasCodigo(linhas) {
-    return linhas.map((linha) => `<li>${linha}</li>`).join("");
-  }
-
-  function renderizarTechs(techs) {
-    return techs.map((tech) => `<span>${tech}</span>`).join("");
-  }
-
-  function renderizarActions(projeto) {
-    const repoButton = `
-      <a href="${projeto.repo}" target="_blank" rel="noopener noreferrer" class="btn-card">
-        <i class="fa-brands fa-github"></i>
-        Repositório
-      </a>
-    `;
-
-    const demoButton = projeto.demo
-      ? `
-        <a href="${projeto.demo}" target="_blank" rel="noopener noreferrer" class="btn-card btn-card-secondary">
-          <i class="fa-solid fa-play"></i>
-          Demo
-        </a>
-      `
-      : "";
-
-    return repoButton + demoButton;
-  }
-
-  function selecionarProjeto(chave) {
-    const projeto = projetos[chave];
-
-    if (!projeto) return;
-
-    fileButtons.forEach((button) => {
-      button.classList.toggle("active", button.dataset.project === chave);
-    });
-
-    if (projectTabName) projectTabName.textContent = projeto.file;
-    if (projectFileName) projectFileName.textContent = projeto.file;
-    if (projectCodeLines) projectCodeLines.innerHTML = renderizarLinhasCodigo(projeto.code);
-    if (projectStatus) projectStatus.textContent = projeto.status;
-    if (projectIcon) projectIcon.textContent = projeto.icon;
-    if (projectTitle) projectTitle.textContent = projeto.title;
-    if (projectDescription) projectDescription.textContent = projeto.description;
-    if (projectPain) projectPain.textContent = projeto.pain;
-    if (projectSolution) projectSolution.textContent = projeto.solution;
-    if (projectTechList) projectTechList.innerHTML = renderizarTechs(projeto.techs);
-    if (projectActions) projectActions.innerHTML = renderizarActions(projeto);
-
-    falarMascote(`Arquivo carregado: ${projeto.file}`);
-    definirExpressaoMascote("happy");
-
-    if (typeof gsap !== "undefined" && projectEditor) {
-      gsap.fromTo(
-        ".project-preview",
-        { opacity: 0, y: 18, scale: 0.98 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "power2.out" }
-      );
-
-      gsap.fromTo(
-        ".project-code-lines li",
-        { opacity: 0, x: -10 },
-        { opacity: 1, x: 0, duration: 0.28, stagger: 0.035, ease: "power2.out" }
-      );
-    }
-
-    configurarEfeito3D();
-  }
-
-  fileButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      selecionarProjeto(button.dataset.project);
-    });
-  });
-
-
-  // =========================
-  // EFEITO 3D NOS CARDS
-  // =========================
-
-  function configurarEfeito3D() {
-    const elementos3D = document.querySelectorAll(
-      ".card-tilt, .profile-card, .skill-node, .feedback-card, .contact-card, .timeline-card, .mini-project-card, .project-preview, .code-window, .profile-avatar-frame"
-    );
-
-    const prefereMenosMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (!elementos3D.length) return;
-
-    if (prefereMenosMovimento) {
-      html.classList.add("no-tilt");
-      return;
-    }
-
-    if (typeof VanillaTilt !== "undefined") {
-      html.classList.remove("no-tilt");
-
-      elementos3D.forEach((elemento) => {
-        if (elemento.vanillaTilt) return;
-
-        VanillaTilt.init(elemento, {
-          max: 8,
-          speed: 450,
-          glare: true,
-          "max-glare": 0.18,
-          scale: 1.015,
-          perspective: 900,
-        });
-      });
-
-      return;
-    }
-
-    html.classList.add("no-tilt");
-    configurarBrilhoFallback(elementos3D);
-  }
-
-  function configurarBrilhoFallback(elementos) {
-    elementos.forEach((elemento) => {
-      if (elemento.dataset.fallbackGlow === "true") return;
-
-      elemento.dataset.fallbackGlow = "true";
-
-      elemento.addEventListener("mousemove", (event) => {
-        const rect = elemento.getBoundingClientRect();
-        const brilhoX = ((event.clientX - rect.left) / rect.width) * 100;
-        const brilhoY = ((event.clientY - rect.top) / rect.height) * 100;
-
-        elemento.style.setProperty("--glow-x", `${brilhoX}%`);
-        elemento.style.setProperty("--glow-y", `${brilhoY}%`);
-      });
-
-      elemento.addEventListener("mouseleave", () => {
-        elemento.style.removeProperty("--glow-x");
-        elemento.style.removeProperty("--glow-y");
-      });
-    });
-  }
-
-  configurarEfeito3D();
-
-
-  // =========================
-  // PIXEL CLICK
-  // =========================
-
-  document.addEventListener("click", (event) => {
-    const pixel = document.createElement("span");
-
-    pixel.className = "click-pixel";
-    pixel.style.left = `${event.clientX}px`;
-    pixel.style.top = `${event.clientY}px`;
-
-    body.appendChild(pixel);
-
-    setTimeout(() => {
-      pixel.remove();
-    }, 650);
-  });
-
-
-  // =========================
-  // CARROSSEL DE FEEDBACKS
-  // =========================
-
-  function escaparHTML(texto) {
-    const div = document.createElement("div");
-    div.textContent = texto;
-    return div.innerHTML;
-  }
-
-  function criarCardComentario(comentario) {
-    const nome = escaparHTML(comentario.nome || "Visitante");
-    const texto = escaparHTML(comentario.comentario || "");
-
-    return `
-      <article class="feedback-card card-tilt">
-        <p>“${texto}”</p>
-        <span>${nome}</span>
-      </article>
-    `;
-  }
-
-  function removerComentariosDuplicados(comentarios) {
-    const vistos = new Set();
-
-    return comentarios.filter((comentario) => {
-      const nome = String(comentario.nome || "Visitante").trim().toLowerCase();
-      const texto = String(comentario.comentario || "").trim().toLowerCase();
-      const chave = `${nome}-${texto}`;
-
-      if (!texto) return false;
-      if (vistos.has(chave)) return false;
-
-      vistos.add(chave);
-      return true;
-    });
-  }
-
-  function configurarCarrosselFeedback() {
-    const carousel = document.getElementById("feedbackCarousel");
-    const track = document.getElementById("feedbackTrack");
-    const btnPrev = document.getElementById("feedbackPrev");
-    const btnNext = document.getElementById("feedbackNext");
-    const sectionFeedback = document.getElementById("feedbacks");
-
-    if (!carousel || !track || !sectionFeedback) return;
-
-    if (track.dataset.carouselConfigurado === "true") {
-      return;
-    }
-
-    track.dataset.carouselConfigurado = "true";
-
-    let cardsReais = [];
-    let indiceAtual = 0;
-    let quantidadeClones = 1;
-    let autoScroll = null;
-    let timeoutRetorno = null;
-    let pausadoPeloUsuario = false;
-    let travadoDuranteReset = false;
-
-    function obterCardsReais() {
-      return Array.from(track.querySelectorAll(".feedback-card:not([data-clone='true'])"));
-    }
-
-    function obterGap() {
-      const estilosTrack = window.getComputedStyle(track);
-      return parseFloat(estilosTrack.columnGap || estilosTrack.gap) || 22;
-    }
-
-    function obterLarguraCard() {
-      const card = track.querySelector(".feedback-card");
-      if (!card) return 360;
-      return card.getBoundingClientRect().width + obterGap();
-    }
-
-    function obterQuantidadeVisivel() {
-      const larguraCard = obterLarguraCard();
-      if (!larguraCard) return 1;
-      return Math.max(1, Math.ceil(carousel.clientWidth / larguraCard));
-    }
-
-    function removerClones() {
-      track.querySelectorAll("[data-clone='true']").forEach((clone) => {
-        clone.remove();
-      });
-    }
-
-    function criarClone(card) {
-      const clone = card.cloneNode(true);
-      clone.dataset.clone = "true";
-      clone.setAttribute("aria-hidden", "true");
-      return clone;
-    }
-
-    function aplicarTransform(comAnimacao = true) {
-      const distancia = obterLarguraCard();
-      const deslocamento = indiceAtual * distancia;
-
-      track.style.transition = comAnimacao ? "transform 0.45s ease" : "none";
-      track.style.transform = `translateX(-${deslocamento}px)`;
-    }
-
-    function montarLoop() {
-      removerClones();
-      cardsReais = obterCardsReais();
-
-      if (cardsReais.length === 0) return;
-
-      if (cardsReais.length === 1) {
-        indiceAtual = 0;
-        aplicarTransform(false);
-        return;
-      }
-
-      quantidadeClones = Math.min(obterQuantidadeVisivel(), cardsReais.length);
-
-      const clonesInicio = cardsReais.slice(-quantidadeClones).map(criarClone);
-      const clonesFim = cardsReais.slice(0, quantidadeClones).map(criarClone);
-
-      clonesInicio.forEach((clone) => {
-        track.insertBefore(clone, track.firstChild);
-      });
-
-      clonesFim.forEach((clone) => {
-        track.appendChild(clone);
-      });
-
-      indiceAtual = quantidadeClones;
-      aplicarTransform(false);
-    }
-
-    function corrigirLoopInfinito() {
-      if (cardsReais.length <= 1) return;
-
-      const totalReais = cardsReais.length;
-      const inicioReais = quantidadeClones;
-      const fimReais = quantidadeClones + totalReais - 1;
-
-      if (indiceAtual > fimReais) {
-        travadoDuranteReset = true;
-        indiceAtual = inicioReais;
-        aplicarTransform(false);
-
-        requestAnimationFrame(() => {
-          travadoDuranteReset = false;
-        });
-      }
-
-      if (indiceAtual < inicioReais) {
-        travadoDuranteReset = true;
-        indiceAtual = fimReais;
-        aplicarTransform(false);
-
-        requestAnimationFrame(() => {
-          travadoDuranteReset = false;
-        });
-      }
-    }
-
-    function irParaProximo(manual = true) {
-      if (cardsReais.length <= 1 || travadoDuranteReset) return;
-      indiceAtual += 1;
-      aplicarTransform(true);
-      if (manual) pausarTemporariamente();
-    }
-
-    function irParaAnterior(manual = true) {
-      if (cardsReais.length <= 1 || travadoDuranteReset) return;
-      indiceAtual -= 1;
-      aplicarTransform(true);
-      if (manual) pausarTemporariamente();
-    }
-
-    function pararAutoScroll() {
-      clearInterval(autoScroll);
-      autoScroll = null;
-    }
-
-    function iniciarAutoScroll() {
-      pararAutoScroll();
-
-      if (pausadoPeloUsuario || cardsReais.length <= 1) return;
-
-      autoScroll = setInterval(() => {
-        if (!document.hidden) {
-          irParaProximo(false);
-        }
-      }, 4200);
-    }
-
-    function pausarTemporariamente() {
-      pausadoPeloUsuario = true;
-      pararAutoScroll();
-      clearTimeout(timeoutRetorno);
-
-      timeoutRetorno = setTimeout(() => {
-        pausadoPeloUsuario = false;
-        iniciarAutoScroll();
-      }, 7000);
-    }
-
-    function reiniciarNoComeco() {
-      indiceAtual = quantidadeClones;
-      aplicarTransform(false);
-    }
-
-    if (btnNext) {
-      btnNext.addEventListener("click", () => irParaProximo(true));
-    }
-
-    if (btnPrev) {
-      btnPrev.addEventListener("click", () => irParaAnterior(true));
-    }
-
-    carousel.addEventListener("mouseenter", pararAutoScroll);
-    carousel.addEventListener("mouseleave", iniciarAutoScroll);
-    carousel.addEventListener("touchstart", pausarTemporariamente, { passive: true });
-    track.addEventListener("transitionend", corrigirLoopInfinito);
-
-    window.addEventListener("resize", () => {
-      clearTimeout(timeoutRetorno);
-
-      timeoutRetorno = setTimeout(() => {
-        pararAutoScroll();
-        removerClones();
-        montarLoop();
-        iniciarAutoScroll();
-      }, 250);
-    });
-
-    const observerFeedback = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            reiniciarNoComeco();
-            pausadoPeloUsuario = false;
-            iniciarAutoScroll();
-          } else {
-            pararAutoScroll();
-          }
-        });
-      },
-      { threshold: 0.35 }
-    );
-
-    observerFeedback.observe(sectionFeedback);
-    montarLoop();
-  }
-
-  function carregarComentarios() {
-    const feedbackTrack = document.getElementById("feedbackTrack");
-    if (!feedbackTrack) return;
-
-    const callbackName = `receberComentarios_${Date.now()}`;
-    const script = document.createElement("script");
-    let callbackExecutado = false;
-
-    function limparJSONP() {
-      delete window[callbackName];
-
-      if (script.parentNode) {
-        script.remove();
-      }
-    }
-
-    function usarComentariosPadrao() {
-      configurarCarrosselFeedback();
-    }
-
-    const timerFallback = setTimeout(() => {
-      if (!callbackExecutado) {
-        usarComentariosPadrao();
-        limparJSONP();
-      }
-    }, 3500);
-
-    window[callbackName] = (comentarios) => {
-      callbackExecutado = true;
-      clearTimeout(timerFallback);
-
-      if (Array.isArray(comentarios) && comentarios.length > 0) {
-        const comentariosUnicos = removerComentariosDuplicados(comentarios);
-
-        feedbackTrack.innerHTML = comentariosUnicos
-          .map(criarCardComentario)
-          .join("");
-      }
-
-      configurarCarrosselFeedback();
-      configurarEfeito3D();
-      limparJSONP();
-    };
-
-    script.src = `${APPS_SCRIPT_URL}?action=list&callback=${callbackName}&t=${Date.now()}`;
-
-    script.onerror = () => {
-      clearTimeout(timerFallback);
-      usarComentariosPadrao();
-      limparJSONP();
-    };
-
-    document.body.appendChild(script);
-  }
-
-  carregarComentarios();
-
-
-  // =========================
-  // ENVIO DE FEEDBACK
-  // =========================
-
-  const feedbackForm = document.getElementById("feedbackForm");
-  const feedbackStatus = document.getElementById("feedbackStatus");
-
-  if (feedbackForm && feedbackStatus) {
-    const botaoFeedback = feedbackForm.querySelector('button[type="submit"]');
-
-    feedbackForm.addEventListener("submit", (event) => {
-      const campoComentario = document.getElementById("comentarioFeedback");
-      const comentario = campoComentario ? campoComentario.value.trim() : "";
-
-      if (!comentario) {
-        event.preventDefault();
-        feedbackStatus.textContent = "Digite um comentário antes de enviar.";
-        feedbackStatus.classList.remove("sucesso");
-        feedbackStatus.classList.add("erro");
-        return;
-      }
-
-      feedbackStatus.textContent = "Enviando feedback...";
-      feedbackStatus.classList.remove("sucesso", "erro");
-
-      if (botaoFeedback) {
-        botaoFeedback.disabled = true;
-        botaoFeedback.style.opacity = "0.75";
-        botaoFeedback.style.cursor = "not-allowed";
-      }
-
-      setTimeout(() => {
-        feedbackStatus.textContent = "Feedback enviado! Ele aparecerá no site após aprovação.";
-        feedbackStatus.classList.remove("erro");
-        feedbackStatus.classList.add("sucesso");
-        feedbackForm.reset();
-
-        if (botaoFeedback) {
-          botaoFeedback.disabled = false;
-          botaoFeedback.style.opacity = "1";
-          botaoFeedback.style.cursor = "pointer";
-        }
-
-        falarMascote("Feedback enviado para aprovação. Obrigado pela ajuda!");
-        definirExpressaoMascote("happy");
-      }, 1400);
-    });
-  }
-
-
-  // =========================
-  // FALAS POR SEÇÃO
-  // =========================
-
-  if ("IntersectionObserver" in window) {
-    const observerFalas = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-
-          const fala = entry.target.dataset.mascot;
-
-          if (fala) {
-            falarMascoteComIntervalo(fala);
-          }
-        });
-      },
-      { threshold: 0.55 }
-    );
-
-    sections.forEach((section) => {
-      observerFalas.observe(section);
-    });
-  }
-
-
-  // =========================
-  // INICIALIZAÇÃO FINAL
-  // =========================
-
-  selecionarProjeto("smartMarket");
-});
+    elementos.inputTipoNovaEscala.addEventListener("change", atualizarCamposCadastro);
+
+    elementos.inputTempoTrabalho.addEventListener("input", gerarVisualizacao);
+    elementos.inputTempoFolga.addEventListener("input", gerarVisualizacao);
+    elementos.inputQuantidadeItens.addEventListener("input", gerarVisualizacao);
+    elementos.inputDataInicial.addEventListener("change", gerarVisualizacao);
+
+    window.addEventListener("scroll", atualizarProgressoScroll);
+}
+
+function carregarTemaSalvo() {
+    const temaSalvo = localStorage.getItem(THEME_KEY) || "dark";
+    aplicarTema(temaSalvo);
+}
+
+function inicializarDemo() {
+    carregarTemaSalvo();
+    definirDataInicialPadrao();
+
+    configurarEventos();
+    configurarTabsDocumentacao();
+    configurarAnimacoesDeEntrada();
+    configurarMenuMobile();
+    configurarModalRelease();
+
+    renderizarEscalas();
+    atualizarCamposSimulador();
+    atualizarCamposCadastro();
+    atualizarResumo();
+    gerarVisualizacao();
+    atualizarProgressoScroll();
+}
+
+inicializarDemo();
