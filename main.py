@@ -3,6 +3,7 @@ from validacoes import (
     ler_numero,
     ler_data,
     ler_opcao_menu,
+    ler_data_hora,
     ler_indice_lista,
     ler_texto,
     confirmar_acao
@@ -15,7 +16,7 @@ from interface import (
     exibir_escalas_salvas
 )
 from armazenamento import carregar_escalas, adicionar_escala, remover_escala, editar_escala
-from tipos_escala import TIPO_ESCALA_PADRAO, obter_nome_tipo
+from tipos_escala import TIPO_ESCALA_PADRAO, TIPO_CICLO_HORAS, obter_nome_tipo
 
 
 def criar_escala_manual(dias_trabalho=6, dias_folga=3):
@@ -52,9 +53,19 @@ def main():
         )
 
         if menu == "1":
-            data_inicio = ler_data("Digite a data inicial da escala (dd/mm/aaaa): ")
-            data_consulta = ler_data("Digite a data que deseja consultar (dd/mm/aaaa): ")
+            if menu == "1":
+                tipo_escala_atual = escala_atual.get("tipo", TIPO_ESCALA_PADRAO)
 
+                if tipo_escala_atual == TIPO_CICLO_HORAS:
+                    data_inicio = ler_data_hora(
+                        "Digite a data e hora inicial da escala (dd/mm/aaaa hh:mm): "
+                    )
+                    data_consulta = ler_data_hora(
+                        "Digite a data e hora que deseja consultar (dd/mm/aaaa hh:mm): "
+                    )
+                else:
+                    data_inicio = ler_data("Digite a data inicial da escala (dd/mm/aaaa): ")
+                    data_consulta = ler_data("Digite a data que deseja consultar (dd/mm/aaaa): ")
             try:
                 status = calcular_status_por_escala(
                     escala_atual,
