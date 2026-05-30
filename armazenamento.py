@@ -1,5 +1,10 @@
 import json
-from tipos_escala import TIPO_ESCALA_PADRAO, validar_tipo_escala
+from tipos_escala import (
+    TIPO_ESCALA_PADRAO,
+    TIPO_CICLO_DIAS,
+    TIPO_CICLO_HORAS,
+    validar_tipo_escala
+)
 
 CAMINHO_ESCALAS = "data/escalas.json"
 
@@ -48,17 +53,52 @@ def adicionar_escala(nome, dias_trabalho, dias_folga):
         if novo_nome == nome_existente:
             return "nome_duplicado"
 
+        tipo_escala = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
         if (
-            escala["dias_trabalho"] == dias_trabalho
+            tipo_escala == TIPO_CICLO_DIAS
+            and escala["dias_trabalho"] == dias_trabalho
             and escala["dias_folga"] == dias_folga
         ):
             return "configuracao_duplicada"
 
     nova_escala = {
-    "nome": nome,
-    "tipo": TIPO_ESCALA_PADRAO,
-    "dias_trabalho": dias_trabalho,
-    "dias_folga": dias_folga
+        "nome": nome,
+        "tipo": TIPO_CICLO_DIAS,
+        "dias_trabalho": dias_trabalho,
+        "dias_folga": dias_folga
+    }
+
+    escalas.append(nova_escala)
+    salvar_escalas(escalas)
+
+    return "sucesso"
+
+def adicionar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
+    escalas = carregar_escalas()
+
+    novo_nome = nome.lower().strip()
+
+    for escala in escalas:
+        nome_existente = escala["nome"].lower().strip()
+
+        if novo_nome == nome_existente:
+            return "nome_duplicado"
+
+        tipo_escala = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
+        if (
+            tipo_escala == TIPO_CICLO_HORAS
+            and escala["horas_trabalho"] == horas_trabalho
+            and escala["horas_folga"] == horas_folga
+        ):
+            return "configuracao_duplicada"
+
+    nova_escala = {
+        "nome": nome,
+        "tipo": TIPO_CICLO_HORAS,
+        "horas_trabalho": horas_trabalho,
+        "horas_folga": horas_folga
     }
 
     escalas.append(nova_escala)
@@ -94,7 +134,13 @@ def editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga):
             if nome_existente == novo_nome_normalizado:
                 return "nome_duplicado"
 
-            if escala["dias_trabalho"] == novos_dias_trabalho and escala["dias_folga"] == novos_dias_folga:
+            tipo_escala = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
+            if (
+                tipo_escala == TIPO_CICLO_DIAS
+                and escala["dias_trabalho"] == novos_dias_trabalho
+                and escala["dias_folga"] == novos_dias_folga
+            ):
                 return "configuracao_duplicada"
 
     tipo_atual = escalas[indice].get("tipo", TIPO_ESCALA_PADRAO)
