@@ -1,33 +1,112 @@
-Licença Proprietária de Uso Não Comercial
+# Licença Proprietária de Uso Não Comercial
 
 Copyright (c) 2026 Vinicius Lima
 
 Todos os direitos reservados.
 
-Este software, incluindo seu código-fonte, documentação, estrutura de arquivos, regras de negócio, conceitos de produto e materiais associados, é de propriedade de Vinicius Lima.
+## 1. Titularidade
 
-A visualização deste repositório é permitida apenas para fins de estudo, avaliação técnica, portfólio, recrutamento e análise profissional.
+Este software, incluindo, mas não se limitando a, código-fonte, documentação, estrutura de arquivos, arquitetura, fluxos, regras de negócio, conceitos de produto, textos, diagramas, materiais visuais, protótipos, demonstrações, arquivos de configuração e demais materiais associados, é de propriedade exclusiva de Vinicius Lima, salvo indicação expressa em contrário.
 
-É permitido:
+A disponibilização pública deste repositório não representa cessão, transferência, venda, sublicenciamento ou renúncia de direitos autorais, patrimoniais, morais, comerciais ou de propriedade intelectual.
+
+## 2. Finalidade permitida
+
+A visualização deste repositório é permitida exclusivamente para fins de:
+
+- estudo individual;
+- avaliação técnica;
+- análise de portfólio;
+- recrutamento;
+- análise profissional;
+- aprendizado pessoal sem reprodução substancial.
+
+## 3. Permissões limitadas
+
+É permitido, sem necessidade de autorização prévia:
+
 - visualizar o código-fonte;
 - estudar a estrutura do projeto;
 - analisar a lógica implementada;
-- utilizar o projeto como referência de aprendizado pessoal, sem cópia direta substancial.
+- executar o projeto localmente apenas para fins de estudo, avaliação técnica ou análise profissional;
+- utilizar o projeto como referência conceitual de aprendizado pessoal, desde que não haja cópia direta, reprodução substancial ou criação de obra derivada com base relevante neste projeto.
 
-Não é permitido, sem autorização prévia e por escrito do autor:
+## 4. Restrições
+
+Não é permitido, sem autorização prévia, expressa e por escrito do autor:
+
 - utilizar este software para fins comerciais;
-- vender, sublicenciar, alugar ou distribuir este software;
-- copiar o código para uso em produtos, sistemas, serviços ou projetos comerciais;
-- modificar e redistribuir este software como se fosse próprio;
-- utilizar a lógica, estrutura ou documentação do projeto para criar solução comercial derivada;
-- remover avisos de autoria, créditos ou referências ao autor.
+- vender, sublicenciar, alugar, hospedar, oferecer como serviço ou distribuir este software;
+- copiar total ou parcialmente o código-fonte para uso em produtos, sistemas, serviços, plataformas, cursos, consultorias, treinamentos, projetos comerciais ou institucionais;
+- modificar, adaptar, traduzir, empacotar, redistribuir ou republicar este software como se fosse próprio;
+- remover, ocultar ou alterar avisos de autoria, créditos, histórico, marcações, links ou referências ao autor;
+- utilizar a estrutura, arquitetura, documentação, fluxos, diagramas, regras de negócio ou conceitos de produto para criar solução comercial derivada ou substancialmente semelhante;
+- incorporar este projeto, total ou parcialmente, em sistemas internos, corporativos, institucionais, acadêmicos, governamentais ou privados sem autorização expressa;
+- publicar forks, cópias, variações ou derivações como projeto próprio;
+- utilizar o nome do autor, identidade visual, textos, documentação ou materiais associados para promoção de produto, serviço ou solução sem autorização;
+- treinar, alimentar, compor dataset, base de conhecimento ou ferramenta automatizada com este repositório para fins comerciais sem autorização expressa;
+- utilizar este projeto para geração direta ou indireta de receita sem autorização prévia.
 
-Qualquer uso comercial, corporativo, institucional ou com finalidade de geração de receita depende de autorização prévia e expressa do autor.
+## 5. Uso comercial, corporativo ou institucional
 
-Para solicitar autorização de uso, entre em contato com:
+Qualquer uso comercial, corporativo, institucional, governamental, educacional formal, interno empresarial, consultivo ou com finalidade de geração de receita depende de autorização prévia, expressa e por escrito do autor.
 
-Vinicius Lima
-GitHub: https://github.com/Dinox75
+Isso inclui, mas não se limita a:
+
+- uso em empresas;
+- uso em produtos pagos;
+- uso em sistemas internos;
+- uso em serviços oferecidos a terceiros;
+- uso em consultorias;
+- uso em treinamentos pagos;
+- uso em plataformas comerciais;
+- uso como base para produto semelhante;
+- uso em demonstrações comerciais;
+- uso em propostas comerciais.
+
+## 6. Forks e cópias
+
+A existência de mecanismos técnicos de fork, clone ou download em plataformas como GitHub não concede permissão para uso, modificação, redistribuição, exploração comercial ou criação de obras derivadas.
+
+Forks ou cópias somente são tolerados para fins de avaliação técnica, estudo pessoal ou análise profissional, desde que preservem integralmente os avisos de autoria e não sejam utilizados para redistribuição, publicação independente, exploração comercial ou apresentação como obra própria.
+
+## 7. Contribuições
+
+O autor não assume obrigação de aceitar contribuições externas.
+
+Qualquer sugestão, issue, pull request, comentário, melhoria, correção ou contribuição enviada ao projeto poderá ser analisada livremente pelo autor.
+
+Ao enviar uma contribuição, o colaborador declara possuir direito sobre o conteúdo enviado e concede ao autor permissão gratuita, não exclusiva, irrevogável e mundial para usar, adaptar, incorporar, modificar e distribuir tal contribuição dentro deste projeto, sem que isso gere obrigação de pagamento, crédito adicional, sociedade, vínculo empregatício ou transferência de titularidade do projeto.
+
+## 8. Direitos não concedidos
+
+Todos os direitos não expressamente concedidos nesta licença permanecem reservados ao autor.
+
+Nenhuma disposição desta licença deve ser interpretada como concessão implícita de direitos de uso comercial, marca, patente, segredo de negócio, know-how, identidade visual, documentação, arquitetura ou quaisquer outros direitos não expressamente autorizados.
+
+## 9. Ausência de garantia
+
+ESTE SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIAS DE QUALQUER TIPO, EXPRESSAS OU IMPLÍCITAS, INCLUINDO, MAS NÃO SE LIMITANDO A, GARANTIAS DE FUNCIONAMENTO, ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA, SEGURANÇA, DISPONIBILIDADE, PRECISÃO, CONFIABILIDADE OU AUSÊNCIA DE ERROS.
+
+## 10. Limitação de responsabilidade
+
+O autor não se responsabiliza por danos, perdas, falhas operacionais, uso indevido, indisponibilidade, prejuízos diretos ou indiretos, perda de dados, decisões tomadas com base no software ou quaisquer consequências resultantes do uso, estudo, execução, adaptação ou tentativa de utilização deste software.
+
+Este projeto possui finalidade educacional, demonstrativa e de portfólio, não substituindo sistemas oficiais de gestão, RH, controle de jornada, folha de pagamento, auditoria ou conformidade legal.
+
+## 11. Solicitação de autorização
+
+Para solicitar autorização de uso comercial, corporativo, institucional, educacional formal ou qualquer uso não previsto expressamente nesta licença, entre em contato com:
+
+**Vinicius Lima**  
+GitHub: https://github.com/Dinox75  
 LinkedIn: https://www.linkedin.com/in/vinicius-limajr/
 
-ESTE SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIAS DE QUALQUER TIPO, EXPRESSAS OU IMPLÍCITAS. O AUTOR NÃO SE RESPONSABILIZA POR DANOS, PERDAS, FALHAS OPERACIONAIS, USO INDEVIDO OU CONSEQUÊNCIAS RESULTANTES DO USO DESTE SOFTWARE.
+## 12. Violação da licença
+
+O uso não autorizado deste software, de sua documentação, estrutura, lógica, materiais associados ou derivações poderá resultar em solicitação de remoção, denúncia à plataforma de hospedagem, revogação de acesso, medidas extrajudiciais e/ou medidas judiciais cabíveis.
+
+---
+
+**Resumo simples:** você pode visualizar, estudar e avaliar este projeto.  
+Você não pode copiar, vender, redistribuir, transformar em produto, usar comercialmente ou apresentar como se fosse seu sem autorização prévia e por escrito.
