@@ -18,9 +18,12 @@ from interface import (
     exibir_menu,
     exibir_proximos_dias,
     exibir_resultado_consulta,
-    exibir_escalas_salvas
+    exibir_escalas_salvas,
+    obter_resumo_escala,
+    exibir_escala_atual,
+    exibir_resultado_consulta_por_tipo,
+    exibir_proximos_periodos
 )
-
 from armazenamento import (
     carregar_escalas,
     adicionar_escala,
@@ -53,51 +56,6 @@ def criar_escala_ciclo_horas(horas_trabalho=12, horas_folga=36):
         "horas_trabalho": horas_trabalho,
         "horas_folga": horas_folga
     }
-
-
-def obter_resumo_escala(escala):
-    tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
-
-    if tipo == TIPO_CICLO_HORAS:
-        return f"{escala['horas_trabalho']}x{escala['horas_folga']} horas"
-
-    return f"{escala['dias_trabalho']}x{escala['dias_folga']} dias"
-
-
-def exibir_escala_atual(escala_atual):
-    tipo = escala_atual.get("tipo", TIPO_ESCALA_PADRAO)
-    tipo_formatado = obter_nome_tipo(tipo)
-
-    print("\nEscala atual:")
-    print(f"Nome: {escala_atual['nome']}")
-    print(f"Tipo: {tipo_formatado}")
-
-    if tipo == TIPO_CICLO_HORAS:
-        print(f"Horas trabalhadas: {escala_atual['horas_trabalho']}")
-        print(f"Horas de folga: {escala_atual['horas_folga']}")
-    else:
-        print(f"Dias trabalhados: {escala_atual['dias_trabalho']}")
-        print(f"Dias de folga: {escala_atual['dias_folga']}")
-
-
-def exibir_resultado_consulta_por_tipo(data_consulta, status, tipo):
-    if tipo == TIPO_CICLO_HORAS:
-        data_formatada = data_consulta.strftime("%d/%m/%Y %H:%M")
-        print(f"\nNa data e hora {data_formatada}, você estará: {status}")
-    else:
-        exibir_resultado_consulta(data_consulta, status)
-
-
-def exibir_proximos_periodos(periodos):
-    print("\n==== PRÓXIMOS PERÍODOS ====")
-
-    for periodo in periodos:
-        inicio = periodo["inicio"].strftime("%d/%m/%Y %H:%M")
-        fim = periodo["fim"].strftime("%d/%m/%Y %H:%M")
-        status = periodo["status"]
-
-        print(f"{inicio} até {fim}: {status}")
-
 
 def consultar_status(escala_atual):
     tipo = escala_atual.get("tipo", TIPO_ESCALA_PADRAO)
