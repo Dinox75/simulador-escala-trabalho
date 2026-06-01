@@ -1,3 +1,30 @@
+## [0.6.0] - Suporte inicial a turno rotativo
+
+### Adicionado
+- Suporte funcional ao tipo de escala `turno_rotativo`.
+- Cálculo de status por sequência de turnos.
+- Geração de próximos dias para escalas com turnos rotativos.
+- Cadastro de escalas de turno rotativo no CLI.
+- Edição de escalas de turno rotativo no CLI.
+- Aplicação de escalas rotativas salvas como escala atual.
+- Validação para impedir sequência de turnos vazia.
+- Testes automatizados para cálculo, geração, cadastro e edição de turno rotativo.
+
+### Alterado
+- Menu principal agora permite usar escalas por dias, por horas e por turno rotativo.
+- Fluxo de cadastro e edição foi expandido para suportar sequência de turnos.
+- Exibição da escala atual agora mostra a sequência do turno rotativo.
+
+### Mantido
+- Compatibilidade com escalas por dias.
+- Compatibilidade com escalas por horas.
+- Suporte à escala 12x36.
+- Persistência em JSON.
+- Testes automatizados com `pytest`.
+
+### Observação
+Esta versão entrega a primeira implementação funcional do turno rotativo. Melhorias de interface, refatoração e recursos avançados podem ser evoluídos em versões futuras.
+
 ## [0.5.0] - Escalas por horas e suporte inicial ao 12x36
 
 ### Adicionado
