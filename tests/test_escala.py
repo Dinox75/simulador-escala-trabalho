@@ -1,4 +1,5 @@
 from datetime import date, datetime
+import pytest
 
 from escala import (
     calcular_status,
@@ -235,6 +236,16 @@ def test_calcular_status_turno_rotativo():
 
     assert resultado == "Tarde"
 
+def test_calcular_status_turno_rotativo_com_sequencia_vazia():
+    data_inicio = date(2026, 5, 1)
+    data_consulta = date(2026, 5, 1)
+
+    with pytest.raises(ValueError):
+        calcular_status_turno_rotativo(
+            data_inicio,
+            data_consulta,
+            []
+        )
 
 def test_calcular_status_por_escala_turno_rotativo():
     escala = {

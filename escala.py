@@ -32,6 +32,10 @@ def calcular_status_ciclo_horas(data_hora_inicio, data_hora_consulta, horas_trab
         return "Folga"
     
 def calcular_status_turno_rotativo(data_inicio, data_consulta, sequencia_turnos):
+
+    if not sequencia_turnos:
+        raise ValueError("A sequência de turnos não pode estar vazia.")
+
     ciclo = len(sequencia_turnos)
 
     dias_passados = (data_consulta - data_inicio).days
