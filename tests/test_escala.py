@@ -1,7 +1,5 @@
 from datetime import date, datetime
 
-import pytest
-
 from escala import (
     calcular_status,
     gerar_proximos_dias,
@@ -10,6 +8,8 @@ from escala import (
     calcular_status_ciclo_horas,
     gerar_proximos_periodos_ciclo_horas,
     gerar_proximos_periodos_por_escala,
+    calcular_status_turno_rotativo,
+    gerar_proximos_dias_turno_rotativo,
     converter_data_hora
 )
 
@@ -107,20 +107,6 @@ def test_gerar_proximos_dias_por_escala_ciclo_dias():
     assert resultado[6]["data"] == date(2026, 5, 7)
     assert resultado[6]["status"] == "Folga"
 
-def test_gerar_proximos_dias_por_escala_turno_rotativo_ainda_nao_implementado():
-    escala = {
-        "nome": "Escala turno rotativo",
-        "tipo": TIPO_TURNO_ROTATIVO
-    }
-
-    data_inicio = date(2026, 5, 1)
-
-    with pytest.raises(NotImplementedError):
-        gerar_proximos_dias_por_escala(
-            escala,
-            data_inicio,
-            10
-        )
 
 def test_calcular_status_ciclo_horas_dentro_do_periodo_de_trabalho():
     data_hora_inicio = datetime(2026, 6, 1, 6, 0)
@@ -169,6 +155,7 @@ def test_calcular_status_por_escala_ciclo_horas_12x36():
 
     assert resultado == "Trabalhando"
 
+
 def test_gerar_proximos_periodos_ciclo_horas_12x36():
     data_hora_inicio = datetime(2026, 6, 1, 6, 0)
 
@@ -197,6 +184,7 @@ def test_gerar_proximos_periodos_ciclo_horas_12x36():
     assert resultado[3]["fim"] == datetime(2026, 6, 5, 6, 0)
     assert resultado[3]["status"] == "Folga"
 
+
 def test_gerar_proximos_periodos_por_escala_ciclo_horas_12x36():
     escala = {
         "nome": "Escala 12x36",
@@ -222,6 +210,121 @@ def test_gerar_proximos_periodos_por_escala_ciclo_horas_12x36():
     assert resultado[1]["inicio"] == datetime(2026, 6, 1, 18, 0)
     assert resultado[1]["fim"] == datetime(2026, 6, 3, 6, 0)
     assert resultado[1]["status"] == "Folga"
+
+
+def test_calcular_status_turno_rotativo():
+    data_inicio = date(2026, 5, 1)
+    data_consulta = date(2026, 5, 3)
+
+    sequencia_turnos = [
+        "Manhã",
+        "Manhã",
+        "Tarde",
+        "Tarde",
+        "Noite",
+        "Noite",
+        "Folga",
+        "Folga"
+    ]
+
+    resultado = calcular_status_turno_rotativo(
+        data_inicio,
+        data_consulta,
+        sequencia_turnos
+    )
+
+    assert resultado == "Tarde"
+
+
+def test_calcular_status_por_escala_turno_rotativo():
+    escala = {
+        "nome": "Turno rotativo teste",
+        "tipo": TIPO_TURNO_ROTATIVO,
+        "sequencia_turnos": [
+            "Manhã",
+            "Manhã",
+            "Tarde",
+            "Tarde",
+            "Noite",
+            "Noite",
+            "Folga",
+            "Folga"
+        ]
+    }
+
+    data_inicio = date(2026, 5, 1)
+    data_consulta = date(2026, 5, 3)
+
+    resultado = calcular_status_por_escala(
+        escala,
+        data_inicio,
+        data_consulta
+    )
+
+    assert resultado == "Tarde"
+
+
+def test_gerar_proximos_dias_turno_rotativo():
+    data_inicio = date(2026, 5, 1)
+
+    sequencia_turnos = [
+        "Manhã",
+        "Manhã",
+        "Tarde",
+        "Tarde",
+        "Noite",
+        "Noite",
+        "Folga",
+        "Folga"
+    ]
+
+    resultado = gerar_proximos_dias_turno_rotativo(
+        data_inicio,
+        8,
+        sequencia_turnos
+    )
+
+    assert len(resultado) == 8
+    assert resultado[0]["data"] == date(2026, 5, 1)
+    assert resultado[0]["status"] == "Manhã"
+    assert resultado[1]["status"] == "Manhã"
+    assert resultado[2]["status"] == "Tarde"
+    assert resultado[4]["status"] == "Noite"
+    assert resultado[6]["status"] == "Folga"
+
+
+def test_gerar_proximos_dias_por_escala_turno_rotativo():
+    escala = {
+        "nome": "Escala turno rotativo",
+        "tipo": TIPO_TURNO_ROTATIVO,
+        "sequencia_turnos": [
+            "Manhã",
+            "Manhã",
+            "Tarde",
+            "Tarde",
+            "Noite",
+            "Noite",
+            "Folga",
+            "Folga"
+        ]
+    }
+
+    data_inicio = date(2026, 5, 1)
+
+    resultado = gerar_proximos_dias_por_escala(
+        escala,
+        data_inicio,
+        8
+    )
+
+    assert len(resultado) == 8
+    assert resultado[0]["data"] == date(2026, 5, 1)
+    assert resultado[0]["status"] == "Manhã"
+    assert resultado[2]["data"] == date(2026, 5, 3)
+    assert resultado[2]["status"] == "Tarde"
+    assert resultado[4]["status"] == "Noite"
+    assert resultado[6]["status"] == "Folga"
+
 
 def test_converter_data_hora_valida():
     resultado = converter_data_hora("01/06/2026 06:00")
