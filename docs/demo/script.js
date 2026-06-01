@@ -1,979 +1,872 @@
-const STORAGE_KEY = "simulador_escalas_favoritas_v060";
-const STORAGE_KEY_V051 = "simulador_escalas_favoritas_v051";
-const STORAGE_KEY_V050 = "simulador_escalas_favoritas_v050";
-const STORAGE_KEY_V040 = "simulador_escalas_favoritas_v040";
-const STORAGE_KEY_V030 = "simulador_escalas_favoritas_v030";
-const THEME_KEY = "simulador_tema_v060";
-
 const TIPO_CICLO_DIAS = "ciclo_dias";
 const TIPO_CICLO_HORAS = "ciclo_horas";
 const TIPO_TURNO_ROTATIVO = "turno_rotativo";
+const STORAGE_KEY = "simulador_escala_demo_v06";
+const THEME_KEY = "simulador_escala_theme";
 
-const NOMES_TIPOS = {
-  [TIPO_CICLO_DIAS]: "Ciclo por dias",
-  [TIPO_CICLO_HORAS]: "Ciclo por horas",
-  [TIPO_TURNO_ROTATIVO]: "Turno rotativo"
-};
-
-const escalasPadrao = [
-  {
-    nome: "Escala padrão 6x3",
-    tipo: TIPO_CICLO_DIAS,
-    dias_trabalho: 6,
-    dias_folga: 3
-  },
-  {
-    nome: "Escala administrativa 5x2",
-    tipo: TIPO_CICLO_DIAS,
-    dias_trabalho: 5,
-    dias_folga: 2
-  },
-  {
-    nome: "Escala 12x36",
-    tipo: TIPO_CICLO_HORAS,
-    horas_trabalho: 12,
-    horas_folga: 36
-  },
-  {
-    nome: "Turno rotativo exemplo",
-    tipo: TIPO_TURNO_ROTATIVO,
-    sequencia_turnos: ["Manhã", "Manhã", "Tarde", "Tarde", "Noite", "Noite", "Folga", "Folga"]
-  }
+const DEFAULT_SCALES = [
+    {
+        nome: "Escala padrão 6x3",
+        tipo: TIPO_CICLO_DIAS,
+        dias_trabalho: 6,
+        dias_folga: 3
+    },
+    {
+        nome: "Escala 12x36",
+        tipo: TIPO_CICLO_HORAS,
+        horas_trabalho: 12,
+        horas_folga: 36
+    },
+    {
+        nome: "Turno rotativo exemplo",
+        tipo: TIPO_TURNO_ROTATIVO,
+        sequencia_turnos: ["Manhã", "Manhã", "Tarde", "Tarde", "Noite", "Noite", "Folga", "Folga"]
+    }
 ];
 
-let escalas = [];
-let indiceEdicao = null;
-let tipoResultadoAtual = TIPO_CICLO_DIAS;
-let scrollPendente = false;
-
-const $ = (seletor) => document.querySelector(seletor);
-const $$ = (seletor) => document.querySelectorAll(seletor);
-
-const elementos = {
-  body: document.body,
-  progressoScroll: $("#progresso-scroll"),
-  botaoMenu: $("#botao-menu"),
-  menuPrincipal: $("#menu-principal"),
-  botaoTema: $("#botao-tema"),
-  botoesTipo: $$(".type-option"),
-  formEscala: $("#form-escala"),
-  tipoEscala: $("#tipo-escala"),
-  inputDataInicial: $("#data-inicial"),
-  inputTempoTrabalho: $("#tempo-trabalho"),
-  inputTempoFolga: $("#tempo-folga"),
-  inputSequenciaTurnos: $("#sequencia-turnos"),
-  inputQuantidadeItens: $("#quantidade-itens"),
-  campoTempoTrabalho: $("#campo-tempo-trabalho"),
-  campoTempoFolga: $("#campo-tempo-folga"),
-  campoSequenciaTurnos: $("#campo-sequencia-turnos"),
-  labelDataInicial: $("#label-data-inicial"),
-  labelTempoTrabalho: $("#label-tempo-trabalho"),
-  labelTempoFolga: $("#label-tempo-folga"),
-  labelQuantidadeItens: $("#label-quantidade-itens"),
-  descricaoSimulador: $("#descricao-simulador"),
-  botaoGerar: $("#botao-gerar"),
-  escalaAtualTexto: $("#escala-atual-texto"),
-  tipoAtualTexto: $("#tipo-atual-texto"),
-  totalEscalas: $("#total-escalas"),
-  totalItensSimulados: $("#total-itens-simulados"),
-  listaEscalas: $("#lista-escalas"),
-  botaoExportarJson: $("#botao-exportar-json"),
-  botaoLimparDemo: $("#botao-limpar-demo"),
-  formNovaEscala: $("#form-nova-escala"),
-  tituloFormEscala: $("#titulo-form-escala"),
-  descricaoFormEscala: $("#descricao-form-escala"),
-  inputNomeEscala: $("#nome-escala"),
-  inputTipoNovaEscala: $("#tipo-nova-escala"),
-  inputNovoTempoTrabalho: $("#novo-tempo-trabalho"),
-  inputNovoTempoFolga: $("#novo-tempo-folga"),
-  inputNovaSequenciaTurnos: $("#nova-sequencia-turnos"),
-  campoNovoTempoTrabalho: $("#campo-novo-tempo-trabalho"),
-  campoNovoTempoFolga: $("#campo-novo-tempo-folga"),
-  campoNovaSequenciaTurnos: $("#campo-nova-sequencia-turnos"),
-  labelNovoTempoTrabalho: $("#label-novo-tempo-trabalho"),
-  labelNovoTempoFolga: $("#label-novo-tempo-folga"),
-  botaoSalvarEscala: $("#botao-salvar-escala"),
-  botaoCancelarEdicao: $("#botao-cancelar-edicao"),
-  mensagem: $("#mensagem"),
-  kickerResultado: $("#kicker-resultado"),
-  tituloResultado: $("#titulo-resultado"),
-  descricaoResultado: $("#descricao-resultado"),
-  timeline: $("#timeline"),
-  calendarios: $("#calendarios"),
-  toastArea: $("#toast-area")
+const state = {
+    selectedType: TIPO_CICLO_DIAS,
+    resultItems: [],
+    savedScales: [],
+    heroIndex: 0,
+    scrollTicking: false
 };
 
-function obterNomeTipo(tipo) {
-  return NOMES_TIPOS[tipo] || NOMES_TIPOS[TIPO_CICLO_DIAS];
-}
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
-function escaparHTML(texto) {
-  return String(texto)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+const elements = {
+    root: document.documentElement,
+    themeToggle: $("#themeToggle"),
+    themeTransition: $("#themeTransition"),
+    mobileMenuButton: $("#mobileMenuButton"),
+    navLinks: $("#navLinks"),
+    scrollProgress: $("#scrollProgress"),
+    scaleTypeButtons: $("#scaleTypeButtons"),
+    simulatorForm: $("#simulatorForm"),
+    dynamicFields: $("#dynamicFields"),
+    resultCard: $("#resultCard"),
+    resultTitle: $("#resultTitle"),
+    resultDescription: $("#resultDescription"),
+    timelineList: $("#timelineList"),
+    calendarGrid: $("#calendarGrid"),
+    calendarMonth: $("#calendarMonth"),
+    savedScaleForm: $("#savedScaleForm"),
+    savedName: $("#savedName"),
+    savedType: $("#savedType"),
+    savedDynamicFields: $("#savedDynamicFields"),
+    savedScalesList: $("#savedScalesList"),
+    resetScalesButton: $("#resetScalesButton"),
+    heroTerminalLine: $("#heroTerminalLine"),
+    heroTerminalOutput: $("#heroTerminalOutput"),
+    heroStatusText: $("#heroStatusText"),
+    heroProgressBar: $("#heroProgressBar"),
+    heroStatusMeta: $("#heroStatusMeta")
+};
 
-function normalizarTexto(texto) {
-  return String(texto || "").toLowerCase().trim();
-}
-
-function normalizarSequenciaTurnos(valor) {
-  if (Array.isArray(valor)) {
-    return valor
-      .map((turno) => String(turno).trim())
-      .filter(Boolean);
-  }
-
-  return String(valor || "")
-    .split(/[,;>\n]/)
-    .map((turno) => turno.trim())
-    .filter(Boolean);
-}
-
-function formatarSequenciaTurnos(sequencia) {
-  const turnos = normalizarSequenciaTurnos(sequencia);
-  return turnos.length ? turnos.join(" → ") : "Sequência não definida";
-}
-
-function normalizarEscala(escala) {
-  const tipo = Object.keys(NOMES_TIPOS).includes(escala?.tipo)
-    ? escala.tipo
-    : TIPO_CICLO_DIAS;
-
-  if (tipo === TIPO_CICLO_HORAS) {
-    return {
-      nome: escala.nome || "Escala sem nome",
-      tipo,
-      horas_trabalho: Number(escala.horas_trabalho) || Number(escala.dias_trabalho) || 12,
-      horas_folga: Number(escala.horas_folga) || Number(escala.dias_folga) || 36
-    };
-  }
-
-  if (tipo === TIPO_TURNO_ROTATIVO) {
-    const sequencia = normalizarSequenciaTurnos(
-      escala.sequencia_turnos || escala.sequencia || escala.turnos
-    );
-
-    return {
-      nome: escala.nome || "Escala sem nome",
-      tipo,
-      sequencia_turnos: sequencia.length ? sequencia : ["Manhã", "Tarde", "Noite", "Folga"]
-    };
-  }
-
-  return {
-    nome: escala.nome || "Escala sem nome",
-    tipo: TIPO_CICLO_DIAS,
-    dias_trabalho: Number(escala.dias_trabalho) || 1,
-    dias_folga: Number(escala.dias_folga) || 1
-  };
-}
-
-function normalizarListaEscalas(lista) {
-  return Array.isArray(lista) ? lista.map(normalizarEscala) : [...escalasPadrao];
-}
-
-function carregarEscalas() {
-  const chaves = [STORAGE_KEY, STORAGE_KEY_V051, STORAGE_KEY_V050, STORAGE_KEY_V040, STORAGE_KEY_V030];
-
-  for (const chave of chaves) {
-    const dados = localStorage.getItem(chave);
-
-    if (!dados) {
-      continue;
+const HERO_FRAMES = [
+    {
+        line: "Aplicando escala 6x3",
+        output: "Hoje: Trabalhando · Próxima folga em 2 dias",
+        status: "Trabalhando",
+        meta: "Ciclo 6x3 em andamento",
+        progress: "62%"
+    },
+    {
+        line: "Consultando escala 12x36",
+        output: "01/06/2026 20:00 → Folga",
+        status: "Folga",
+        meta: "Retorno previsto após 36h",
+        progress: "34%"
+    },
+    {
+        line: "Calculando turno rotativo",
+        output: "Sequência: Manhã → Tarde → Noite → Folga",
+        status: "Turno: Noite",
+        meta: "Rotação por sequência personalizada",
+        progress: "78%"
     }
+];
+
+function cloneScale(scale) {
+    return JSON.parse(JSON.stringify(scale));
+}
+
+function loadSavedScales() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+        if (Array.isArray(saved) && saved.length > 0) {
+            return saved;
+        }
+    } catch (error) {
+        console.warn("Não foi possível carregar escalas salvas.", error);
+    }
+
+    return DEFAULT_SCALES.map(cloneScale);
+}
+
+function saveScales() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.savedScales));
+}
+
+function normalizeTurns(value) {
+    if (Array.isArray(value)) {
+        return value
+            .map((turn) => String(turn).trim())
+            .filter(Boolean);
+    }
+
+    return String(value)
+        .split(",")
+        .map((turn) => turn.trim())
+        .filter(Boolean);
+}
+
+function getTypeName(type) {
+    const names = {
+        [TIPO_CICLO_DIAS]: "Ciclo por dias",
+        [TIPO_CICLO_HORAS]: "Ciclo por horas",
+        [TIPO_TURNO_ROTATIVO]: "Turno rotativo"
+    };
+
+    return names[type] || "Ciclo por dias";
+}
+
+function getScaleSummary(scale) {
+    if (scale.tipo === TIPO_CICLO_HORAS) {
+        return `${scale.horas_trabalho}x${scale.horas_folga} horas`;
+    }
+
+    if (scale.tipo === TIPO_TURNO_ROTATIVO) {
+        return normalizeTurns(scale.sequencia_turnos).join(" → ");
+    }
+
+    return `${scale.dias_trabalho}x${scale.dias_folga} dias`;
+}
+
+function parseDateInput(value) {
+    const [year, month, day] = value.split("-").map(Number);
+    return new Date(year, month - 1, day);
+}
+
+function parseDateTimeInput(value) {
+    return new Date(value);
+}
+
+function formatDate(date) {
+    return new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    }).format(date);
+}
+
+function formatDateTime(date) {
+    return new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    }).format(date);
+}
+
+function getDaysDifference(start, query) {
+    const startUtc = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+    const queryUtc = Date.UTC(query.getFullYear(), query.getMonth(), query.getDate());
+    return Math.floor((queryUtc - startUtc) / 86400000);
+}
+
+function calculateCycleDaysStatus(start, query, workDays, offDays) {
+    const cycle = workDays + offDays;
+    const daysPassed = getDaysDifference(start, query);
+    const position = ((daysPassed % cycle) + cycle) % cycle;
+
+    return position < workDays ? "Trabalhando" : "Folga";
+}
+
+function calculateCycleHoursStatus(start, query, workHours, offHours) {
+    const cycle = workHours + offHours;
+    const hoursPassed = (query - start) / 3600000;
+    const position = ((hoursPassed % cycle) + cycle) % cycle;
+
+    return position < workHours ? "Trabalhando" : "Folga";
+}
+
+function calculateRotativeStatus(start, query, turns) {
+    if (!turns.length) {
+        throw new Error("A sequência de turnos não pode ficar vazia.");
+    }
+
+    const daysPassed = getDaysDifference(start, query);
+    const position = ((daysPassed % turns.length) + turns.length) % turns.length;
+
+    return turns[position];
+}
+
+function generateDays(start, amount, statusCallback) {
+    return Array.from({ length: amount }, (_, index) => {
+        const date = new Date(start);
+        date.setDate(start.getDate() + index);
+
+        return {
+            date,
+            status: statusCallback(date)
+        };
+    });
+}
+
+function generateHourPeriods(start, amount, workHours, offHours) {
+    const periods = [];
+    let currentStart = new Date(start);
+
+    for (let index = 0; index < amount; index += 1) {
+        const isWork = index % 2 === 0;
+        const duration = isWork ? workHours : offHours;
+        const end = new Date(currentStart);
+
+        end.setHours(end.getHours() + duration);
+
+        periods.push({
+            date: new Date(currentStart),
+            end,
+            status: isWork ? "Trabalhando" : "Folga"
+        });
+
+        currentStart = end;
+    }
+
+    return periods;
+}
+
+function getStatusClass(status) {
+    const normalized = String(status).toLowerCase();
+
+    if (normalized.includes("trabalhando") || normalized.includes("manhã") || normalized.includes("tarde")) {
+        return "work";
+    }
+
+    if (normalized.includes("noite")) {
+        return "night";
+    }
+
+    return "off";
+}
+
+function todayInputValue() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function nowDateTimeInputValue() {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+}
+
+function renderSimulatorFields() {
+    const today = todayInputValue();
+    const now = nowDateTimeInputValue();
+
+    const templates = {
+        [TIPO_CICLO_DIAS]: `
+            <div class="form-grid">
+                <label>
+                    Data inicial
+                    <input id="startDate" type="date" value="2026-05-01" required>
+                </label>
+                <label>
+                    Data para consultar
+                    <input id="queryDate" type="date" value="${today}" required>
+                </label>
+                <label>
+                    Dias de trabalho
+                    <input id="workDays" type="number" min="1" value="6" required>
+                </label>
+                <label>
+                    Dias de folga
+                    <input id="offDays" type="number" min="1" value="3" required>
+                </label>
+                <label>
+                    Dias para visualizar
+                    <input id="amountDays" type="number" min="1" max="60" value="21" required>
+                </label>
+            </div>
+        `,
+        [TIPO_CICLO_HORAS]: `
+            <div class="form-grid">
+                <label>
+                    Data/hora inicial
+                    <input id="startDateTime" type="datetime-local" value="2026-06-01T06:00" required>
+                </label>
+                <label>
+                    Data/hora para consultar
+                    <input id="queryDateTime" type="datetime-local" value="${now}" required>
+                </label>
+                <label>
+                    Horas de trabalho
+                    <input id="workHours" type="number" min="1" value="12" required>
+                </label>
+                <label>
+                    Horas de folga
+                    <input id="offHours" type="number" min="1" value="36" required>
+                </label>
+                <label>
+                    Períodos para visualizar
+                    <input id="amountPeriods" type="number" min="1" max="40" value="8" required>
+                </label>
+            </div>
+        `,
+        [TIPO_TURNO_ROTATIVO]: `
+            <div class="form-grid">
+                <label>
+                    Data inicial
+                    <input id="startDate" type="date" value="2026-05-01" required>
+                </label>
+                <label>
+                    Data para consultar
+                    <input id="queryDate" type="date" value="${today}" required>
+                </label>
+                <label class="wide-field">
+                    Sequência de turnos
+                    <input id="turnSequence" type="text" value="Manhã,Manhã,Tarde,Tarde,Noite,Noite,Folga,Folga" required>
+                </label>
+                <label>
+                    Dias para visualizar
+                    <input id="amountDays" type="number" min="1" max="60" value="21" required>
+                </label>
+            </div>
+        `
+    };
+
+    elements.dynamicFields.innerHTML = templates[state.selectedType];
+}
+
+function renderSavedDynamicFields() {
+    const type = elements.savedType.value;
+
+    const templates = {
+        [TIPO_CICLO_DIAS]: `
+            <div class="form-grid">
+                <label>
+                    Dias de trabalho
+                    <input id="savedWorkDays" type="number" min="1" value="6" required>
+                </label>
+                <label>
+                    Dias de folga
+                    <input id="savedOffDays" type="number" min="1" value="3" required>
+                </label>
+            </div>
+        `,
+        [TIPO_CICLO_HORAS]: `
+            <div class="form-grid">
+                <label>
+                    Horas de trabalho
+                    <input id="savedWorkHours" type="number" min="1" value="12" required>
+                </label>
+                <label>
+                    Horas de folga
+                    <input id="savedOffHours" type="number" min="1" value="36" required>
+                </label>
+            </div>
+        `,
+        [TIPO_TURNO_ROTATIVO]: `
+            <label>
+                Sequência de turnos
+                <input id="savedTurnSequence" type="text" value="Manhã,Tarde,Noite,Folga" required>
+            </label>
+        `
+    };
+
+    elements.savedDynamicFields.innerHTML = templates[type];
+}
+
+function updateScaleButtons() {
+    $$('[data-type]').forEach((button) => {
+        button.classList.toggle("active", button.dataset.type === state.selectedType);
+    });
+}
+
+function runSimulation(event) {
+    event.preventDefault();
 
     try {
-      const lista = normalizarListaEscalas(JSON.parse(dados));
-      salvarEscalas(lista);
-      return lista;
-    } catch (erro) {
-      localStorage.removeItem(chave);
+        if (state.selectedType === TIPO_CICLO_HORAS) {
+            runHoursSimulation();
+            return;
+        }
+
+        if (state.selectedType === TIPO_TURNO_ROTATIVO) {
+            runRotativeSimulation();
+            return;
+        }
+
+        runDaysSimulation();
+    } catch (error) {
+        showResult("Erro na simulação", error.message, "off");
     }
-  }
-
-  salvarEscalas(escalasPadrao);
-  return normalizarListaEscalas(escalasPadrao);
 }
 
-function salvarEscalas(lista) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizarListaEscalas(lista)));
+function runDaysSimulation() {
+    const start = parseDateInput($("#startDate").value);
+    const query = parseDateInput($("#queryDate").value);
+    const workDays = Number($("#workDays").value);
+    const offDays = Number($("#offDays").value);
+    const amount = Number($("#amountDays").value);
+    const status = calculateCycleDaysStatus(start, query, workDays, offDays);
+
+    state.resultItems = generateDays(start, amount, (date) => calculateCycleDaysStatus(start, date, workDays, offDays));
+
+    showResult(
+        status,
+        `Na data ${formatDate(query)}, o status calculado para a escala ${workDays}x${offDays} é: ${status}.`,
+        getStatusClass(status)
+    );
+
+    renderTimeline();
+    renderCalendar();
 }
 
-function obterResumoEscala(escala) {
-  if (escala.tipo === TIPO_CICLO_HORAS) {
-    return `${escala.horas_trabalho}x${escala.horas_folga} horas`;
-  }
+function runHoursSimulation() {
+    const start = parseDateTimeInput($("#startDateTime").value);
+    const query = parseDateTimeInput($("#queryDateTime").value);
+    const workHours = Number($("#workHours").value);
+    const offHours = Number($("#offHours").value);
+    const amount = Number($("#amountPeriods").value);
+    const status = calculateCycleHoursStatus(start, query, workHours, offHours);
 
-  if (escala.tipo === TIPO_TURNO_ROTATIVO) {
-    return formatarSequenciaTurnos(escala.sequencia_turnos);
-  }
+    state.resultItems = generateHourPeriods(start, amount, workHours, offHours);
 
-  return `${escala.dias_trabalho}x${escala.dias_folga} dias`;
+    showResult(
+        status,
+        `Em ${formatDateTime(query)}, o status calculado para a escala ${workHours}x${offHours} horas é: ${status}.`,
+        getStatusClass(status)
+    );
+
+    renderTimeline(true);
+    renderCalendar();
 }
 
-function obterClasseStatus(status) {
-  const texto = normalizarTexto(status);
+function runRotativeSimulation() {
+    const start = parseDateInput($("#startDate").value);
+    const query = parseDateInput($("#queryDate").value);
+    const turns = normalizeTurns($("#turnSequence").value);
+    const amount = Number($("#amountDays").value);
+    const status = calculateRotativeStatus(start, query, turns);
 
-  if (texto.includes("folga")) {
-    return "status-folga";
-  }
+    state.resultItems = generateDays(start, amount, (date) => calculateRotativeStatus(start, date, turns));
 
-  if (texto.includes("noite")) {
-    return "status-noite";
-  }
+    showResult(
+        status,
+        `Na data ${formatDate(query)}, a sequência rotativa aponta: ${status}.`,
+        getStatusClass(status)
+    );
 
-  if (texto.includes("tarde")) {
-    return "status-tarde";
-  }
-
-  return "status-trabalho";
+    renderTimeline();
+    renderCalendar();
 }
 
-function exibirMensagem(texto, tipo = "info") {
-  if (!elementos.mensagem) {
-    return;
-  }
+function showResult(title, description, statusClass) {
+    elements.resultTitle.textContent = title;
+    elements.resultDescription.textContent = description;
+    elements.resultCard.classList.remove("status-work", "status-off");
+    elements.resultCard.classList.add(statusClass === "work" ? "status-work" : "status-off");
 
-  elementos.mensagem.textContent = texto;
-  elementos.mensagem.className = `message ${tipo}`;
-}
-
-function exibirToast(texto) {
-  if (!elementos.toastArea) {
-    return;
-  }
-
-  const toast = document.createElement("div");
-  toast.className = "toast";
-  toast.textContent = texto;
-  elementos.toastArea.appendChild(toast);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 3200);
-}
-
-function atualizarCamposSimulador(tipo) {
-  const ciclo = tipo === TIPO_CICLO_DIAS;
-  const horas = tipo === TIPO_CICLO_HORAS;
-  const rotativo = tipo === TIPO_TURNO_ROTATIVO;
-
-  elementos.tipoEscala.value = tipo;
-  elementos.inputDataInicial.type = horas ? "datetime-local" : "date";
-  elementos.labelDataInicial.textContent = horas ? "Data e hora inicial" : "Data inicial da escala";
-  elementos.labelQuantidadeItens.textContent = horas ? "Quantidade de períodos" : "Quantidade de dias";
-
-  elementos.campoTempoTrabalho.hidden = rotativo;
-  elementos.campoTempoFolga.hidden = rotativo;
-  elementos.campoSequenciaTurnos.hidden = !rotativo;
-
-  elementos.inputTempoTrabalho.required = !rotativo;
-  elementos.inputTempoFolga.required = !rotativo;
-  elementos.inputSequenciaTurnos.required = rotativo;
-
-  if (ciclo) {
-    elementos.labelTempoTrabalho.textContent = "Dias trabalhados";
-    elementos.labelTempoFolga.textContent = "Dias de folga";
-    elementos.inputTempoTrabalho.value = elementos.inputTempoTrabalho.value || 6;
-    elementos.inputTempoFolga.value = elementos.inputTempoFolga.value || 3;
-    elementos.escalaAtualTexto.textContent = `${elementos.inputTempoTrabalho.value}x${elementos.inputTempoFolga.value} dias`;
-    elementos.descricaoSimulador.textContent = "Use ciclos como 6x3, 5x2 ou 4x4 para prever trabalho e folga.";
-  }
-
-  if (horas) {
-    elementos.labelTempoTrabalho.textContent = "Horas trabalhadas";
-    elementos.labelTempoFolga.textContent = "Horas de folga";
-    elementos.inputTempoTrabalho.value = 12;
-    elementos.inputTempoFolga.value = 36;
-    elementos.escalaAtualTexto.textContent = "12x36 horas";
-    elementos.descricaoSimulador.textContent = "Use data e hora inicial para simular escalas como 12x36.";
-  }
-
-  if (rotativo) {
-    elementos.escalaAtualTexto.textContent = "Turno rotativo";
-    elementos.descricaoSimulador.textContent = "Informe uma sequência, como Manhã, Tarde, Noite e Folga.";
-  }
-
-  elementos.tipoAtualTexto.textContent = obterNomeTipo(tipo);
-
-  elementos.botoesTipo.forEach((botao) => {
-    botao.classList.toggle("active", botao.dataset.tipo === tipo);
-  });
-}
-
-function atualizarCamposCadastro() {
-  const tipo = elementos.inputTipoNovaEscala.value;
-  const rotativo = tipo === TIPO_TURNO_ROTATIVO;
-  const horas = tipo === TIPO_CICLO_HORAS;
-
-  elementos.campoNovoTempoTrabalho.hidden = rotativo;
-  elementos.campoNovoTempoFolga.hidden = rotativo;
-  elementos.campoNovaSequenciaTurnos.hidden = !rotativo;
-
-  elementos.inputNovoTempoTrabalho.required = !rotativo;
-  elementos.inputNovoTempoFolga.required = !rotativo;
-  elementos.inputNovaSequenciaTurnos.required = rotativo;
-
-  if (horas) {
-    elementos.labelNovoTempoTrabalho.textContent = "Horas trabalhadas";
-    elementos.labelNovoTempoFolga.textContent = "Horas de folga";
-    elementos.inputNovoTempoTrabalho.value = 12;
-    elementos.inputNovoTempoFolga.value = 36;
-    return;
-  }
-
-  elementos.labelNovoTempoTrabalho.textContent = "Dias trabalhados";
-  elementos.labelNovoTempoFolga.textContent = "Dias de folga";
-
-  if (!rotativo) {
-    elementos.inputNovoTempoTrabalho.value = elementos.inputNovoTempoTrabalho.value || 6;
-    elementos.inputNovoTempoFolga.value = elementos.inputNovoTempoFolga.value || 3;
-  }
-}
-
-function existeNomeDuplicado(nome, indiceIgnorado = null) {
-  const nomeNormalizado = normalizarTexto(nome);
-
-  return escalas.some((escala, indice) => {
-    return indice !== indiceIgnorado && normalizarTexto(escala.nome) === nomeNormalizado;
-  });
-}
-
-function obterChaveConfiguracao(escala) {
-  const item = normalizarEscala(escala);
-
-  if (item.tipo === TIPO_CICLO_HORAS) {
-    return `${item.tipo}:${item.horas_trabalho}:${item.horas_folga}`;
-  }
-
-  if (item.tipo === TIPO_TURNO_ROTATIVO) {
-    return `${item.tipo}:${normalizarSequenciaTurnos(item.sequencia_turnos).join("|").toLowerCase()}`;
-  }
-
-  return `${item.tipo}:${item.dias_trabalho}:${item.dias_folga}`;
-}
-
-function existeConfiguracaoDuplicada(novaEscala, indiceIgnorado = null) {
-  const chave = obterChaveConfiguracao(novaEscala);
-
-  return escalas.some((escala, indice) => {
-    return indice !== indiceIgnorado && obterChaveConfiguracao(escala) === chave;
-  });
-}
-
-function renderizarEscalas() {
-  elementos.totalEscalas.textContent = String(escalas.length);
-
-  if (!elementos.listaEscalas) {
-    return;
-  }
-
-  if (!escalas.length) {
-    elementos.listaEscalas.innerHTML = `<p class="muted">Nenhuma escala salva.</p>`;
-    return;
-  }
-
-  elementos.listaEscalas.innerHTML = escalas
-    .map((escala, indice) => {
-      const resumo = obterResumoEscala(escala);
-      const tipo = obterNomeTipo(escala.tipo);
-
-      return `
-        <article class="saved-card">
-          <div>
-            <strong>${escaparHTML(escala.nome)}</strong>
-            <span>${escaparHTML(tipo)} • ${escaparHTML(resumo)}</span>
-          </div>
-          <div class="saved-actions">
-            <button class="ghost-button use-scale" type="button" data-indice="${indice}">Usar</button>
-            <button class="ghost-button edit-scale" type="button" data-indice="${indice}">Editar</button>
-            <button class="danger-button delete-scale" type="button" data-indice="${indice}">Excluir</button>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
-
-  $$(".use-scale").forEach((botao) => {
-    botao.addEventListener("click", () => aplicarEscala(Number(botao.dataset.indice)));
-  });
-
-  $$(".edit-scale").forEach((botao) => {
-    botao.addEventListener("click", () => prepararEdicaoEscala(Number(botao.dataset.indice)));
-  });
-
-  $$(".delete-scale").forEach((botao) => {
-    botao.addEventListener("click", () => excluirEscala(Number(botao.dataset.indice)));
-  });
-}
-
-function aplicarEscala(indice) {
-  const escala = escalas[indice];
-
-  if (!escala) {
-    return;
-  }
-
-  atualizarCamposSimulador(escala.tipo);
-
-  if (escala.tipo === TIPO_CICLO_HORAS) {
-    elementos.inputTempoTrabalho.value = escala.horas_trabalho;
-    elementos.inputTempoFolga.value = escala.horas_folga;
-    elementos.escalaAtualTexto.textContent = obterResumoEscala(escala);
-  } else if (escala.tipo === TIPO_TURNO_ROTATIVO) {
-    elementos.inputSequenciaTurnos.value = escala.sequencia_turnos.join(", ");
-    elementos.escalaAtualTexto.textContent = escala.nome;
-  } else {
-    elementos.inputTempoTrabalho.value = escala.dias_trabalho;
-    elementos.inputTempoFolga.value = escala.dias_folga;
-    elementos.escalaAtualTexto.textContent = obterResumoEscala(escala);
-  }
-
-  elementos.tipoAtualTexto.textContent = obterNomeTipo(escala.tipo);
-  exibirToast(`Escala "${escala.nome}" aplicada.`);
-}
-
-function obterDadosNovaEscala() {
-  const tipo = elementos.inputTipoNovaEscala.value;
-  const nome = elementos.inputNomeEscala.value.trim();
-
-  if (tipo === TIPO_CICLO_HORAS) {
-    return {
-      nome,
-      tipo,
-      horas_trabalho: Number(elementos.inputNovoTempoTrabalho.value),
-      horas_folga: Number(elementos.inputNovoTempoFolga.value)
-    };
-  }
-
-  if (tipo === TIPO_TURNO_ROTATIVO) {
-    return {
-      nome,
-      tipo,
-      sequencia_turnos: normalizarSequenciaTurnos(elementos.inputNovaSequenciaTurnos.value)
-    };
-  }
-
-  return {
-    nome,
-    tipo: TIPO_CICLO_DIAS,
-    dias_trabalho: Number(elementos.inputNovoTempoTrabalho.value),
-    dias_folga: Number(elementos.inputNovoTempoFolga.value)
-  };
-}
-
-function validarEscala(escala) {
-  if (!escala.nome) {
-    return "Digite um nome para a escala.";
-  }
-
-  if (escala.tipo === TIPO_TURNO_ROTATIVO) {
-    if (!escala.sequencia_turnos.length) {
-      return "Digite pelo menos um turno na sequência.";
+    if (window.gsap) {
+        window.gsap.fromTo(
+            elements.resultCard,
+            { y: 14, opacity: 0.6 },
+            { y: 0, opacity: 1, duration: 0.38, ease: "power2.out" }
+        );
     }
-
-    return "";
-  }
-
-  const trabalho = escala.tipo === TIPO_CICLO_HORAS ? escala.horas_trabalho : escala.dias_trabalho;
-  const folga = escala.tipo === TIPO_CICLO_HORAS ? escala.horas_folga : escala.dias_folga;
-
-  if (!Number.isFinite(trabalho) || trabalho <= 0 || !Number.isFinite(folga) || folga <= 0) {
-    return "Os valores de trabalho e folga precisam ser maiores que zero.";
-  }
-
-  return "";
 }
 
-function salvarFormularioEscala(evento) {
-  evento.preventDefault();
-
-  const novaEscala = normalizarEscala(obterDadosNovaEscala());
-  const erro = validarEscala(novaEscala);
-
-  if (erro) {
-    exibirMensagem(erro, "erro");
-    return;
-  }
-
-  if (existeNomeDuplicado(novaEscala.nome, indiceEdicao)) {
-    exibirMensagem("Já existe uma escala com esse nome.", "erro");
-    return;
-  }
-
-  if (existeConfiguracaoDuplicada(novaEscala, indiceEdicao)) {
-    exibirMensagem("Já existe uma escala com essa mesma configuração.", "erro");
-    return;
-  }
-
-  if (indiceEdicao === null) {
-    escalas.push(novaEscala);
-    exibirMensagem("Escala cadastrada com sucesso!", "sucesso");
-  } else {
-    escalas[indiceEdicao] = novaEscala;
-    exibirMensagem("Escala editada com sucesso!", "sucesso");
-  }
-
-  salvarEscalas(escalas);
-  renderizarEscalas();
-  limparFormularioEscala();
-}
-
-function prepararEdicaoEscala(indice) {
-  const escala = escalas[indice];
-
-  if (!escala) {
-    return;
-  }
-
-  indiceEdicao = indice;
-  elementos.tituloFormEscala.textContent = "Editar escala";
-  elementos.descricaoFormEscala.textContent = "Atualize os dados da escala selecionada.";
-  elementos.botaoSalvarEscala.textContent = "Salvar alteração";
-  elementos.botaoCancelarEdicao.hidden = false;
-  elementos.inputNomeEscala.value = escala.nome;
-  elementos.inputTipoNovaEscala.value = escala.tipo;
-  atualizarCamposCadastro();
-
-  if (escala.tipo === TIPO_CICLO_HORAS) {
-    elementos.inputNovoTempoTrabalho.value = escala.horas_trabalho;
-    elementos.inputNovoTempoFolga.value = escala.horas_folga;
-  } else if (escala.tipo === TIPO_TURNO_ROTATIVO) {
-    elementos.inputNovaSequenciaTurnos.value = escala.sequencia_turnos.join(", ");
-  } else {
-    elementos.inputNovoTempoTrabalho.value = escala.dias_trabalho;
-    elementos.inputNovoTempoFolga.value = escala.dias_folga;
-  }
-
-  elementos.inputNomeEscala.focus();
-}
-
-function limparFormularioEscala() {
-  indiceEdicao = null;
-  elementos.formNovaEscala.reset();
-  elementos.inputTipoNovaEscala.value = TIPO_CICLO_DIAS;
-  elementos.inputNovoTempoTrabalho.value = 6;
-  elementos.inputNovoTempoFolga.value = 3;
-  elementos.inputNovaSequenciaTurnos.value = "Manhã, Tarde, Noite, Folga";
-  elementos.tituloFormEscala.textContent = "Cadastrar nova escala";
-  elementos.descricaoFormEscala.textContent = "Crie modelos para reaproveitar na simulação.";
-  elementos.botaoSalvarEscala.textContent = "Salvar escala";
-  elementos.botaoCancelarEdicao.hidden = true;
-  atualizarCamposCadastro();
-}
-
-function excluirEscala(indice) {
-  const escala = escalas[indice];
-
-  if (!escala) {
-    return;
-  }
-
-  const confirmado = window.confirm(`Excluir a escala "${escala.nome}"?`);
-
-  if (!confirmado) {
-    return;
-  }
-
-  escalas.splice(indice, 1);
-  salvarEscalas(escalas);
-  renderizarEscalas();
-  exibirToast("Escala excluída.");
-}
-
-function calcularStatusCicloDias(dataInicio, dataConsulta, diasTrabalho, diasFolga) {
-  const ciclo = diasTrabalho + diasFolga;
-  const diasPassados = Math.floor((dataConsulta - dataInicio) / 86400000);
-  const posicao = ((diasPassados % ciclo) + ciclo) % ciclo;
-  return posicao < diasTrabalho ? "Trabalhando" : "Folga";
-}
-
-function calcularStatusTurnoRotativo(dataInicio, dataConsulta, sequenciaTurnos) {
-  if (!sequenciaTurnos.length) {
-    throw new Error("A sequência de turnos não pode estar vazia.");
-  }
-
-  const diasPassados = Math.floor((dataConsulta - dataInicio) / 86400000);
-  const posicao = ((diasPassados % sequenciaTurnos.length) + sequenciaTurnos.length) % sequenciaTurnos.length;
-  return sequenciaTurnos[posicao];
-}
-
-function gerarDias(dataInicio, quantidade, tipo, config) {
-  const resultado = [];
-
-  for (let indice = 0; indice < quantidade; indice += 1) {
-    const data = new Date(dataInicio);
-    data.setDate(dataInicio.getDate() + indice);
-
-    let status = "Folga";
-
-    if (tipo === TIPO_TURNO_ROTATIVO) {
-      status = calcularStatusTurnoRotativo(dataInicio, data, config.sequencia_turnos);
-    } else {
-      status = calcularStatusCicloDias(dataInicio, data, config.dias_trabalho, config.dias_folga);
-    }
-
-    resultado.push({ data, status });
-  }
-
-  return resultado;
-}
-
-function gerarPeriodosHoras(dataInicio, quantidade, horasTrabalho, horasFolga) {
-  const periodos = [];
-  let inicio = new Date(dataInicio);
-
-  for (let indice = 0; indice < quantidade; indice += 1) {
-    const trabalhando = indice % 2 === 0;
-    const duracao = trabalhando ? horasTrabalho : horasFolga;
-    const fim = new Date(inicio.getTime() + duracao * 60 * 60 * 1000);
-
-    periodos.push({
-      inicio: new Date(inicio),
-      fim,
-      status: trabalhando ? "Trabalhando" : "Folga"
-    });
-
-    inicio = fim;
-  }
-
-  return periodos;
-}
-
-function formatarData(data) {
-  return data.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  });
-}
-
-function formatarDataHora(data) {
-  return data.toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
-
-function obterDataDoInput(valor, tipo) {
-  if (!valor) {
-    return null;
-  }
-
-  if (tipo === TIPO_CICLO_HORAS) {
-    return new Date(valor);
-  }
-
-  return new Date(`${valor}T00:00:00`);
-}
-
-function renderizarTimelineDias(dias) {
-  elementos.timeline.innerHTML = dias
-    .map((item) => {
-      return `
-        <article class="timeline-item ${obterClasseStatus(item.status)}">
-          <strong>${formatarData(item.data)}</strong>
-          <span>${escaparHTML(item.status)}</span>
-        </article>
-      `;
-    })
-    .join("");
-}
-
-function renderizarTimelinePeriodos(periodos) {
-  elementos.timeline.innerHTML = periodos
-    .map((periodo) => {
-      return `
-        <article class="timeline-item ${obterClasseStatus(periodo.status)}">
-          <strong>${escaparHTML(periodo.status)}</strong>
-          <span>${formatarDataHora(periodo.inicio)} até ${formatarDataHora(periodo.fim)}</span>
-        </article>
-      `;
-    })
-    .join("");
-}
-
-function agruparPorMes(dias) {
-  return dias.reduce((grupos, item) => {
-    const chave = `${item.data.getFullYear()}-${String(item.data.getMonth()).padStart(2, "0")}`;
-
-    if (!grupos[chave]) {
-      grupos[chave] = [];
-    }
-
-    grupos[chave].push(item);
-    return grupos;
-  }, {});
-}
-
-function renderizarCalendarioDias(dias) {
-  const grupos = agruparPorMes(dias);
-  const nomesSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
-  elementos.calendarios.innerHTML = Object.values(grupos)
-    .map((itensMes) => {
-      const primeiraData = itensMes[0].data;
-      const ano = primeiraData.getFullYear();
-      const mes = primeiraData.getMonth();
-      const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
-      const ultimoDiaMes = new Date(ano, mes + 1, 0).getDate();
-      const mapa = new Map(itensMes.map((item) => [item.data.getDate(), item.status]));
-      const titulo = primeiraData.toLocaleDateString("pt-BR", {
-        month: "long",
-        year: "numeric"
-      });
-
-      const vazios = Array.from({ length: primeiroDiaSemana }, (_, indice) => {
-        return `<div class="day-cell empty" aria-hidden="true" data-empty="${indice}"></div>`;
-      });
-
-      const diasMes = Array.from({ length: ultimoDiaMes }, (_, indice) => {
-        const dia = indice + 1;
-        const status = mapa.get(dia);
-        const classe = status ? obterClasseStatus(status) : "fora-periodo";
-        const texto = status || "-";
+function renderTimeline(isHourly = false) {
+    elements.timelineList.innerHTML = state.resultItems.map((item) => {
+        const statusClass = getStatusClass(item.status);
+        const dateLabel = isHourly ? formatDateTime(item.date) : formatDate(item.date);
+        const meta = item.end ? `Até ${formatDateTime(item.end)}` : getTypeName(state.selectedType);
 
         return `
-          <div class="day-cell ${classe}">
-            <strong>${dia}</strong>
-            <span>${escaparHTML(texto)}</span>
-          </div>
+            <article class="timeline-item ${statusClass}">
+                <span class="timeline-dot"></span>
+                <div>
+                    <div class="timeline-date">${dateLabel}</div>
+                    <div class="timeline-meta">${meta}</div>
+                </div>
+                <strong class="timeline-status">${item.status}</strong>
+            </article>
         `;
-      });
+    }).join("");
+}
 
-      return `
-        <article class="calendar-card">
-          <h3>${escaparHTML(titulo)}</h3>
-          <div class="week-row">
-            ${nomesSemana.map((nome) => `<span>${nome}</span>`).join("")}
-          </div>
-          <div class="days-grid">
-            ${vazios.join("")}
-            ${diasMes.join("")}
-          </div>
+function renderCalendar() {
+    const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const baseItems = state.resultItems.filter((item) => item.date instanceof Date);
+
+    if (!baseItems.length) {
+        elements.calendarGrid.innerHTML = "";
+        return;
+    }
+
+    const firstDate = baseItems[0].date;
+    const year = firstDate.getFullYear();
+    const month = firstDate.getMonth();
+    const monthName = new Intl.DateTimeFormat("pt-BR", {
+        month: "long",
+        year: "numeric"
+    }).format(firstDate);
+
+    elements.calendarMonth.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+    const byDate = new Map(
+        baseItems.map((item) => [
+            item.date.toISOString().slice(0, 10),
+            item.status
+        ])
+    );
+
+    const firstMonthDay = new Date(year, month, 1);
+    const lastMonthDay = new Date(year, month + 1, 0);
+    const cells = [];
+
+    weekDays.forEach((day) => {
+        cells.push(`<div class="calendar-head">${day}</div>`);
+    });
+
+    for (let index = 0; index < firstMonthDay.getDay(); index += 1) {
+        cells.push(`<div class="calendar-cell empty"></div>`);
+    }
+
+    for (let day = 1; day <= lastMonthDay.getDate(); day += 1) {
+        const date = new Date(year, month, day);
+        const key = date.toISOString().slice(0, 10);
+        const status = byDate.get(key);
+        const statusClass = status ? getStatusClass(status) : "";
+
+        cells.push(`
+            <div class="calendar-cell ${statusClass}">
+                <strong>${day}</strong>
+                ${status ? `<span>${status}</span>` : ""}
+            </div>
+        `);
+    }
+
+    elements.calendarGrid.innerHTML = cells.join("");
+}
+
+function renderSavedScales() {
+    elements.savedScalesList.innerHTML = state.savedScales.map((scale, index) => `
+        <article class="scale-card">
+            <div>
+                <h4>${scale.nome}</h4>
+                <p>${getTypeName(scale.tipo)} · ${getScaleSummary(scale)}</p>
+            </div>
+            <div class="scale-card-actions">
+                <button class="small-button" type="button" data-apply-scale="${index}">Usar</button>
+                <button class="small-button danger" type="button" data-delete-scale="${index}">Excluir</button>
+            </div>
         </article>
-      `;
-    })
-    .join("");
+    `).join("");
+
+    if (!state.savedScales.length) {
+        elements.savedScalesList.innerHTML = `<p class="timeline-meta">Nenhuma escala salva.</p>`;
+    }
 }
 
-function gerarResultado(evento) {
-  evento.preventDefault();
+function handleSavedScaleSubmit(event) {
+    event.preventDefault();
 
-  const tipo = elementos.tipoEscala.value;
-  const quantidade = Number(elementos.inputQuantidadeItens.value);
-  const dataInicio = obterDataDoInput(elementos.inputDataInicial.value, tipo);
+    const name = elements.savedName.value.trim();
+    const type = elements.savedType.value;
 
-  if (!dataInicio || Number.isNaN(dataInicio.getTime())) {
-    exibirToast("Informe uma data inicial válida.");
-    return;
-  }
-
-  if (!Number.isFinite(quantidade) || quantidade <= 0) {
-    exibirToast("Informe uma quantidade válida.");
-    return;
-  }
-
-  tipoResultadoAtual = tipo;
-  elementos.totalItensSimulados.textContent = String(quantidade);
-  elementos.kickerResultado.textContent = obterNomeTipo(tipo);
-
-  try {
-    if (tipo === TIPO_CICLO_HORAS) {
-      const horasTrabalho = Number(elementos.inputTempoTrabalho.value);
-      const horasFolga = Number(elementos.inputTempoFolga.value);
-      const periodos = gerarPeriodosHoras(dataInicio, quantidade, horasTrabalho, horasFolga);
-
-      elementos.tituloResultado.textContent = `Próximos ${quantidade} períodos da escala ${horasTrabalho}x${horasFolga}.`;
-      elementos.descricaoResultado.textContent = "A visualização abaixo mostra o início e o fim de cada período.";
-      renderizarTimelinePeriodos(periodos);
-      elementos.calendarios.innerHTML = "";
-      return;
+    if (!name) {
+        return;
     }
 
-    const config = tipo === TIPO_TURNO_ROTATIVO
-      ? { sequencia_turnos: normalizarSequenciaTurnos(elementos.inputSequenciaTurnos.value) }
-      : {
-          dias_trabalho: Number(elementos.inputTempoTrabalho.value),
-          dias_folga: Number(elementos.inputTempoFolga.value)
-        };
+    const scale = { nome: name, tipo: type };
 
-    if (tipo === TIPO_TURNO_ROTATIVO && !config.sequencia_turnos.length) {
-      throw new Error("Informe pelo menos um turno para simular.");
+    if (type === TIPO_CICLO_DIAS) {
+        scale.dias_trabalho = Number($("#savedWorkDays").value);
+        scale.dias_folga = Number($("#savedOffDays").value);
     }
 
-    const dias = gerarDias(dataInicio, quantidade, tipo, config);
-    elementos.tituloResultado.textContent = `Previsão dos próximos ${quantidade} dias.`;
-    elementos.descricaoResultado.textContent = tipo === TIPO_TURNO_ROTATIVO
-      ? `Sequência usada: ${formatarSequenciaTurnos(config.sequencia_turnos)}.`
-      : "O calendário mostra trabalho e folga sem cortar sábado ou domingo.";
+    if (type === TIPO_CICLO_HORAS) {
+        scale.horas_trabalho = Number($("#savedWorkHours").value);
+        scale.horas_folga = Number($("#savedOffHours").value);
+    }
 
-    renderizarTimelineDias(dias);
-    renderizarCalendarioDias(dias);
-  } catch (erro) {
-    exibirToast(erro.message || "Não foi possível gerar a simulação.");
-  }
+    if (type === TIPO_TURNO_ROTATIVO) {
+        scale.sequencia_turnos = normalizeTurns($("#savedTurnSequence").value);
+
+        if (!scale.sequencia_turnos.length) {
+            alert("A sequência de turnos não pode ficar vazia.");
+            return;
+        }
+    }
+
+    state.savedScales.push(scale);
+    saveScales();
+    renderSavedScales();
+    elements.savedScaleForm.reset();
+    renderSavedDynamicFields();
 }
 
-function exportarJson() {
-  const blob = new Blob([JSON.stringify(escalas, null, 2)], {
-    type: "application/json"
-  });
+function applySavedScale(index) {
+    const scale = state.savedScales[index];
 
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "escalas-simulador.json";
-  link.click();
-  URL.revokeObjectURL(url);
+    if (!scale) {
+        return;
+    }
+
+    state.selectedType = scale.tipo;
+    updateScaleButtons();
+    renderSimulatorFields();
+
+    if (scale.tipo === TIPO_CICLO_DIAS) {
+        $("#workDays").value = scale.dias_trabalho;
+        $("#offDays").value = scale.dias_folga;
+    }
+
+    if (scale.tipo === TIPO_CICLO_HORAS) {
+        $("#workHours").value = scale.horas_trabalho;
+        $("#offHours").value = scale.horas_folga;
+    }
+
+    if (scale.tipo === TIPO_TURNO_ROTATIVO) {
+        $("#turnSequence").value = normalizeTurns(scale.sequencia_turnos).join(",");
+    }
+
+    document.getElementById("simulador").scrollIntoView({ behavior: "smooth" });
 }
 
-function limparDemo() {
-  const confirmado = window.confirm("Restaurar os dados padrão da demo?");
-
-  if (!confirmado) {
-    return;
-  }
-
-  escalas = normalizarListaEscalas(escalasPadrao);
-  salvarEscalas(escalas);
-  renderizarEscalas();
-  exibirToast("Dados da demo restaurados.");
+function deleteSavedScale(index) {
+    state.savedScales.splice(index, 1);
+    saveScales();
+    renderSavedScales();
 }
 
-function configurarTema() {
-  const temaSalvo = localStorage.getItem(THEME_KEY) || "dark";
-  elementos.body.dataset.theme = temaSalvo;
-  atualizarBotaoTema();
-}
+function configureScaleButtons() {
+    elements.scaleTypeButtons.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-type]");
 
-function atualizarBotaoTema() {
-  const temaAtual = elementos.body.dataset.theme || "dark";
-  elementos.botaoTema.textContent = temaAtual === "dark" ? "🌙 Tema escuro" : "☀️ Tema claro";
-}
+        if (!button) {
+            return;
+        }
 
-function alternarTema() {
-  const temaAtual = elementos.body.dataset.theme || "dark";
-  const novoTema = temaAtual === "dark" ? "light" : "dark";
-  elementos.body.dataset.theme = novoTema;
-  localStorage.setItem(THEME_KEY, novoTema);
-  atualizarBotaoTema();
-}
+        state.selectedType = button.dataset.type;
+        updateScaleButtons();
+        renderSimulatorFields();
 
-function configurarTabs() {
-  $$(".doc-tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
-      const target = tab.dataset.target;
-
-      $$(".doc-tab").forEach((item) => item.classList.remove("active"));
-      $$(".doc-panel").forEach((painel) => painel.classList.remove("active"));
-
-      tab.classList.add("active");
-      const painel = document.getElementById(target);
-
-      if (painel) {
-        painel.classList.add("active");
-      }
+        if (window.gsap) {
+            window.gsap.fromTo(
+                elements.dynamicFields,
+                { y: 12, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.32, ease: "power2.out" }
+            );
+        }
     });
-  });
 }
 
-function configurarAnimacoesDeEntrada() {
-  const itens = $$(".reveal");
+function configureTabs() {
+    $$('[data-result-tab]').forEach((button) => {
+        button.addEventListener("click", () => {
+            $$('[data-result-tab]').forEach((item) => item.classList.remove("active"));
+            $$('.tab-content').forEach((content) => content.classList.remove("active"));
 
-  if (!("IntersectionObserver" in window)) {
-    itens.forEach((item) => item.classList.add("visible"));
-    return;
-  }
-
-  const observer = new IntersectionObserver((entradas) => {
-    entradas.forEach((entrada) => {
-      if (entrada.isIntersecting) {
-        entrada.target.classList.add("visible");
-        observer.unobserve(entrada.target);
-      }
+            button.classList.add("active");
+            $(`#${button.dataset.resultTab}Tab`).classList.add("active");
+        });
     });
-  }, {
-    threshold: 0.08,
-    rootMargin: "0px 0px -40px 0px"
-  });
 
-  itens.forEach((item) => observer.observe(item));
-}
+    $$('[data-doc]').forEach((button) => {
+        button.addEventListener("click", () => {
+            $$('[data-doc]').forEach((item) => item.classList.remove("active"));
+            $$('.doc-content').forEach((content) => content.classList.remove("active"));
 
-function atualizarProgressoScroll() {
-  if (scrollPendente || !elementos.progressoScroll) {
-    return;
-  }
-
-  scrollPendente = true;
-
-  window.requestAnimationFrame(() => {
-    const alturaTotal = document.documentElement.scrollHeight - window.innerHeight;
-    const progresso = alturaTotal > 0 ? (window.scrollY / alturaTotal) * 100 : 0;
-    elementos.progressoScroll.style.width = `${progresso}%`;
-    scrollPendente = false;
-  });
-}
-
-function configurarMenuMobile() {
-  elementos.botaoMenu.addEventListener("click", () => {
-    const aberto = elementos.menuPrincipal.classList.toggle("open");
-    elementos.botaoMenu.setAttribute("aria-expanded", String(aberto));
-  });
-
-  elementos.menuPrincipal.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      elementos.menuPrincipal.classList.remove("open");
-      elementos.botaoMenu.setAttribute("aria-expanded", "false");
+            button.classList.add("active");
+            $(`#doc-${button.dataset.doc}`).classList.add("active");
+        });
     });
-  });
 }
 
-function configurarEventos() {
-  elementos.botoesTipo.forEach((botao) => {
-    botao.addEventListener("click", () => atualizarCamposSimulador(botao.dataset.tipo));
-  });
+function configureTheme() {
+    const savedTheme = localStorage.getItem(THEME_KEY);
 
-  elementos.formEscala.addEventListener("submit", gerarResultado);
-  elementos.formNovaEscala.addEventListener("submit", salvarFormularioEscala);
-  elementos.inputTipoNovaEscala.addEventListener("change", atualizarCamposCadastro);
-  elementos.botaoCancelarEdicao.addEventListener("click", limparFormularioEscala);
-  elementos.botaoExportarJson.addEventListener("click", exportarJson);
-  elementos.botaoLimparDemo.addEventListener("click", limparDemo);
-  elementos.botaoTema.addEventListener("click", alternarTema);
-  window.addEventListener("scroll", atualizarProgressoScroll, { passive: true });
+    if (savedTheme) {
+        elements.root.dataset.theme = savedTheme;
+    }
 
-  configurarMenuMobile();
-  configurarTabs();
+    updateThemeIcon();
+
+    elements.themeToggle.addEventListener("click", () => {
+        const rect = elements.themeToggle.getBoundingClientRect();
+        const nextTheme = elements.root.dataset.theme === "dark" ? "light" : "dark";
+
+        elements.themeTransition.style.setProperty("--x", `${rect.left + rect.width / 2}px`);
+        elements.themeTransition.style.setProperty("--y", `${rect.top + rect.height / 2}px`);
+        elements.themeTransition.classList.remove("active");
+        void elements.themeTransition.offsetWidth;
+        elements.themeTransition.classList.add("active");
+
+        window.setTimeout(() => {
+            elements.root.dataset.theme = nextTheme;
+            localStorage.setItem(THEME_KEY, nextTheme);
+            updateThemeIcon();
+        }, 180);
+    });
 }
 
-function definirDataInicialPadrao() {
-  const hoje = new Date();
-  const ano = hoje.getFullYear();
-  const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-  const dia = String(hoje.getDate()).padStart(2, "0");
+function updateThemeIcon() {
+    const icon = elements.root.dataset.theme === "dark" ? "sun" : "moon";
+    elements.themeToggle.innerHTML = `<i data-lucide="${icon}"></i>`;
 
-  elementos.inputDataInicial.value = `${ano}-${mes}-${dia}`;
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 }
 
-function inicializar() {
-  configurarTema();
-  escalas = carregarEscalas();
-  definirDataInicialPadrao();
-  atualizarCamposSimulador(TIPO_CICLO_DIAS);
-  atualizarCamposCadastro();
-  renderizarEscalas();
-  configurarEventos();
-  configurarAnimacoesDeEntrada();
-  atualizarProgressoScroll();
+function configureMenu() {
+    elements.mobileMenuButton.addEventListener("click", () => {
+        elements.navLinks.classList.toggle("open");
+        document.body.classList.toggle("menu-open");
+    });
+
+    elements.navLinks.addEventListener("click", (event) => {
+        if (event.target.matches("a")) {
+            elements.navLinks.classList.remove("open");
+            document.body.classList.remove("menu-open");
+        }
+    });
 }
 
-inicializar();
+function configureRevealAnimations() {
+    const revealItems = $$(".reveal");
+
+    if (!("IntersectionObserver" in window)) {
+        revealItems.forEach((item) => item.classList.add("visible"));
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.08,
+        rootMargin: "0px 0px -40px 0px"
+    });
+
+    revealItems.forEach((item) => observer.observe(item));
+}
+
+function configureScrollProgress() {
+    window.addEventListener("scroll", () => {
+        if (state.scrollTicking) {
+            return;
+        }
+
+        state.scrollTicking = true;
+
+        requestAnimationFrame(() => {
+            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0;
+
+            elements.scrollProgress.style.width = `${progress}%`;
+            state.scrollTicking = false;
+        });
+    }, { passive: true });
+}
+
+function startHeroDemo() {
+    function renderFrame() {
+        const frame = HERO_FRAMES[state.heroIndex % HERO_FRAMES.length];
+
+        elements.heroTerminalLine.textContent = frame.line;
+        elements.heroTerminalOutput.textContent = frame.output;
+        elements.heroStatusText.textContent = frame.status;
+        elements.heroStatusMeta.textContent = frame.meta;
+        elements.heroProgressBar.style.width = frame.progress;
+
+        state.heroIndex += 1;
+
+        if (window.gsap) {
+            window.gsap.fromTo(
+                [elements.heroTerminalLine, elements.heroTerminalOutput, elements.heroStatusText],
+                { y: 8, opacity: 0.5 },
+                { y: 0, opacity: 1, duration: 0.35, ease: "power2.out", stagger: 0.05 }
+            );
+        }
+    }
+
+    renderFrame();
+    window.setInterval(renderFrame, 2600);
+}
+
+function configureSavedScaleActions() {
+    elements.savedScalesList.addEventListener("click", (event) => {
+        const applyButton = event.target.closest("[data-apply-scale]");
+        const deleteButton = event.target.closest("[data-delete-scale]");
+
+        if (applyButton) {
+            applySavedScale(Number(applyButton.dataset.applyScale));
+        }
+
+        if (deleteButton) {
+            deleteSavedScale(Number(deleteButton.dataset.deleteScale));
+        }
+    });
+}
+
+function configureGsapIntro() {
+    if (!window.gsap) {
+        return;
+    }
+
+    window.gsap.from(".brand", { y: -16, opacity: 0, duration: 0.5, ease: "power2.out" });
+    window.gsap.from(".nav-links a", { y: -12, opacity: 0, duration: 0.4, stagger: 0.04, delay: 0.1 });
+    window.gsap.from(".hero-copy > *", { y: 24, opacity: 0, duration: 0.65, stagger: 0.08, delay: 0.15, ease: "power3.out" });
+    window.gsap.from(".demo-window", { rotate: -8, scale: 0.92, opacity: 0, duration: 0.8, delay: 0.2, ease: "back.out(1.4)" });
+}
+
+function initializeDefaultSimulation() {
+    runDaysSimulation();
+}
+
+function initialize() {
+    state.savedScales = loadSavedScales();
+
+    configureTheme();
+    configureMenu();
+    configureScaleButtons();
+    configureTabs();
+    configureRevealAnimations();
+    configureScrollProgress();
+    configureSavedScaleActions();
+
+    renderSimulatorFields();
+    renderSavedDynamicFields();
+    renderSavedScales();
+
+    elements.simulatorForm.addEventListener("submit", runSimulation);
+    elements.savedScaleForm.addEventListener("submit", handleSavedScaleSubmit);
+    elements.savedType.addEventListener("change", renderSavedDynamicFields);
+    elements.resetScalesButton.addEventListener("click", () => {
+        state.savedScales = DEFAULT_SCALES.map(cloneScale);
+        saveScales();
+        renderSavedScales();
+    });
+
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+
+    startHeroDemo();
+    configureGsapIntro();
+    initializeDefaultSimulation();
+}
+
+document.addEventListener("DOMContentLoaded", initialize);
