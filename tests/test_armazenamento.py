@@ -604,3 +604,198 @@ def test_editar_escala_ciclo_horas_nao_quebra_com_escala_por_dias_existente(tmp_
     assert escalas[1]["tipo"] == "ciclo_horas"
     assert escalas[1]["horas_trabalho"] == 18
     assert escalas[1]["horas_folga"] == 54
+
+def test_adicionar_escala_turno_rotativo_com_sucesso(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([])
+
+    resultado = armazenamento.adicionar_escala_turno_rotativo(
+        "Escala revezamento",
+        ["Manhã", "Tarde", "Noite", "Folga"]
+    )
+
+    escalas = armazenamento.carregar_escalas()
+
+    assert resultado == "sucesso"
+    assert len(escalas) == 1
+    assert escalas[0]["nome"] == "Escala revezamento"
+    assert escalas[0]["tipo"] == "turno_rotativo"
+    assert escalas[0]["sequencia_turnos"] == ["Manhã", "Tarde", "Noite", "Folga"]
+
+
+def test_adicionar_escala_turno_rotativo_com_nome_duplicado(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([
+        {
+            "nome": "Escala revezamento",
+            "tipo": "turno_rotativo",
+            "sequencia_turnos": ["Manhã", "Tarde", "Noite", "Folga"]
+        }
+    ])
+
+    resultado = armazenamento.adicionar_escala_turno_rotativo(
+        "Escala revezamento",
+        ["Manhã", "Manhã", "Folga"]
+    )
+
+    assert resultado == "nome_duplicado"
+
+
+def test_adicionar_escala_turno_rotativo_com_configuracao_duplicada(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([
+        {
+            "nome": "Escala A",
+            "tipo": "turno_rotativo",
+            "sequencia_turnos": ["Manhã", "Tarde", "Noite", "Folga"]
+        }
+    ])
+
+    resultado = armazenamento.adicionar_escala_turno_rotativo(
+        "Escala B",
+        ["Manhã", "Tarde", "Noite", "Folga"]
+    )
+
+    assert resultado == "configuracao_duplicada"
+
+
+def test_adicionar_escala_turno_rotativo_com_sequencia_vazia(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([])
+
+    resultado = armazenamento.adicionar_escala_turno_rotativo(
+        "Escala vazia",
+        []
+    )
+
+    assert resultado == "sequencia_vazia"
+
+def test_editar_escala_turno_rotativo_com_sucesso(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([
+        {
+            "nome": "Escala antiga",
+            "tipo": "turno_rotativo",
+            "sequencia_turnos": ["Manhã", "Tarde", "Folga"]
+        }
+    ])
+
+    resultado = armazenamento.editar_escala_turno_rotativo(
+        0,
+        "Escala atualizada",
+        ["Manhã", "Tarde", "Noite", "Folga"]
+    )
+
+    escalas = armazenamento.carregar_escalas()
+
+    assert resultado == "sucesso"
+    assert escalas[0]["nome"] == "Escala atualizada"
+    assert escalas[0]["tipo"] == "turno_rotativo"
+    assert escalas[0]["sequencia_turnos"] == ["Manhã", "Tarde", "Noite", "Folga"]
+
+
+def test_editar_escala_turno_rotativo_com_indice_invalido(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([])
+
+    resultado = armazenamento.editar_escala_turno_rotativo(
+        5,
+        "Escala atualizada",
+        ["Manhã", "Folga"]
+    )
+
+    assert resultado == "indice_invalido"
+
+
+def test_editar_escala_turno_rotativo_com_nome_duplicado(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([
+        {
+            "nome": "Escala A",
+            "tipo": "turno_rotativo",
+            "sequencia_turnos": ["Manhã", "Tarde"]
+        },
+        {
+            "nome": "Escala B",
+            "tipo": "turno_rotativo",
+            "sequencia_turnos": ["Noite", "Folga"]
+        }
+    ])
+
+    resultado = armazenamento.editar_escala_turno_rotativo(
+        0,
+        "Escala B",
+        ["Manhã", "Tarde", "Noite"]
+    )
+
+    assert resultado == "nome_duplicado"
+
+
+def test_editar_escala_turno_rotativo_com_configuracao_duplicada(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([
+        {
+            "nome": "Escala A",
+            "tipo": "turno_rotativo",
+            "sequencia_turnos": ["Manhã", "Tarde"]
+        },
+        {
+            "nome": "Escala B",
+            "tipo": "turno_rotativo",
+            "sequencia_turnos": ["Noite", "Folga"]
+        }
+    ])
+
+    resultado = armazenamento.editar_escala_turno_rotativo(
+        0,
+        "Escala C",
+        ["Noite", "Folga"]
+    )
+
+    assert resultado == "configuracao_duplicada"
+
+
+def test_editar_escala_turno_rotativo_com_sequencia_vazia(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([
+        {
+            "nome": "Escala A",
+            "tipo": "turno_rotativo",
+            "sequencia_turnos": ["Manhã", "Tarde"]
+        }
+    ])
+
+    resultado = armazenamento.editar_escala_turno_rotativo(
+        0,
+        "Escala A atualizada",
+        []
+    )
+
+    assert resultado == "sequencia_vazia"

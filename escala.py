@@ -1,6 +1,11 @@
 # Responsável pela lógica da escala.
 from datetime import datetime, timedelta
-from tipos_escala import TIPO_CICLO_DIAS, TIPO_CICLO_HORAS, TIPO_ESCALA_PADRAO
+from tipos_escala import (
+    TIPO_CICLO_DIAS,
+    TIPO_CICLO_HORAS,
+    TIPO_TURNO_ROTATIVO,
+    TIPO_ESCALA_PADRAO
+)
 
 def calcular_status(data_inicio, data_consulta, dias_trabalho, dias_folga):
     ciclo = dias_trabalho + dias_folga
@@ -25,6 +30,19 @@ def calcular_status_ciclo_horas(data_hora_inicio, data_hora_consulta, horas_trab
         return "Trabalhando"
     else:
         return "Folga"
+    
+def calcular_status_turno_rotativo(data_inicio, data_consulta, sequencia_turnos):
+
+    if not sequencia_turnos:
+        raise ValueError("A sequência de turnos não pode estar vazia.")
+
+    ciclo = len(sequencia_turnos)
+
+    dias_passados = (data_consulta - data_inicio).days
+
+    posicao_ciclo = dias_passados % ciclo
+
+    return sequencia_turnos[posicao_ciclo]
     
 def gerar_proximos_periodos_ciclo_horas(data_hora_inicio, quantidade_periodos, horas_trabalho, horas_folga):
     periodos = []
@@ -68,6 +86,13 @@ def calcular_status_por_escala(escala, data_inicio, data_consulta):
             escala["horas_trabalho"],
             escala["horas_folga"]
         )
+    
+    if tipo == TIPO_TURNO_ROTATIVO:
+        return calcular_status_turno_rotativo(
+            data_inicio,
+            data_consulta,
+            escala["sequencia_turnos"]
+        )
 
     raise NotImplementedError("Tipo de escala ainda não implementado no cálculo.")
 
@@ -90,6 +115,25 @@ def gerar_proximos_dias(data_inicio, quantidade_dias, dias_trabalho, dias_folga)
 
     return result
 
+def gerar_proximos_dias_turno_rotativo(data_inicio, quantidade_dias, sequencia_turnos):
+    resultado = []
+
+    for dia in range(quantidade_dias):
+        data_atual = data_inicio + timedelta(days=dia)
+
+        status = calcular_status_turno_rotativo(
+            data_inicio,
+            data_atual,
+            sequencia_turnos
+        )
+
+        resultado.append({
+            "data": data_atual,
+            "status": status
+        })
+
+    return resultado
+
 def gerar_proximos_dias_por_escala(escala, data_inicio, quantidade_dias):
     tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
 
@@ -100,7 +144,13 @@ def gerar_proximos_dias_por_escala(escala, data_inicio, quantidade_dias):
             escala["dias_trabalho"],
             escala["dias_folga"]
         )
-
+    if tipo == TIPO_TURNO_ROTATIVO:
+        return gerar_proximos_dias_turno_rotativo(
+            data_inicio,
+            quantidade_dias,
+            escala["sequencia_turnos"]
+        )
+    
     raise NotImplementedError("Tipo de escala ainda não implementado na geração de próximos dias.")
 
 def gerar_proximos_periodos_por_escala(escala, data_hora_inicio, quantidade_periodos):

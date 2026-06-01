@@ -17,27 +17,57 @@ from validacoes import (
 from interface import (
     exibir_menu,
     exibir_proximos_dias,
-    exibir_resultado_consulta,
-    exibir_escalas_salvas,
-    obter_resumo_escala,
-    exibir_escala_atual,
     exibir_resultado_consulta_por_tipo,
     exibir_proximos_periodos
 )
+
 from armazenamento import (
     carregar_escalas,
     adicionar_escala,
     adicionar_escala_ciclo_horas,
+    adicionar_escala_turno_rotativo,
     remover_escala,
     editar_escala_ciclo_horas,
+    editar_escala_turno_rotativo,
     editar_escala
 )
 
 from tipos_escala import (
     TIPO_ESCALA_PADRAO,
     TIPO_CICLO_HORAS,
+    TIPO_TURNO_ROTATIVO,
     obter_nome_tipo
 )
+
+
+def normalizar_sequencia_turnos(sequencia):
+    if isinstance(sequencia, str):
+        sequencia = sequencia.split(",")
+
+    return [
+        str(turno).strip()
+        for turno in sequencia
+        if str(turno).strip()
+    ]
+
+
+def formatar_sequencia_turnos(sequencia_turnos):
+    return " -> ".join(sequencia_turnos)
+
+
+def ler_sequencia_turnos():
+    while True:
+        texto = ler_texto(
+            "Digite a sequência de turnos separados por vírgula "
+            "(ex: Manhã,Tarde,Noite,Folga): "
+        )
+
+        sequencia_turnos = normalizar_sequencia_turnos(texto)
+
+        if sequencia_turnos:
+            return sequencia_turnos
+
+        print("A sequência de turnos não pode ficar vazia.")
 
 
 def criar_escala_manual(dias_trabalho=6, dias_folga=3):
@@ -56,6 +86,76 @@ def criar_escala_ciclo_horas(horas_trabalho=12, horas_folga=36):
         "horas_trabalho": horas_trabalho,
         "horas_folga": horas_folga
     }
+
+
+def criar_escala_turno_rotativo(sequencia_turnos=None):
+    if sequencia_turnos is None:
+        sequencia_turnos = [
+            "Manhã",
+            "Manhã",
+            "Tarde",
+            "Tarde",
+            "Noite",
+            "Noite",
+            "Folga",
+            "Folga"
+        ]
+
+    return {
+        "nome": "Escala turno rotativo",
+        "tipo": TIPO_TURNO_ROTATIVO,
+        "sequencia_turnos": sequencia_turnos
+    }
+
+
+def obter_resumo_escala(escala):
+    tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
+
+    if tipo == TIPO_CICLO_HORAS:
+        return f"{escala['horas_trabalho']}x{escala['horas_folga']} horas"
+
+    if tipo == TIPO_TURNO_ROTATIVO:
+        quantidade_turnos = len(escala.get("sequencia_turnos", []))
+        return f"Turno rotativo ({quantidade_turnos} etapas)"
+
+    return f"{escala['dias_trabalho']}x{escala['dias_folga']} dias"
+
+
+def exibir_escala_atual(escala_atual):
+    tipo = escala_atual.get("tipo", TIPO_ESCALA_PADRAO)
+    tipo_formatado = obter_nome_tipo(tipo)
+
+    print("\nEscala atual:")
+    print(f"Nome: {escala_atual['nome']}")
+    print(f"Tipo: {tipo_formatado}")
+
+    if tipo == TIPO_CICLO_HORAS:
+        print(f"Horas trabalhadas: {escala_atual['horas_trabalho']}")
+        print(f"Horas de folga: {escala_atual['horas_folga']}")
+
+    elif tipo == TIPO_TURNO_ROTATIVO:
+        sequencia_turnos = escala_atual.get("sequencia_turnos", [])
+        print(f"Sequência: {formatar_sequencia_turnos(sequencia_turnos)}")
+
+    else:
+        print(f"Dias trabalhados: {escala_atual['dias_trabalho']}")
+        print(f"Dias de folga: {escala_atual['dias_folga']}")
+
+
+def exibir_escalas_salvas(escalas):
+    if not escalas:
+        print("\nNenhuma escala salva.")
+        return
+
+    print("\n==== ESCALAS SALVAS ====")
+
+    for indice, escala in enumerate(escalas, start=1):
+        tipo = escala.get("tipo", TIPO_ESCALA_PADRAO)
+        tipo_formatado = obter_nome_tipo(tipo)
+        resumo = obter_resumo_escala(escala)
+
+        print(f"{indice} - {escala['nome']} | {tipo_formatado} | {resumo}")
+
 
 def consultar_status(escala_atual):
     tipo = escala_atual.get("tipo", TIPO_ESCALA_PADRAO)
@@ -82,6 +182,9 @@ def consultar_status(escala_atual):
 
     except NotImplementedError as erro:
         print(f"\n{erro}")
+
+    except ValueError as erro:
+        print(f"\nErro: {erro}")
 
 
 def visualizar_proximos(escala_atual):
@@ -117,15 +220,19 @@ def visualizar_proximos(escala_atual):
     except NotImplementedError as erro:
         print(f"\n{erro}")
 
+    except ValueError as erro:
+        print(f"\nErro: {erro}")
+
 
 def alterar_escala_atual():
     print("\nTipo de escala:")
     print("1 - Ciclo por dias")
     print("2 - Ciclo por horas")
+    print("3 - Turno rotativo")
 
     tipo_escolhido = ler_opcao_menu(
         "Escolha o tipo de escala: ",
-        ["1", "2"]
+        ["1", "2", "3"]
     )
 
     if tipo_escolhido == "1":
@@ -142,9 +249,25 @@ def alterar_escala_atual():
 
         return escala_atual
 
-    escala_atual = criar_escala_ciclo_horas(12, 36)
+    if tipo_escolhido == "2":
+        horas_trabalho = ler_numero("Quantas horas de trabalho? ")
+        horas_folga = ler_numero("Quantas horas de folga? ")
 
-    print("\nEscala 12x36 aplicada com sucesso.")
+        escala_atual = criar_escala_ciclo_horas(
+            horas_trabalho,
+            horas_folga
+        )
+
+        print("\nEscala por horas aplicada com sucesso.")
+        exibir_escala_atual(escala_atual)
+
+        return escala_atual
+
+    sequencia_turnos = ler_sequencia_turnos()
+
+    escala_atual = criar_escala_turno_rotativo(sequencia_turnos)
+
+    print("\nEscala de turno rotativo aplicada com sucesso.")
     exibir_escala_atual(escala_atual)
 
     return escala_atual
@@ -170,10 +293,11 @@ def cadastrar_escala():
     print("\nTipo de escala:")
     print("1 - Ciclo por dias")
     print("2 - Ciclo por horas")
+    print("3 - Turno rotativo")
 
     tipo_escolhido = ler_opcao_menu(
         "Escolha o tipo de escala para cadastrar: ",
-        ["1", "2"]
+        ["1", "2", "3"]
     )
 
     nome = ler_texto("Digite o nome da escala: ")
@@ -188,7 +312,7 @@ def cadastrar_escala():
             dias_folga
         )
 
-    else:
+    elif tipo_escolhido == "2":
         horas_trabalho = ler_numero("Digite a quantidade de horas trabalhadas: ")
         horas_folga = ler_numero("Digite a quantidade de horas de folga: ")
 
@@ -196,6 +320,14 @@ def cadastrar_escala():
             nome,
             horas_trabalho,
             horas_folga
+        )
+
+    else:
+        sequencia_turnos = ler_sequencia_turnos()
+
+        resultado = adicionar_escala_turno_rotativo(
+            nome,
+            sequencia_turnos
         )
 
     if resultado == "sucesso":
@@ -206,6 +338,10 @@ def cadastrar_escala():
 
     elif resultado == "configuracao_duplicada":
         print("Já existe uma escala com essa mesma configuração.")
+
+    elif resultado == "sequencia_vazia":
+        print("A sequência de turnos não pode ficar vazia.")
+
 
 def editar_escala_salva(escala_atual):
     escalas = carregar_escalas()
@@ -259,6 +395,37 @@ def editar_escala_salva(escala_atual):
             "horas_folga": novas_horas_folga
         }
 
+    elif tipo == TIPO_TURNO_ROTATIVO:
+        sequencia_atual = escala_selecionada.get("sequencia_turnos", [])
+
+        print(f"Sequência atual: {formatar_sequencia_turnos(sequencia_atual)}")
+
+        nova_sequencia_turnos = ler_sequencia_turnos()
+
+        print("\nResumo da alteração:")
+        print(f"Nome: {escala_selecionada['nome']} -> {novo_nome}")
+        print(f"Tipo: {tipo_formatado}")
+        print(f"Sequência: {formatar_sequencia_turnos(sequencia_atual)}")
+        print(f"Nova sequência: {formatar_sequencia_turnos(nova_sequencia_turnos)}")
+
+        confirmacao = confirmar_acao("Deseja salvar essa alteração?")
+
+        if not confirmacao:
+            print("Edição cancelada.")
+            return escala_atual
+
+        resultado = editar_escala_turno_rotativo(
+            indice,
+            novo_nome,
+            nova_sequencia_turnos
+        )
+
+        escala_editada = {
+            "nome": novo_nome,
+            "tipo": TIPO_TURNO_ROTATIVO,
+            "sequencia_turnos": nova_sequencia_turnos
+        }
+
     else:
         print(f"Dias trabalhados atuais: {escala_selecionada['dias_trabalho']}")
         print(f"Dias de folga atuais: {escala_selecionada['dias_folga']}")
@@ -308,7 +475,11 @@ def editar_escala_salva(escala_atual):
     elif resultado == "configuracao_duplicada":
         print("Já existe uma escala com essa configuração.")
 
+    elif resultado == "sequencia_vazia":
+        print("A sequência de turnos não pode ficar vazia.")
+
     return escala_atual
+
 
 def excluir_escala_salva(escala_atual):
     escalas = carregar_escalas()

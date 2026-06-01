@@ -5,6 +5,7 @@ from tipos_escala import (
     TIPO_ESCALA_PADRAO,
     TIPO_CICLO_DIAS,
     TIPO_CICLO_HORAS,
+    TIPO_TURNO_ROTATIVO,
     validar_tipo_escala
 )
 
@@ -94,6 +95,40 @@ def criar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
         "horas_folga": horas_folga
     }
 
+def normalizar_sequencia_turnos(sequencia_turnos):
+    return [
+        str(turno).strip()
+        for turno in sequencia_turnos
+        if str(turno).strip()
+    ]
+
+
+def criar_escala_turno_rotativo(nome, sequencia_turnos):
+    return {
+        "nome": nome.strip(),
+        "tipo": TIPO_TURNO_ROTATIVO,
+        "sequencia_turnos": normalizar_sequencia_turnos(sequencia_turnos)
+    }
+
+
+def existe_sequencia_turnos_duplicada(escalas, sequencia_turnos, indice_ignorado=None):
+    sequencia_normalizada = normalizar_sequencia_turnos(sequencia_turnos)
+
+    for indice, escala in enumerate(escalas):
+        if indice == indice_ignorado:
+            continue
+
+        if escala.get("tipo", TIPO_ESCALA_PADRAO) != TIPO_TURNO_ROTATIVO:
+            continue
+
+        sequencia_existente = normalizar_sequencia_turnos(
+            escala.get("sequencia_turnos", [])
+        )
+
+        if sequencia_existente == sequencia_normalizada:
+            return True
+
+    return False
 
 def existe_nome_duplicado(escalas, nome, indice_ignorado=None):
     nome_normalizado = normalizar_nome(nome)
@@ -186,6 +221,30 @@ def adicionar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
 
     return "sucesso"
 
+def adicionar_escala_turno_rotativo(nome, sequencia_turnos):
+    escalas = carregar_escalas()
+
+    sequencia_normalizada = normalizar_sequencia_turnos(sequencia_turnos)
+
+    if not sequencia_normalizada:
+        return "sequencia_vazia"
+
+    if existe_nome_duplicado(escalas, nome):
+        return "nome_duplicado"
+
+    if existe_sequencia_turnos_duplicada(escalas, sequencia_normalizada):
+        return "configuracao_duplicada"
+
+    nova_escala = criar_escala_turno_rotativo(
+        nome,
+        sequencia_normalizada
+    )
+
+    escalas.append(nova_escala)
+    salvar_escalas(escalas)
+
+    return "sucesso"
+
 
 def remover_escala(indice):
     escalas = carregar_escalas()
@@ -255,6 +314,36 @@ def editar_escala_ciclo_horas(
         novo_nome,
         novas_horas_trabalho,
         novas_horas_folga
+    )
+
+    salvar_escalas(escalas)
+
+    return "sucesso"
+
+def editar_escala_turno_rotativo(indice, novo_nome, nova_sequencia_turnos):
+    escalas = carregar_escalas()
+
+    if indice < 0 or indice >= len(escalas):
+        return "indice_invalido"
+
+    sequencia_normalizada = normalizar_sequencia_turnos(nova_sequencia_turnos)
+
+    if not sequencia_normalizada:
+        return "sequencia_vazia"
+
+    if existe_nome_duplicado(escalas, novo_nome, indice):
+        return "nome_duplicado"
+
+    if existe_sequencia_turnos_duplicada(
+        escalas,
+        sequencia_normalizada,
+        indice
+    ):
+        return "configuracao_duplicada"
+
+    escalas[indice] = criar_escala_turno_rotativo(
+        novo_nome,
+        sequencia_normalizada
     )
 
     salvar_escalas(escalas)
