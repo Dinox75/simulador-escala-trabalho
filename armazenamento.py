@@ -319,3 +319,33 @@ def editar_escala_ciclo_horas(
     salvar_escalas(escalas)
 
     return "sucesso"
+
+def editar_escala_turno_rotativo(indice, novo_nome, nova_sequencia_turnos):
+    escalas = carregar_escalas()
+
+    if indice < 0 or indice >= len(escalas):
+        return "indice_invalido"
+
+    sequencia_normalizada = normalizar_sequencia_turnos(nova_sequencia_turnos)
+
+    if not sequencia_normalizada:
+        return "sequencia_vazia"
+
+    if existe_nome_duplicado(escalas, novo_nome, indice):
+        return "nome_duplicado"
+
+    if existe_sequencia_turnos_duplicada(
+        escalas,
+        sequencia_normalizada,
+        indice
+    ):
+        return "configuracao_duplicada"
+
+    escalas[indice] = criar_escala_turno_rotativo(
+        novo_nome,
+        sequencia_normalizada
+    )
+
+    salvar_escalas(escalas)
+
+    return "sucesso"
