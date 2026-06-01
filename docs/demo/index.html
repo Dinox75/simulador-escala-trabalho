@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Demo web do Simulador de Escala de Trabalho: consulte escalas, visualize ciclos e planeje turnos.">
+    <meta name="description" content="Demo web do Simulador de Escala de Trabalho: consulte escalas 6x3, 12x36, turnos rotativos e visualize ciclos de trabalho.">
     <title>Simulador de Escala de Trabalho | Demo Interativa</title>
 
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -15,17 +17,17 @@
 </head>
 <body>
     <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
-    <div class="theme-transition" id="themeTransition" aria-hidden="true"></div>
+    <div class="theme-flash" id="themeFlash" aria-hidden="true"></div>
 
     <div class="background-scene" aria-hidden="true">
-        <span class="blob blob-one"></span>
-        <span class="blob blob-two"></span>
-        <span class="blob blob-three"></span>
+        <span class="orb orb-a"></span>
+        <span class="orb orb-b"></span>
+        <span class="orb orb-c"></span>
         <span class="grid-overlay"></span>
-        <span class="noise-overlay"></span>
+        <span class="grain-overlay"></span>
     </div>
 
-    <header class="site-header">
+    <header class="site-header" id="siteHeader">
         <a class="brand" href="#inicio" aria-label="Ir para o início">
             <span class="brand-mark">SE</span>
             <span>
@@ -44,7 +46,7 @@
         </nav>
 
         <div class="header-actions">
-            <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema">
+            <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro ou escuro">
                 <i data-lucide="moon"></i>
             </button>
             <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu">
@@ -61,12 +63,10 @@
                     Bem-vindo à demo v0.6
                 </span>
 
-                <h1>
-                    Sua escala de trabalho clara, visual e fácil de consultar.
-                </h1>
+                <h1>Transforme escala confusa em uma visão clara de trabalho, folga e turno.</h1>
 
                 <p class="hero-subtitle">
-                    Uma experiência pensada para o colaborador entender sua rotina e para a empresa enxergar melhor ciclos, folgas e turnos em um painel simples.
+                    Uma demo interativa para colaborador consultar a própria rotina e para empresas visualizarem ciclos de forma objetiva, bonita e fácil de explicar.
                 </p>
 
                 <div class="hero-actions">
@@ -75,20 +75,20 @@
                         <i data-lucide="arrow-right"></i>
                     </a>
                     <a class="button ghost" href="#dor">
-                        Ver dor do projeto
+                        Entender a dor
                     </a>
                 </div>
 
                 <div class="trust-row" aria-label="Recursos do projeto">
                     <span><i data-lucide="calendar-check"></i> 6x3</span>
                     <span><i data-lucide="clock-3"></i> 12x36</span>
-                    <span><i data-lucide="refresh-cw"></i> Turno rotativo</span>
-                    <span><i data-lucide="database"></i> Escalas salvas</span>
+                    <span><i data-lucide="refresh-cw"></i> Rotativo</span>
+                    <span><i data-lucide="database"></i> JSON</span>
                 </div>
             </div>
 
-            <div class="hero-visual reveal" aria-label="Demonstração animada do projeto">
-                <div class="demo-window glass-card">
+            <div class="hero-visual reveal" aria-label="Demonstração animada do projeto funcionando">
+                <div class="demo-window glass-card live-demo-card">
                     <div class="window-topbar">
                         <span></span>
                         <span></span>
@@ -102,6 +102,18 @@
                         <div class="terminal-line accent" id="heroTerminalLine">Aplicando escala 6x3</div>
                         <div class="terminal-output" id="heroTerminalOutput">
                             Hoje: Trabalhando · Próxima folga em 2 dias
+                        </div>
+                    </div>
+
+                    <div class="scale-runner" aria-hidden="true">
+                        <span class="runner-dot"></span>
+                        <div class="runner-track">
+                            <span class="runner-step active">D1</span>
+                            <span class="runner-step active">D2</span>
+                            <span class="runner-step active">D3</span>
+                            <span class="runner-step">F1</span>
+                            <span class="runner-step">F2</span>
+                            <span class="runner-step">F3</span>
                         </div>
                     </div>
                 </div>
@@ -127,12 +139,48 @@
         </section>
 
         <section class="section problem-section" id="dor">
-            <div class="section-heading reveal">
-                <span class="eyebrow"><i data-lucide="target"></i> Por que o projeto existe?</span>
-                <h2>A dor é simples: escala mal explicada vira confusão.</h2>
-                <p>
-                    Muitos colaboradores precisam perguntar se trabalham, quando folgam ou qual turno está valendo. Empresas também sofrem quando a regra está espalhada em grupos, planilhas ou anotações soltas.
-                </p>
+            <div class="problem-layout">
+                <div class="problem-copy reveal">
+                    <span class="eyebrow"><i data-lucide="target"></i> Por que o projeto existe?</span>
+                    <h2>A dor é simples: escala mal explicada vira confusão.</h2>
+                    <p>
+                        Quando a escala fica em conversa de grupo, papel, planilha solta ou memória de alguém, a dúvida aparece sempre: hoje eu trabalho? qual turno? quando folgo? O projeto nasceu para transformar essa regra em consulta visual.
+                    </p>
+                    <p>
+                        A proposta não é substituir um sistema corporativo completo agora. A ideia inicial é validar uma ferramenta objetiva, com boa usabilidade, que ajude a reduzir ruído entre colaborador, liderança e rotina real de operação.
+                    </p>
+                </div>
+
+                <div class="process-demo glass-card reveal" aria-label="Animação explicando o funcionamento do projeto">
+                    <div class="process-top">
+                        <span class="live-dot"></span>
+                        <strong>Demonstração do fluxo</strong>
+                    </div>
+
+                    <div class="process-screen">
+                        <div class="process-line active" data-process-line>
+                            <span>1</span>
+                            <p>Usuário escolhe o tipo de escala</p>
+                        </div>
+                        <div class="process-line" data-process-line>
+                            <span>2</span>
+                            <p>Informa data inicial e data de consulta</p>
+                        </div>
+                        <div class="process-line" data-process-line>
+                            <span>3</span>
+                            <p>Motor calcula a posição no ciclo</p>
+                        </div>
+                        <div class="process-line" data-process-line>
+                            <span>4</span>
+                            <p>Resultado aparece em calendário e linha do tempo</p>
+                        </div>
+                    </div>
+
+                    <div class="process-result">
+                        <small>Resposta simulada</small>
+                        <strong id="processResultText">Status: Trabalhando</strong>
+                    </div>
+                </div>
             </div>
 
             <div class="problem-grid">
@@ -145,7 +193,7 @@
                 <article class="problem-card reveal">
                     <i data-lucide="calendar-x-2"></i>
                     <h3>Folgas difíceis de prever</h3>
-                    <p>Escalas como 6x3, 12x36 e turnos rotativos não são tão intuitivas quando vistas só em texto.</p>
+                    <p>Escalas como 6x3, 12x36 e turnos rotativos ficam mais compreensíveis quando viram calendário.</p>
                 </article>
 
                 <article class="problem-card reveal">
@@ -160,7 +208,7 @@
             <div class="section-heading reveal">
                 <span class="eyebrow"><i data-lucide="play-circle"></i> Demonstração interativa</span>
                 <h2>Escolha o tipo de escala e veja o projeto rodando.</h2>
-                <p>Os botões deixam a escolha mais visível para o usuário final, sem depender de menus escondidos.</p>
+                <p>O turno rotativo agora é montado por botões. O usuário vê a sequência, pode remover etapas e não se perde no preenchimento.</p>
             </div>
 
             <div class="simulator-layout">
@@ -180,7 +228,7 @@
                         <button class="scale-type-button" type="button" data-type="turno_rotativo">
                             <i data-lucide="repeat-2"></i>
                             <strong>Turno rotativo</strong>
-                            <small>Manhã, tarde, noite, folga</small>
+                            <small>Manhã, tarde, noite e folga</small>
                         </button>
                     </div>
 
@@ -223,22 +271,18 @@
                     </div>
                 </div>
             </div>
-        </section>
 
-        <section class="section saved-section" id="escalas">
-            <div class="section-heading reveal">
-                <span class="eyebrow"><i data-lucide="save"></i> Escalas salvas</span>
-                <h2>Crie modelos para reaproveitar depois.</h2>
-                <p>Essa área simula o comportamento do projeto Python com armazenamento local no navegador.</p>
-            </div>
+            <div class="saved-scales glass-card reveal">
+                <div>
+                    <span class="eyebrow"><i data-lucide="save"></i> Escalas salvas</span>
+                    <h3>Cadastre e aplique modelos de escala na demo.</h3>
+                    <p>Esta área simula o armazenamento em JSON do projeto Python usando o localStorage do navegador.</p>
+                </div>
 
-            <div class="saved-layout">
-                <form class="glass-card saved-form reveal" id="savedScaleForm">
-                    <h3>Cadastrar escala</h3>
-
+                <form class="saved-form" id="savedScaleForm">
                     <label>
                         Nome da escala
-                        <input id="savedName" type="text" placeholder="Ex: Escala produção A" required>
+                        <input id="savedName" type="text" placeholder="Ex: Revezamento Ferrero" required>
                     </label>
 
                     <label>
@@ -258,130 +302,234 @@
                     </button>
                 </form>
 
-                <div class="saved-list glass-card reveal">
-                    <div class="list-header">
-                        <h3>Modelos disponíveis</h3>
-                        <button class="text-button" id="resetScalesButton" type="button">Restaurar padrões</button>
-                    </div>
-                    <div id="savedScalesList" class="scale-list"></div>
-                </div>
+                <div class="saved-list" id="savedScalesList"></div>
+
+                <button class="button danger-outline" id="resetScalesButton" type="button">
+                    Resetar exemplos
+                </button>
             </div>
         </section>
 
         <section class="section future-section" id="futuro">
             <div class="section-heading reveal">
                 <span class="eyebrow"><i data-lucide="rocket"></i> Visão de futuro</span>
-                <h2>Duas áreas futuras para transformar a demo em produto.</h2>
-                <p>A ideia é evoluir de um simulador de portfólio para uma ferramenta com valor real para pessoas e empresas.</p>
+                <h2>O simulador pode crescer em duas frentes: colaborador e empresa.</h2>
+                <p>A v0.6 inicia o caminho dos turnos rotativos. As próximas versões podem transformar a demo em uma ferramenta mais completa.</p>
             </div>
 
             <div class="future-grid">
-                <article class="future-card collaborator reveal">
-                    <span class="future-icon"><i data-lucide="user-round"></i></span>
+                <article class="future-card reveal">
+                    <i data-lucide="user-round-check"></i>
                     <h3>Área do colaborador</h3>
-                    <p>Um espaço simples para consultar hoje, próximos dias, folgas, troca de turno e alertas personalizados.</p>
+                    <p>Um painel pessoal para consultar escala atual, próximos turnos, folgas futuras, troca de turno e lembretes.</p>
                     <ul>
-                        <li>Consulta rápida da escala atual</li>
-                        <li>Calendário mensal com folgas destacadas</li>
-                        <li>Notificações antes de mudanças de turno</li>
-                        <li>Histórico de escalas aplicadas</li>
+                        <li>Consulta rápida por data.</li>
+                        <li>Calendário mensal visual.</li>
+                        <li>Notificações antes do turno.</li>
+                        <li>Histórico de escalas aplicadas.</li>
                     </ul>
                 </article>
 
-                <article class="future-card company reveal">
-                    <span class="future-icon"><i data-lucide="landmark"></i></span>
+                <article class="future-card reveal">
+                    <i data-lucide="building-2"></i>
                     <h3>Área da empresa</h3>
-                    <p>Um painel para cadastrar equipes, padrões de escala e acompanhar a distribuição de turnos.</p>
+                    <p>Um painel de gestão para cadastrar padrões, distribuir escalas por equipe e reduzir dúvidas operacionais.</p>
                     <ul>
-                        <li>Cadastro de setores e equipes</li>
-                        <li>Gestão de modelos de escala</li>
-                        <li>Visão macro de cobertura operacional</li>
-                        <li>Exportação de relatórios</li>
+                        <li>Cadastro de equipes e setores.</li>
+                        <li>Modelos de escala por função.</li>
+                        <li>Exportação de relatórios.</li>
+                        <li>Visão macro de cobertura por turno.</li>
                     </ul>
                 </article>
             </div>
-        </section>
 
-        <section class="section docs-section" id="documentacao">
-            <div class="section-heading reveal">
-                <span class="eyebrow"><i data-lucide="book-open-text"></i> Documentação</span>
-                <h2>Como a lógica funciona por trás da interface.</h2>
-            </div>
-
-            <div class="docs-card glass-card reveal">
-                <div class="docs-tabs" role="tablist" aria-label="Abas de documentação">
-                    <button class="doc-tab active" type="button" data-doc="dias">Ciclo por dias</button>
-                    <button class="doc-tab" type="button" data-doc="horas">Ciclo por horas</button>
-                    <button class="doc-tab" type="button" data-doc="rotativo">Turno rotativo</button>
-                    <button class="doc-tab" type="button" data-doc="roadmap">Roadmap</button>
+            <div class="complex-cycle glass-card reveal">
+                <div class="complex-copy">
+                    <span class="eyebrow"><i data-lucide="shuffle"></i> Futuro: ciclo de turnos sequenciais</span>
+                    <h3>Escalas em blocos, parecidas com a rotina real de revezamento.</h3>
+                    <p>
+                        Algumas empresas usam ciclos mais longos, com blocos de tarde, noite, folga e manhã. Ainda é uma ideia em estudo no projeto, mas pode ser chamada provisoriamente de <strong>ciclo de turnos sequenciais</strong> ou <strong>escala rotativa em blocos</strong>.
+                    </p>
+                    <p>
+                        Exemplo inspirado em uma rotina real: três tardes, três noites, três folgas, depois três tardes, três noites, duas folgas, depois seis manhãs, uma folga e o ciclo recomeça.
+                    </p>
                 </div>
 
-                <div class="doc-content active" id="doc-dias">
-                    <h3>Ciclo por dias</h3>
-                    <p>Calcula a posição do dia consultado dentro de um ciclo formado por dias trabalhados + dias de folga.</p>
-                    <pre><code>ciclo = dias_trabalho + dias_folga
-posição = dias_passados % ciclo</code></pre>
-                </div>
-
-                <div class="doc-content" id="doc-horas">
-                    <h3>Ciclo por horas</h3>
-                    <p>Usado para escalas como 12x36, onde a regra depende de data e hora inicial.</p>
-                    <pre><code>ciclo = horas_trabalho + horas_folga
-posição = horas_passadas % ciclo</code></pre>
-                </div>
-
-                <div class="doc-content" id="doc-rotativo">
-                    <h3>Turno rotativo</h3>
-                    <p>Usa uma sequência definida pelo usuário, como Manhã → Tarde → Noite → Folga, e retorna a etapa correspondente ao dia consultado.</p>
-                    <pre><code>sequência = ["Manhã", "Tarde", "Noite", "Folga"]
-turno = sequência[dias_passados % len(sequência)]</code></pre>
-                </div>
-
-                <div class="doc-content" id="doc-roadmap">
-                    <h3>Roadmap</h3>
-                    <p>Próximos passos planejados para evolução do projeto.</p>
-                    <div class="roadmap-list">
-                        <span>v0.6 · Turno rotativo no CLI</span>
-                        <span>v0.7 · Exportação e relatórios</span>
-                        <span>v0.8 · Área do colaborador</span>
-                        <span>v1.0 · Painel empresarial</span>
+                <div class="cycle-map" aria-label="Exemplo visual de ciclo de turnos sequenciais">
+                    <div class="cycle-row">
+                        <span class="turn-pill tarde">Tarde</span>
+                        <span class="turn-pill tarde">Tarde</span>
+                        <span class="turn-pill tarde">Tarde</span>
+                        <span class="turn-pill noite">Noite</span>
+                        <span class="turn-pill noite">Noite</span>
+                        <span class="turn-pill noite">Noite</span>
+                        <span class="turn-pill folga">Folga</span>
+                        <span class="turn-pill folga">Folga</span>
+                        <span class="turn-pill folga">Folga</span>
+                    </div>
+                    <div class="cycle-row">
+                        <span class="turn-pill tarde">Tarde</span>
+                        <span class="turn-pill tarde">Tarde</span>
+                        <span class="turn-pill tarde">Tarde</span>
+                        <span class="turn-pill noite">Noite</span>
+                        <span class="turn-pill noite">Noite</span>
+                        <span class="turn-pill noite">Noite</span>
+                        <span class="turn-pill folga">Folga</span>
+                        <span class="turn-pill folga">Folga</span>
+                    </div>
+                    <div class="cycle-row">
+                        <span class="turn-pill manha">Manhã</span>
+                        <span class="turn-pill manha">Manhã</span>
+                        <span class="turn-pill manha">Manhã</span>
+                        <span class="turn-pill manha">Manhã</span>
+                        <span class="turn-pill manha">Manhã</span>
+                        <span class="turn-pill manha">Manhã</span>
+                        <span class="turn-pill folga">Folga</span>
+                        <span class="turn-pill repeat">Repete</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="section about-section" id="sobre">
-            <div class="about-card glass-card reveal">
-                <div>
-                    <span class="eyebrow"><i data-lucide="info"></i> Sobre o projeto</span>
-                    <h2>Um projeto Python que cresceu para uma experiência visual.</h2>
+        <section class="section docs-section" id="documentacao">
+            <div class="section-heading reveal">
+                <span class="eyebrow"><i data-lucide="book-open"></i> Documentação</span>
+                <h2>Como a regra funciona por trás da interface.</h2>
+                <p>Um resumo técnico para quem quer entender a lógica do projeto antes de olhar o código.</p>
+            </div>
+
+            <div class="docs-card glass-card reveal">
+                <div class="docs-tabs" role="tablist" aria-label="Documentação do projeto">
+                    <button class="doc-tab active" type="button" data-doc-tab="dias">Ciclo por dias</button>
+                    <button class="doc-tab" type="button" data-doc-tab="horas">Ciclo por horas</button>
+                    <button class="doc-tab" type="button" data-doc-tab="rotativo">Turno rotativo</button>
+                    <button class="doc-tab" type="button" data-doc-tab="arquitetura">Arquitetura</button>
                 </div>
-                <p>
-                    O Simulador de Escala de Trabalho começou como um projeto de lógica em Python para consultar dias de trabalho e folga. A demo web transforma essa lógica em uma experiência mais amigável, com visualização por cards, linha do tempo e calendário.
-                </p>
+
+                <article class="doc-panel active" id="doc-dias">
+                    <h3>Ciclo por dias</h3>
+                    <p>Usa a soma dos dias trabalhados e dias de folga para formar um ciclo. Depois calcula a posição da data consultada dentro desse ciclo.</p>
+                    <pre><code>ciclo = dias_trabalho + dias_folga
+posicao = dias_passados % ciclo
+status = "Trabalhando" se posicao &lt; dias_trabalho</code></pre>
+                </article>
+
+                <article class="doc-panel" id="doc-horas">
+                    <h3>Ciclo por horas</h3>
+                    <p>Segue o mesmo princípio, mas usa horas. É útil para escalas como 12x36, em que a virada pode acontecer no mesmo dia ou atravessar madrugada.</p>
+                    <pre><code>ciclo = horas_trabalho + horas_folga
+posicao = horas_passadas % ciclo
+status = "Trabalhando" se posicao &lt; horas_trabalho</code></pre>
+                </article>
+
+                <article class="doc-panel" id="doc-rotativo">
+                    <h3>Turno rotativo</h3>
+                    <p>Usa uma sequência personalizada. Cada posição da lista representa um dia do ciclo. Quando chega ao fim, a sequência recomeça.</p>
+                    <pre><code>sequencia = ["Manhã", "Tarde", "Noite", "Folga"]
+posicao = dias_passados % len(sequencia)
+status = sequencia[posicao]</code></pre>
+                </article>
+
+                <article class="doc-panel" id="doc-arquitetura">
+                    <h3>Arquitetura inicial</h3>
+                    <p>O projeto Python separa responsabilidades: cálculo em <code>escala.py</code>, dados em <code>armazenamento.py</code>, validações em <code>validacoes.py</code> e exibição em <code>interface.py</code>.</p>
+                    <pre><code>main.py → fluxo do programa
+escala.py → regras de cálculo
+armazenamento.py → JSON
+interface.py → saída visual
+validacoes.py → entradas seguras</code></pre>
+                </article>
+            </div>
+        </section>
+
+        <section class="section about-section" id="sobre">
+            <div class="about-layout">
+                <div class="about-copy reveal">
+                    <span class="eyebrow"><i data-lucide="info"></i> Sobre o projeto</span>
+                    <h2>Um projeto de portfólio com problema real, evolução incremental e foco em usabilidade.</h2>
+                    <p>
+                        O Simulador de Escala de Trabalho nasceu como um projeto Python de linha de comando para praticar fundamentos importantes: datas, funções, modularização, persistência em JSON, validação de entrada e testes automatizados.
+                    </p>
+                    <p>
+                        A evolução natural foi transformar a lógica em uma demo web. Assim, o projeto deixa de ser apenas um script técnico e passa a comunicar valor para usuários reais: quem trabalha em escala e quem precisa organizar equipes.
+                    </p>
+                    <p>
+                        A proposta atual é manter o núcleo simples e confiável, enquanto a interface ganha clareza visual. Cada versão adiciona uma camada: primeiro ciclos por dias, depois ciclos por horas, agora turnos rotativos e futuramente ciclos em blocos mais complexos.
+                    </p>
+                </div>
+
+                <div class="about-animation glass-card reveal" aria-label="Vídeo animado demonstrativo do projeto">
+                    <div class="video-frame">
+                        <div class="video-topbar">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <strong>demo_interativa.mp4</strong>
+                        </div>
+                        <div class="video-stage">
+                            <div class="video-calendar">
+                                <span class="video-day active">Seg</span>
+                                <span class="video-day active">Ter</span>
+                                <span class="video-day">Qua</span>
+                                <span class="video-day folga">Qui</span>
+                                <span class="video-day folga">Sex</span>
+                                <span class="video-day active">Sáb</span>
+                                <span class="video-day">Dom</span>
+                            </div>
+                            <div class="video-status-card">
+                                <small>Consulta</small>
+                                <strong id="aboutVideoStatus">Próxima folga encontrada</strong>
+                                <span class="video-loader"><em></em></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section class="section terms-section" id="termos">
+            <div class="section-heading reveal">
+                <span class="eyebrow"><i data-lucide="shield-check"></i> Termos de uso</span>
+                <h2>Uso responsável da demo.</h2>
+                <p>Esta página apresenta uma simulação para fins educacionais, técnicos e demonstrativos.</p>
+            </div>
+
             <div class="terms-grid">
-                <article class="glass-card reveal">
-                    <h3>Termos de uso</h3>
-                    <p>Esta página é uma demonstração educacional e de portfólio. Ela não substitui sistemas oficiais de RH, controle de jornada ou gestão trabalhista.</p>
+                <article class="terms-card reveal">
+                    <h3>1. Finalidade</h3>
+                    <p>O simulador é um projeto de estudo e portfólio. Ele demonstra cálculos de escala com base em dados informados pelo usuário, sem substituir sistemas oficiais de RH, folha, ponto ou gestão corporativa.</p>
                 </article>
-                <article class="glass-card reveal">
-                    <h3>Dados locais</h3>
-                    <p>As escalas criadas na demo ficam salvas apenas no navegador por meio de localStorage. Nenhuma informação é enviada para servidor.</p>
+
+                <article class="terms-card reveal">
+                    <h3>2. Conferência obrigatória</h3>
+                    <p>Antes de usar qualquer resultado em contexto real, confira com a empresa, liderança ou documento oficial da escala. A demo ajuda na visualização, mas não deve ser a única fonte de decisão.</p>
                 </article>
-                <article class="glass-card reveal">
-                    <h3>Limitações</h3>
-                    <p>Feriados, banco de horas, trocas de turno e regras legais específicas ainda não fazem parte da simulação.</p>
+
+                <article class="terms-card reveal">
+                    <h3>3. Dados locais</h3>
+                    <p>As escalas salvas na demonstração ficam no navegador por meio de localStorage. Elas não são enviadas para servidor e podem ser apagadas ao limpar os dados do navegador.</p>
+                </article>
+
+                <article class="terms-card reveal">
+                    <h3>4. Limitações</h3>
+                    <p>Regras especiais como feriados, banco de horas, trocas de turno, afastamentos, férias, faltas, horas extras e exceções operacionais ainda não fazem parte do cálculo padrão.</p>
+                </article>
+
+                <article class="terms-card reveal">
+                    <h3>5. Evolução do projeto</h3>
+                    <p>Novas versões podem alterar textos, interface, estrutura de dados e comportamento da demo. O objetivo é evoluir com testes e melhorias graduais.</p>
+                </article>
+
+                <article class="terms-card reveal">
+                    <h3>6. Responsabilidade</h3>
+                    <p>O uso da ferramenta é livre para estudo e avaliação. Em caso de uso profissional, recomenda-se validação técnica, jurídica e operacional antes de qualquer implantação real.</p>
                 </article>
             </div>
         </section>
     </main>
 
     <footer class="site-footer">
-        <p>Simulador de Escala de Trabalho · Demo web v0.6</p>
+        <p>Simulador de Escala de Trabalho · Demo web · Projeto Python em evolução</p>
         <a href="#inicio">Voltar ao topo</a>
     </footer>
 </body>

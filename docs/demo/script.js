@@ -1,6 +1,7 @@
 const TIPO_CICLO_DIAS = "ciclo_dias";
 const TIPO_CICLO_HORAS = "ciclo_horas";
 const TIPO_TURNO_ROTATIVO = "turno_rotativo";
+
 const STORAGE_KEY = "simulador_escala_demo_v06";
 const THEME_KEY = "simulador_escala_theme";
 
@@ -23,46 +24,6 @@ const DEFAULT_SCALES = [
         sequencia_turnos: ["Manhã", "Manhã", "Tarde", "Tarde", "Noite", "Noite", "Folga", "Folga"]
     }
 ];
-
-const state = {
-    selectedType: TIPO_CICLO_DIAS,
-    resultItems: [],
-    savedScales: [],
-    heroIndex: 0,
-    scrollTicking: false
-};
-
-const $ = (selector) => document.querySelector(selector);
-const $$ = (selector) => Array.from(document.querySelectorAll(selector));
-
-const elements = {
-    root: document.documentElement,
-    themeToggle: $("#themeToggle"),
-    themeTransition: $("#themeTransition"),
-    mobileMenuButton: $("#mobileMenuButton"),
-    navLinks: $("#navLinks"),
-    scrollProgress: $("#scrollProgress"),
-    scaleTypeButtons: $("#scaleTypeButtons"),
-    simulatorForm: $("#simulatorForm"),
-    dynamicFields: $("#dynamicFields"),
-    resultCard: $("#resultCard"),
-    resultTitle: $("#resultTitle"),
-    resultDescription: $("#resultDescription"),
-    timelineList: $("#timelineList"),
-    calendarGrid: $("#calendarGrid"),
-    calendarMonth: $("#calendarMonth"),
-    savedScaleForm: $("#savedScaleForm"),
-    savedName: $("#savedName"),
-    savedType: $("#savedType"),
-    savedDynamicFields: $("#savedDynamicFields"),
-    savedScalesList: $("#savedScalesList"),
-    resetScalesButton: $("#resetScalesButton"),
-    heroTerminalLine: $("#heroTerminalLine"),
-    heroTerminalOutput: $("#heroTerminalOutput"),
-    heroStatusText: $("#heroStatusText"),
-    heroProgressBar: $("#heroProgressBar"),
-    heroStatusMeta: $("#heroStatusMeta")
-};
 
 const HERO_FRAMES = [
     {
@@ -87,6 +48,66 @@ const HERO_FRAMES = [
         progress: "78%"
     }
 ];
+
+const PROCESS_RESULTS = [
+    "Status: Trabalhando",
+    "Consulta: 03/05/2026",
+    "Posição no ciclo: 2",
+    "Resultado exibido no calendário"
+];
+
+const TURN_CLASSES = {
+    "manhã": "manha",
+    "manha": "manha",
+    "tarde": "tarde",
+    "noite": "noite",
+    "folga": "folga",
+    "trabalhando": "trabalhando"
+};
+
+const state = {
+    selectedType: TIPO_CICLO_DIAS,
+    resultItems: [],
+    savedScales: [],
+    simulatorTurns: ["Manhã", "Tarde", "Noite", "Folga"],
+    savedTurns: ["Manhã", "Tarde", "Noite", "Folga"],
+    heroIndex: 0,
+    processIndex: 0,
+    scrollTicking: false
+};
+
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+const elements = {
+    root: document.documentElement,
+    themeToggle: $("#themeToggle"),
+    themeFlash: $("#themeFlash"),
+    mobileMenuButton: $("#mobileMenuButton"),
+    navLinks: $("#navLinks"),
+    scrollProgress: $("#scrollProgress"),
+    scaleTypeButtons: $("#scaleTypeButtons"),
+    simulatorForm: $("#simulatorForm"),
+    dynamicFields: $("#dynamicFields"),
+    resultCard: $("#resultCard"),
+    resultTitle: $("#resultTitle"),
+    resultDescription: $("#resultDescription"),
+    timelineList: $("#timelineList"),
+    calendarGrid: $("#calendarGrid"),
+    calendarMonth: $("#calendarMonth"),
+    savedScaleForm: $("#savedScaleForm"),
+    savedName: $("#savedName"),
+    savedType: $("#savedType"),
+    savedDynamicFields: $("#savedDynamicFields"),
+    savedScalesList: $("#savedScalesList"),
+    resetScalesButton: $("#resetScalesButton"),
+    heroTerminalLine: $("#heroTerminalLine"),
+    heroTerminalOutput: $("#heroTerminalOutput"),
+    heroStatusText: $("#heroStatusText"),
+    heroProgressBar: $("#heroProgressBar"),
+    heroStatusMeta: $("#heroStatusMeta"),
+    processResultText: $("#processResultText")
+};
 
 function cloneScale(scale) {
     return JSON.parse(JSON.stringify(scale));
@@ -133,6 +154,11 @@ function getTypeName(type) {
     return names[type] || "Ciclo por dias";
 }
 
+function getTurnClass(status) {
+    const key = String(status).toLowerCase();
+    return TURN_CLASSES[key] || "trabalhando";
+}
+
 function getScaleSummary(scale) {
     if (scale.tipo === TIPO_CICLO_HORAS) {
         return `${scale.horas_trabalho}x${scale.horas_folga} horas`;
@@ -172,6 +198,25 @@ function formatDateTime(date) {
     }).format(date);
 }
 
+function formatMonth(date) {
+    return new Intl.DateTimeFormat("pt-BR", {
+        month: "long",
+        year: "numeric"
+    }).format(date);
+}
+
+function addDays(date, amount) {
+    const next = new Date(date);
+    next.setDate(next.getDate() + amount);
+    return next;
+}
+
+function addHours(date, amount) {
+    const next = new Date(date);
+    next.setHours(next.getHours() + amount);
+    return next;
+}
+
 function getDaysDifference(start, query) {
     const startUtc = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
     const queryUtc = Date.UTC(query.getFullYear(), query.getMonth(), query.getDate());
@@ -205,106 +250,134 @@ function calculateRotativeStatus(start, query, turns) {
     return turns[position];
 }
 
-function generateDays(start, amount, statusCallback) {
-    return Array.from({ length: amount }, (_, index) => {
-        const date = new Date(start);
-        date.setDate(start.getDate() + index);
+function createTimelineItem(dateLabel, status, detail = "") {
+    return {
+        dateLabel,
+        status,
+        detail
+    };
+}
 
-        return {
-            date,
-            status: statusCallback(date)
-        };
+function generateCycleDaysItems(start, quantity, workDays, offDays) {
+    return Array.from({ length: quantity }, (_, index) => {
+        const current = addDays(start, index);
+        const status = calculateCycleDaysStatus(start, current, workDays, offDays);
+
+        return createTimelineItem(formatDate(current), status, `Dia ${index + 1} do período visualizado`);
     });
 }
 
-function generateHourPeriods(start, amount, workHours, offHours) {
-    const periods = [];
-    let currentStart = new Date(start);
+function generateRotativeItems(start, quantity, turns) {
+    return Array.from({ length: quantity }, (_, index) => {
+        const current = addDays(start, index);
+        const status = calculateRotativeStatus(start, current, turns);
 
-    for (let index = 0; index < amount; index += 1) {
+        return createTimelineItem(formatDate(current), status, `Etapa ${(index % turns.length) + 1} de ${turns.length}`);
+    });
+}
+
+function generateCycleHoursItems(start, quantity, workHours, offHours) {
+    const items = [];
+    let current = new Date(start);
+
+    for (let index = 0; index < quantity; index += 1) {
         const isWork = index % 2 === 0;
+        const status = isWork ? "Trabalhando" : "Folga";
         const duration = isWork ? workHours : offHours;
-        const end = new Date(currentStart);
+        const end = addHours(current, duration);
 
-        end.setHours(end.getHours() + duration);
+        items.push(createTimelineItem(
+            formatDateTime(current),
+            status,
+            `Até ${formatDateTime(end)}`
+        ));
 
-        periods.push({
-            date: new Date(currentStart),
-            end,
-            status: isWork ? "Trabalhando" : "Folga"
-        });
-
-        currentStart = end;
+        current = end;
     }
 
-    return periods;
+    return items;
 }
 
-function getStatusClass(status) {
-    const normalized = String(status).toLowerCase();
+function setDefaultDateValues() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
 
-    if (normalized.includes("trabalhando") || normalized.includes("manhã") || normalized.includes("tarde")) {
-        return "work";
-    }
-
-    if (normalized.includes("noite")) {
-        return "night";
-    }
-
-    return "off";
+    return `${yyyy}-${mm}-${dd}`;
 }
 
-function todayInputValue() {
-    return new Date().toISOString().slice(0, 10);
+function setDefaultDateTimeValues() {
+    return `${setDefaultDateValues()}T06:00`;
 }
 
-function nowDateTimeInputValue() {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    return now.toISOString().slice(0, 16);
-}
+function renderTurnBuilder(target, turns) {
+    const previewId = `${target}TurnPreview`;
 
-function renderSimulatorFields() {
-    const today = todayInputValue();
-    const now = nowDateTimeInputValue();
-
-    const templates = {
-        [TIPO_CICLO_DIAS]: `
-            <div class="form-grid">
-                <label>
-                    Data inicial
-                    <input id="startDate" type="date" value="2026-05-01" required>
-                </label>
-                <label>
-                    Data para consultar
-                    <input id="queryDate" type="date" value="${today}" required>
-                </label>
-                <label>
-                    Dias de trabalho
-                    <input id="workDays" type="number" min="1" value="6" required>
-                </label>
-                <label>
-                    Dias de folga
-                    <input id="offDays" type="number" min="1" value="3" required>
-                </label>
-                <label>
-                    Dias para visualizar
-                    <input id="amountDays" type="number" min="1" max="60" value="21" required>
-                </label>
+    return `
+        <div class="turn-builder" data-turn-builder="${target}">
+            <div class="turn-builder-title">
+                <div>
+                    <strong>Monte a sequência</strong>
+                    <small>Clique nos botões na ordem real do ciclo.</small>
+                </div>
             </div>
-        `,
-        [TIPO_CICLO_HORAS]: `
-            <div class="form-grid">
+
+            <div class="turn-button-grid" aria-label="Adicionar turno ao ciclo">
+                <button class="turn-button manha" type="button" data-turn-target="${target}" data-turn-value="Manhã">Manhã</button>
+                <button class="turn-button tarde" type="button" data-turn-target="${target}" data-turn-value="Tarde">Tarde</button>
+                <button class="turn-button noite" type="button" data-turn-target="${target}" data-turn-value="Noite">Noite</button>
+                <button class="turn-button folga" type="button" data-turn-target="${target}" data-turn-value="Folga">Folga</button>
+            </div>
+
+            <div class="turn-preview" id="${previewId}" aria-label="Sequência montada"></div>
+
+            <div class="turn-actions">
+                <button class="tiny-button" type="button" data-turn-action="undo" data-turn-target="${target}">Remover último</button>
+                <button class="tiny-button" type="button" data-turn-action="clear" data-turn-target="${target}">Limpar sequência</button>
+                <button class="tiny-button" type="button" data-turn-action="ferrero" data-turn-target="${target}">Exemplo em blocos</button>
+            </div>
+        </div>
+    `;
+}
+
+function renderTurnPreview(target) {
+    const preview = $(`#${target}TurnPreview`);
+    const turns = target === "simulator" ? state.simulatorTurns : state.savedTurns;
+
+    if (!preview) {
+        return;
+    }
+
+    if (!turns.length) {
+        preview.innerHTML = `<span class="turn-empty">Nenhum turno adicionado ainda.</span>`;
+        return;
+    }
+
+    preview.innerHTML = turns
+        .map((turn, index) => `
+            <span class="turn-chip ${getTurnClass(turn)}">
+                ${index + 1}. ${turn}
+                <button type="button" aria-label="Remover ${turn}" data-turn-target="${target}" data-turn-remove="${index}">×</button>
+            </span>
+        `)
+        .join("");
+}
+
+function renderDynamicFields() {
+    if (state.selectedType === TIPO_CICLO_HORAS) {
+        elements.dynamicFields.innerHTML = `
+            <div class="field-grid">
                 <label>
-                    Data/hora inicial
-                    <input id="startDateTime" type="datetime-local" value="2026-06-01T06:00" required>
+                    Início da escala
+                    <input id="startDateTime" type="datetime-local" value="${setDefaultDateTimeValues()}" required>
                 </label>
                 <label>
-                    Data/hora para consultar
-                    <input id="queryDateTime" type="datetime-local" value="${now}" required>
+                    Data consultada
+                    <input id="queryDateTime" type="datetime-local" value="${setDefaultDateTimeValues()}" required>
                 </label>
                 <label>
-                    Horas de trabalho
+                    Horas trabalhadas
                     <input id="workHours" type="number" min="1" value="12" required>
                 </label>
                 <label>
@@ -313,55 +386,69 @@ function renderSimulatorFields() {
                 </label>
                 <label>
                     Períodos para visualizar
-                    <input id="amountPeriods" type="number" min="1" max="40" value="8" required>
+                    <input id="quantityPeriods" type="number" min="1" max="30" value="6" required>
                 </label>
             </div>
-        `,
-        [TIPO_TURNO_ROTATIVO]: `
-            <div class="form-grid">
+        `;
+        return;
+    }
+
+    if (state.selectedType === TIPO_TURNO_ROTATIVO) {
+        elements.dynamicFields.innerHTML = `
+            <div class="field-grid">
                 <label>
-                    Data inicial
-                    <input id="startDate" type="date" value="2026-05-01" required>
+                    Início do ciclo
+                    <input id="startDate" type="date" value="${setDefaultDateValues()}" required>
                 </label>
                 <label>
-                    Data para consultar
-                    <input id="queryDate" type="date" value="${today}" required>
-                </label>
-                <label class="wide-field">
-                    Sequência de turnos
-                    <input id="turnSequence" type="text" value="Manhã,Manhã,Tarde,Tarde,Noite,Noite,Folga,Folga" required>
+                    Data consultada
+                    <input id="queryDate" type="date" value="${setDefaultDateValues()}" required>
                 </label>
                 <label>
                     Dias para visualizar
-                    <input id="amountDays" type="number" min="1" max="60" value="21" required>
+                    <input id="quantityDays" type="number" min="1" max="60" value="14" required>
                 </label>
             </div>
-        `
-    };
+            ${renderTurnBuilder("simulator", state.simulatorTurns)}
+        `;
+        renderTurnPreview("simulator");
+        return;
+    }
 
-    elements.dynamicFields.innerHTML = templates[state.selectedType];
+    elements.dynamicFields.innerHTML = `
+        <div class="field-grid">
+            <label>
+                Início da escala
+                <input id="startDate" type="date" value="${setDefaultDateValues()}" required>
+            </label>
+            <label>
+                Data consultada
+                <input id="queryDate" type="date" value="${setDefaultDateValues()}" required>
+            </label>
+            <label>
+                Dias trabalhados
+                <input id="workDays" type="number" min="1" value="6" required>
+            </label>
+            <label>
+                Dias de folga
+                <input id="offDays" type="number" min="1" value="3" required>
+            </label>
+            <label>
+                Dias para visualizar
+                <input id="quantityDays" type="number" min="1" max="60" value="14" required>
+            </label>
+        </div>
+    `;
 }
 
 function renderSavedDynamicFields() {
     const type = elements.savedType.value;
 
-    const templates = {
-        [TIPO_CICLO_DIAS]: `
-            <div class="form-grid">
+    if (type === TIPO_CICLO_HORAS) {
+        elements.savedDynamicFields.innerHTML = `
+            <div class="field-grid">
                 <label>
-                    Dias de trabalho
-                    <input id="savedWorkDays" type="number" min="1" value="6" required>
-                </label>
-                <label>
-                    Dias de folga
-                    <input id="savedOffDays" type="number" min="1" value="3" required>
-                </label>
-            </div>
-        `,
-        [TIPO_CICLO_HORAS]: `
-            <div class="form-grid">
-                <label>
-                    Horas de trabalho
+                    Horas trabalhadas
                     <input id="savedWorkHours" type="number" min="1" value="12" required>
                 </label>
                 <label>
@@ -369,185 +456,77 @@ function renderSavedDynamicFields() {
                     <input id="savedOffHours" type="number" min="1" value="36" required>
                 </label>
             </div>
-        `,
-        [TIPO_TURNO_ROTATIVO]: `
-            <label>
-                Sequência de turnos
-                <input id="savedTurnSequence" type="text" value="Manhã,Tarde,Noite,Folga" required>
-            </label>
-        `
-    };
-
-    elements.savedDynamicFields.innerHTML = templates[type];
-}
-
-function updateScaleButtons() {
-    $$('[data-type]').forEach((button) => {
-        button.classList.toggle("active", button.dataset.type === state.selectedType);
-    });
-}
-
-function runSimulation(event) {
-    event.preventDefault();
-
-    try {
-        if (state.selectedType === TIPO_CICLO_HORAS) {
-            runHoursSimulation();
-            return;
-        }
-
-        if (state.selectedType === TIPO_TURNO_ROTATIVO) {
-            runRotativeSimulation();
-            return;
-        }
-
-        runDaysSimulation();
-    } catch (error) {
-        showResult("Erro na simulação", error.message, "off");
-    }
-}
-
-function runDaysSimulation() {
-    const start = parseDateInput($("#startDate").value);
-    const query = parseDateInput($("#queryDate").value);
-    const workDays = Number($("#workDays").value);
-    const offDays = Number($("#offDays").value);
-    const amount = Number($("#amountDays").value);
-    const status = calculateCycleDaysStatus(start, query, workDays, offDays);
-
-    state.resultItems = generateDays(start, amount, (date) => calculateCycleDaysStatus(start, date, workDays, offDays));
-
-    showResult(
-        status,
-        `Na data ${formatDate(query)}, o status calculado para a escala ${workDays}x${offDays} é: ${status}.`,
-        getStatusClass(status)
-    );
-
-    renderTimeline();
-    renderCalendar();
-}
-
-function runHoursSimulation() {
-    const start = parseDateTimeInput($("#startDateTime").value);
-    const query = parseDateTimeInput($("#queryDateTime").value);
-    const workHours = Number($("#workHours").value);
-    const offHours = Number($("#offHours").value);
-    const amount = Number($("#amountPeriods").value);
-    const status = calculateCycleHoursStatus(start, query, workHours, offHours);
-
-    state.resultItems = generateHourPeriods(start, amount, workHours, offHours);
-
-    showResult(
-        status,
-        `Em ${formatDateTime(query)}, o status calculado para a escala ${workHours}x${offHours} horas é: ${status}.`,
-        getStatusClass(status)
-    );
-
-    renderTimeline(true);
-    renderCalendar();
-}
-
-function runRotativeSimulation() {
-    const start = parseDateInput($("#startDate").value);
-    const query = parseDateInput($("#queryDate").value);
-    const turns = normalizeTurns($("#turnSequence").value);
-    const amount = Number($("#amountDays").value);
-    const status = calculateRotativeStatus(start, query, turns);
-
-    state.resultItems = generateDays(start, amount, (date) => calculateRotativeStatus(start, date, turns));
-
-    showResult(
-        status,
-        `Na data ${formatDate(query)}, a sequência rotativa aponta: ${status}.`,
-        getStatusClass(status)
-    );
-
-    renderTimeline();
-    renderCalendar();
-}
-
-function showResult(title, description, statusClass) {
-    elements.resultTitle.textContent = title;
-    elements.resultDescription.textContent = description;
-    elements.resultCard.classList.remove("status-work", "status-off");
-    elements.resultCard.classList.add(statusClass === "work" ? "status-work" : "status-off");
-
-    if (window.gsap) {
-        window.gsap.fromTo(
-            elements.resultCard,
-            { y: 14, opacity: 0.6 },
-            { y: 0, opacity: 1, duration: 0.38, ease: "power2.out" }
-        );
-    }
-}
-
-function renderTimeline(isHourly = false) {
-    elements.timelineList.innerHTML = state.resultItems.map((item) => {
-        const statusClass = getStatusClass(item.status);
-        const dateLabel = isHourly ? formatDateTime(item.date) : formatDate(item.date);
-        const meta = item.end ? `Até ${formatDateTime(item.end)}` : getTypeName(state.selectedType);
-
-        return `
-            <article class="timeline-item ${statusClass}">
-                <span class="timeline-dot"></span>
-                <div>
-                    <div class="timeline-date">${dateLabel}</div>
-                    <div class="timeline-meta">${meta}</div>
-                </div>
-                <strong class="timeline-status">${item.status}</strong>
-            </article>
         `;
-    }).join("");
-}
-
-function renderCalendar() {
-    const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-    const baseItems = state.resultItems.filter((item) => item.date instanceof Date);
-
-    if (!baseItems.length) {
-        elements.calendarGrid.innerHTML = "";
         return;
     }
 
-    const firstDate = baseItems[0].date;
-    const year = firstDate.getFullYear();
-    const month = firstDate.getMonth();
-    const monthName = new Intl.DateTimeFormat("pt-BR", {
-        month: "long",
-        year: "numeric"
-    }).format(firstDate);
-
-    elements.calendarMonth.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-
-    const byDate = new Map(
-        baseItems.map((item) => [
-            item.date.toISOString().slice(0, 10),
-            item.status
-        ])
-    );
-
-    const firstMonthDay = new Date(year, month, 1);
-    const lastMonthDay = new Date(year, month + 1, 0);
-    const cells = [];
-
-    weekDays.forEach((day) => {
-        cells.push(`<div class="calendar-head">${day}</div>`);
-    });
-
-    for (let index = 0; index < firstMonthDay.getDay(); index += 1) {
-        cells.push(`<div class="calendar-cell empty"></div>`);
+    if (type === TIPO_TURNO_ROTATIVO) {
+        elements.savedDynamicFields.innerHTML = renderTurnBuilder("saved", state.savedTurns);
+        renderTurnPreview("saved");
+        return;
     }
 
-    for (let day = 1; day <= lastMonthDay.getDate(); day += 1) {
-        const date = new Date(year, month, day);
-        const key = date.toISOString().slice(0, 10);
-        const status = byDate.get(key);
-        const statusClass = status ? getStatusClass(status) : "";
+    elements.savedDynamicFields.innerHTML = `
+        <div class="field-grid">
+            <label>
+                Dias trabalhados
+                <input id="savedWorkDays" type="number" min="1" value="6" required>
+            </label>
+            <label>
+                Dias de folga
+                <input id="savedOffDays" type="number" min="1" value="3" required>
+            </label>
+        </div>
+    `;
+}
+
+function renderTimeline(items) {
+    if (!items.length) {
+        elements.timelineList.innerHTML = `<p class="turn-empty">A linha do tempo aparecerá aqui depois da simulação.</p>`;
+        return;
+    }
+
+    elements.timelineList.innerHTML = items
+        .map((item) => `
+            <div class="timeline-item">
+                <span class="timeline-date">${item.dateLabel}</span>
+                <span>${item.detail}</span>
+                <strong class="timeline-status ${getTurnClass(item.status)} ${item.status === "Folga" ? "folga-status" : ""}">${item.status}</strong>
+            </div>
+        `)
+        .join("");
+}
+
+function renderCalendar(items) {
+    const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const today = new Date();
+    const monthBase = items.length ? parseDateFromLabel(items[0].dateLabel) : today;
+    const firstDay = new Date(monthBase.getFullYear(), monthBase.getMonth(), 1);
+    const lastDay = new Date(monthBase.getFullYear(), monthBase.getMonth() + 1, 0);
+    const statusByDate = new Map(items.map((item) => [item.dateLabel, item.status]));
+
+    elements.calendarMonth.textContent = formatMonth(monthBase);
+
+    const cells = [];
+
+    weekdays.forEach((day) => {
+        cells.push(`<div class="calendar-weekday">${day}</div>`);
+    });
+
+    for (let index = 0; index < firstDay.getDay(); index += 1) {
+        cells.push(`<div class="calendar-empty" aria-hidden="true"></div>`);
+    }
+
+    for (let day = 1; day <= lastDay.getDate(); day += 1) {
+        const current = new Date(monthBase.getFullYear(), monthBase.getMonth(), day);
+        const label = formatDate(current);
+        const status = statusByDate.get(label) || "";
+        const statusClass = status ? `${getTurnClass(status)} ${status === "Folga" ? "folga-status" : ""}` : "";
 
         cells.push(`
-            <div class="calendar-cell ${statusClass}">
+            <div class="calendar-day ${statusClass}">
                 <strong>${day}</strong>
-                ${status ? `<span>${status}</span>` : ""}
+                <small>${status}</small>
             </div>
         `);
     }
@@ -555,23 +534,98 @@ function renderCalendar() {
     elements.calendarGrid.innerHTML = cells.join("");
 }
 
-function renderSavedScales() {
-    elements.savedScalesList.innerHTML = state.savedScales.map((scale, index) => `
-        <article class="scale-card">
-            <div>
-                <h4>${scale.nome}</h4>
-                <p>${getTypeName(scale.tipo)} · ${getScaleSummary(scale)}</p>
-            </div>
-            <div class="scale-card-actions">
-                <button class="small-button" type="button" data-apply-scale="${index}">Usar</button>
-                <button class="small-button danger" type="button" data-delete-scale="${index}">Excluir</button>
-            </div>
-        </article>
-    `).join("");
+function parseDateFromLabel(label) {
+    const [day, month, year] = label.split("/").map(Number);
+    return new Date(year, month - 1, day);
+}
 
-    if (!state.savedScales.length) {
-        elements.savedScalesList.innerHTML = `<p class="timeline-meta">Nenhuma escala salva.</p>`;
+function showResult(title, description, items) {
+    elements.resultTitle.textContent = title;
+    elements.resultDescription.textContent = description;
+    state.resultItems = items;
+
+    renderTimeline(items);
+    renderCalendar(items);
+
+    elements.resultCard.classList.remove("result-pulse");
+    window.requestAnimationFrame(() => {
+        elements.resultCard.classList.add("result-pulse");
+    });
+}
+
+function handleSimulatorSubmit(event) {
+    event.preventDefault();
+
+    try {
+        if (state.selectedType === TIPO_CICLO_HORAS) {
+            const start = parseDateTimeInput($("#startDateTime").value);
+            const query = parseDateTimeInput($("#queryDateTime").value);
+            const workHours = Number($("#workHours").value);
+            const offHours = Number($("#offHours").value);
+            const quantity = Number($("#quantityPeriods").value);
+            const status = calculateCycleHoursStatus(start, query, workHours, offHours);
+            const items = generateCycleHoursItems(start, quantity, workHours, offHours);
+
+            showResult(
+                `Status: ${status}`,
+                `Na data ${formatDateTime(query)}, a escala ${workHours}x${offHours} indica: ${status}.`,
+                items
+            );
+            return;
+        }
+
+        const start = parseDateInput($("#startDate").value);
+        const query = parseDateInput($("#queryDate").value);
+        const quantity = Number($("#quantityDays").value);
+
+        if (state.selectedType === TIPO_TURNO_ROTATIVO) {
+            const turns = normalizeTurns(state.simulatorTurns);
+            const status = calculateRotativeStatus(start, query, turns);
+            const items = generateRotativeItems(start, quantity, turns);
+
+            showResult(
+                `Turno: ${status}`,
+                `Na data ${formatDate(query)}, a sequência indica: ${status}.`,
+                items
+            );
+            return;
+        }
+
+        const workDays = Number($("#workDays").value);
+        const offDays = Number($("#offDays").value);
+        const status = calculateCycleDaysStatus(start, query, workDays, offDays);
+        const items = generateCycleDaysItems(start, quantity, workDays, offDays);
+
+        showResult(
+            `Status: ${status}`,
+            `Na data ${formatDate(query)}, a escala ${workDays}x${offDays} indica: ${status}.`,
+            items
+        );
+    } catch (error) {
+        showResult("Não foi possível simular", error.message, []);
     }
+}
+
+function renderSavedScales() {
+    if (!state.savedScales.length) {
+        elements.savedScalesList.innerHTML = `<p class="turn-empty">Nenhuma escala salva.</p>`;
+        return;
+    }
+
+    elements.savedScalesList.innerHTML = state.savedScales
+        .map((scale, index) => `
+            <div class="saved-item">
+                <div>
+                    <strong>${scale.nome}</strong>
+                    <small>${getTypeName(scale.tipo)} · ${getScaleSummary(scale)}</small>
+                </div>
+                <div class="saved-item-actions">
+                    <button class="tiny-button" type="button" data-apply-scale="${index}">Aplicar</button>
+                    <button class="tiny-button" type="button" data-delete-scale="${index}">Excluir</button>
+                </div>
+            </div>
+        `)
+        .join("");
 }
 
 function handleSavedScaleSubmit(event) {
@@ -584,31 +638,42 @@ function handleSavedScaleSubmit(event) {
         return;
     }
 
-    const scale = { nome: name, tipo: type };
-
-    if (type === TIPO_CICLO_DIAS) {
-        scale.dias_trabalho = Number($("#savedWorkDays").value);
-        scale.dias_folga = Number($("#savedOffDays").value);
-    }
+    let scale;
 
     if (type === TIPO_CICLO_HORAS) {
-        scale.horas_trabalho = Number($("#savedWorkHours").value);
-        scale.horas_folga = Number($("#savedOffHours").value);
-    }
+        scale = {
+            nome: name,
+            tipo,
+            horas_trabalho: Number($("#savedWorkHours").value),
+            horas_folga: Number($("#savedOffHours").value)
+        };
+    } else if (type === TIPO_TURNO_ROTATIVO) {
+        const turns = normalizeTurns(state.savedTurns);
 
-    if (type === TIPO_TURNO_ROTATIVO) {
-        scale.sequencia_turnos = normalizeTurns($("#savedTurnSequence").value);
-
-        if (!scale.sequencia_turnos.length) {
-            alert("A sequência de turnos não pode ficar vazia.");
+        if (!turns.length) {
+            alert("Adicione pelo menos um turno antes de salvar.");
             return;
         }
+
+        scale = {
+            nome: name,
+            tipo,
+            sequencia_turnos: turns
+        };
+    } else {
+        scale = {
+            nome: name,
+            tipo,
+            dias_trabalho: Number($("#savedWorkDays").value),
+            dias_folga: Number($("#savedOffDays").value)
+        };
     }
 
     state.savedScales.push(scale);
     saveScales();
     renderSavedScales();
     elements.savedScaleForm.reset();
+    state.savedTurns = ["Manhã", "Tarde", "Noite", "Folga"];
     renderSavedDynamicFields();
 }
 
@@ -621,23 +686,20 @@ function applySavedScale(index) {
 
     state.selectedType = scale.tipo;
     updateScaleButtons();
-    renderSimulatorFields();
-
-    if (scale.tipo === TIPO_CICLO_DIAS) {
-        $("#workDays").value = scale.dias_trabalho;
-        $("#offDays").value = scale.dias_folga;
-    }
+    renderDynamicFields();
 
     if (scale.tipo === TIPO_CICLO_HORAS) {
         $("#workHours").value = scale.horas_trabalho;
         $("#offHours").value = scale.horas_folga;
+    } else if (scale.tipo === TIPO_TURNO_ROTATIVO) {
+        state.simulatorTurns = normalizeTurns(scale.sequencia_turnos);
+        renderDynamicFields();
+    } else {
+        $("#workDays").value = scale.dias_trabalho;
+        $("#offDays").value = scale.dias_folga;
     }
 
-    if (scale.tipo === TIPO_TURNO_ROTATIVO) {
-        $("#turnSequence").value = normalizeTurns(scale.sequencia_turnos).join(",");
-    }
-
-    document.getElementById("simulador").scrollIntoView({ behavior: "smooth" });
+    document.querySelector("#simulador").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function deleteSavedScale(index) {
@@ -646,105 +708,146 @@ function deleteSavedScale(index) {
     renderSavedScales();
 }
 
-function configureScaleButtons() {
-    elements.scaleTypeButtons.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-type]");
+function resetSavedScales() {
+    state.savedScales = DEFAULT_SCALES.map(cloneScale);
+    saveScales();
+    renderSavedScales();
+}
 
-        if (!button) {
-            return;
-        }
-
-        state.selectedType = button.dataset.type;
-        updateScaleButtons();
-        renderSimulatorFields();
-
-        if (window.gsap) {
-            window.gsap.fromTo(
-                elements.dynamicFields,
-                { y: 12, opacity: 0 },
-                { y: 0, opacity: 1, duration: 0.32, ease: "power2.out" }
-            );
-        }
+function updateScaleButtons() {
+    $$("[data-type]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.type === state.selectedType);
     });
 }
 
-function configureTabs() {
-    $$('[data-result-tab]').forEach((button) => {
-        button.addEventListener("click", () => {
-            $$('[data-result-tab]').forEach((item) => item.classList.remove("active"));
-            $$('.tab-content').forEach((content) => content.classList.remove("active"));
+function handleTurnBuilderClick(event) {
+    const addButton = event.target.closest("[data-turn-value]");
+    const removeButton = event.target.closest("[data-turn-remove]");
+    const actionButton = event.target.closest("[data-turn-action]");
 
+    if (addButton) {
+        const target = addButton.dataset.turnTarget;
+        const value = addButton.dataset.turnValue;
+        const list = target === "simulator" ? state.simulatorTurns : state.savedTurns;
+
+        list.push(value);
+        renderTurnPreview(target);
+        return;
+    }
+
+    if (removeButton) {
+        const target = removeButton.dataset.turnTarget;
+        const index = Number(removeButton.dataset.turnRemove);
+        const list = target === "simulator" ? state.simulatorTurns : state.savedTurns;
+
+        list.splice(index, 1);
+        renderTurnPreview(target);
+        return;
+    }
+
+    if (actionButton) {
+        const target = actionButton.dataset.turnTarget;
+        const action = actionButton.dataset.turnAction;
+        const list = target === "simulator" ? state.simulatorTurns : state.savedTurns;
+
+        if (action === "undo") {
+            list.pop();
+        }
+
+        if (action === "clear") {
+            list.splice(0, list.length);
+        }
+
+        if (action === "ferrero") {
+            const example = [
+                "Tarde", "Tarde", "Tarde",
+                "Noite", "Noite", "Noite",
+                "Folga", "Folga", "Folga",
+                "Tarde", "Tarde", "Tarde",
+                "Noite", "Noite", "Noite",
+                "Folga", "Folga",
+                "Manhã", "Manhã", "Manhã", "Manhã", "Manhã", "Manhã",
+                "Folga"
+            ];
+
+            list.splice(0, list.length, ...example);
+        }
+
+        renderTurnPreview(target);
+    }
+}
+
+function configureTabs() {
+    $$("[data-result-tab]").forEach((button) => {
+        button.addEventListener("click", () => {
+            $$("[data-result-tab]").forEach((item) => item.classList.remove("active"));
             button.classList.add("active");
-            $(`#${button.dataset.resultTab}Tab`).classList.add("active");
+
+            const tab = button.dataset.resultTab;
+            $$(".tab-content").forEach((panel) => panel.classList.remove("active"));
+            $(`#${tab}Tab`).classList.add("active");
         });
     });
 
-    $$('[data-doc]').forEach((button) => {
+    $$("[data-doc-tab]").forEach((button) => {
         button.addEventListener("click", () => {
-            $$('[data-doc]').forEach((item) => item.classList.remove("active"));
-            $$('.doc-content').forEach((content) => content.classList.remove("active"));
-
+            $$("[data-doc-tab]").forEach((item) => item.classList.remove("active"));
             button.classList.add("active");
-            $(`#doc-${button.dataset.doc}`).classList.add("active");
+
+            $$(".doc-panel").forEach((panel) => panel.classList.remove("active"));
+            $(`#doc-${button.dataset.docTab}`).classList.add("active");
         });
     });
 }
 
 function configureTheme() {
-    const savedTheme = localStorage.getItem(THEME_KEY);
+    const savedTheme = localStorage.getItem(THEME_KEY) || "dark";
+    elements.root.setAttribute("data-theme", savedTheme);
+    updateThemeIcon(savedTheme);
 
-    if (savedTheme) {
-        elements.root.dataset.theme = savedTheme;
-    }
-
-    updateThemeIcon();
-
-    elements.themeToggle.addEventListener("click", () => {
+    elements.themeToggle.addEventListener("click", (event) => {
+        const current = elements.root.getAttribute("data-theme") || "dark";
+        const next = current === "dark" ? "light" : "dark";
         const rect = elements.themeToggle.getBoundingClientRect();
-        const nextTheme = elements.root.dataset.theme === "dark" ? "light" : "dark";
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
 
-        elements.themeTransition.style.setProperty("--x", `${rect.left + rect.width / 2}px`);
-        elements.themeTransition.style.setProperty("--y", `${rect.top + rect.height / 2}px`);
-        elements.themeTransition.classList.remove("active");
-        void elements.themeTransition.offsetWidth;
-        elements.themeTransition.classList.add("active");
+        elements.themeFlash.style.setProperty("--x", `${x}px`);
+        elements.themeFlash.style.setProperty("--y", `${y}px`);
+        elements.themeFlash.classList.remove("active");
+        void elements.themeFlash.offsetWidth;
+        elements.themeFlash.classList.add("active");
 
-        window.setTimeout(() => {
-            elements.root.dataset.theme = nextTheme;
-            localStorage.setItem(THEME_KEY, nextTheme);
-            updateThemeIcon();
-        }, 180);
+        elements.root.setAttribute("data-theme", next);
+        localStorage.setItem(THEME_KEY, next);
+        updateThemeIcon(next);
+
+        if (window.gsap) {
+            window.gsap.fromTo(
+                "body",
+                { scale: 0.995 },
+                { scale: 1, duration: 0.45, ease: "power2.out" }
+            );
+        }
+
+        event.currentTarget.blur();
     });
 }
 
-function updateThemeIcon() {
-    const icon = elements.root.dataset.theme === "dark" ? "sun" : "moon";
-    elements.themeToggle.innerHTML = `<i data-lucide="${icon}"></i>`;
+function updateThemeIcon(theme) {
+    const iconName = theme === "dark" ? "moon" : "sun";
+    elements.themeToggle.innerHTML = `<i data-lucide="${iconName}"></i>`;
 
     if (window.lucide) {
         window.lucide.createIcons();
     }
 }
 
-function configureMenu() {
-    elements.mobileMenuButton.addEventListener("click", () => {
-        elements.navLinks.classList.toggle("open");
-        document.body.classList.toggle("menu-open");
-    });
-
-    elements.navLinks.addEventListener("click", (event) => {
-        if (event.target.matches("a")) {
-            elements.navLinks.classList.remove("open");
-            document.body.classList.remove("menu-open");
-        }
-    });
-}
-
 function configureRevealAnimations() {
-    const revealItems = $$(".reveal");
+    const items = $$(".reveal");
 
     if (!("IntersectionObserver" in window)) {
-        revealItems.forEach((item) => item.classList.add("visible"));
+        items.forEach((item) => item.classList.add("visible"));
         return;
     }
 
@@ -756,11 +859,11 @@ function configureRevealAnimations() {
             }
         });
     }, {
-        threshold: 0.08,
+        threshold: 0.1,
         rootMargin: "0px 0px -40px 0px"
     });
 
-    revealItems.forEach((item) => observer.observe(item));
+    items.forEach((item) => observer.observe(item));
 }
 
 function configureScrollProgress() {
@@ -771,19 +874,19 @@ function configureScrollProgress() {
 
         state.scrollTicking = true;
 
-        requestAnimationFrame(() => {
-            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-            const progress = maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0;
-
+        window.requestAnimationFrame(() => {
+            const total = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = total > 0 ? (window.scrollY / total) * 100 : 0;
             elements.scrollProgress.style.width = `${progress}%`;
             state.scrollTicking = false;
         });
     }, { passive: true });
 }
 
-function startHeroDemo() {
-    function renderFrame() {
-        const frame = HERO_FRAMES[state.heroIndex % HERO_FRAMES.length];
+function configureHeroDemo() {
+    window.setInterval(() => {
+        state.heroIndex = (state.heroIndex + 1) % HERO_FRAMES.length;
+        const frame = HERO_FRAMES[state.heroIndex];
 
         elements.heroTerminalLine.textContent = frame.line;
         elements.heroTerminalOutput.textContent = frame.output;
@@ -791,22 +894,70 @@ function startHeroDemo() {
         elements.heroStatusMeta.textContent = frame.meta;
         elements.heroProgressBar.style.width = frame.progress;
 
-        state.heroIndex += 1;
-
         if (window.gsap) {
             window.gsap.fromTo(
                 [elements.heroTerminalLine, elements.heroTerminalOutput, elements.heroStatusText],
-                { y: 8, opacity: 0.5 },
-                { y: 0, opacity: 1, duration: 0.35, ease: "power2.out", stagger: 0.05 }
+                { opacity: 0, y: 10 },
+                { opacity: 1, y: 0, duration: 0.45, stagger: 0.05, ease: "power2.out" }
             );
         }
-    }
-
-    renderFrame();
-    window.setInterval(renderFrame, 2600);
+    }, 3200);
 }
 
-function configureSavedScaleActions() {
+function configureProcessDemo() {
+    const lines = $$('[data-process-line]');
+
+    window.setInterval(() => {
+        state.processIndex = (state.processIndex + 1) % lines.length;
+
+        lines.forEach((line, index) => {
+            line.classList.toggle("active", index === state.processIndex);
+        });
+
+        elements.processResultText.textContent = PROCESS_RESULTS[state.processIndex];
+    }, 1800);
+}
+
+function configureMobileMenu() {
+    elements.mobileMenuButton.addEventListener("click", () => {
+        elements.navLinks.classList.toggle("open");
+        document.body.classList.toggle("menu-open");
+    });
+
+    $$(".nav-links a").forEach((link) => {
+        link.addEventListener("click", () => {
+            elements.navLinks.classList.remove("open");
+            document.body.classList.remove("menu-open");
+        });
+    });
+}
+
+function configureEvents() {
+    elements.scaleTypeButtons.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-type]");
+
+        if (!button) {
+            return;
+        }
+
+        state.selectedType = button.dataset.type;
+        updateScaleButtons();
+        renderDynamicFields();
+
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    });
+
+    elements.simulatorForm.addEventListener("submit", handleSimulatorSubmit);
+    elements.simulatorForm.addEventListener("click", handleTurnBuilderClick);
+    elements.savedScaleForm.addEventListener("submit", handleSavedScaleSubmit);
+    elements.savedScaleForm.addEventListener("click", handleTurnBuilderClick);
+
+    elements.savedType.addEventListener("change", () => {
+        renderSavedDynamicFields();
+    });
+
     elements.savedScalesList.addEventListener("click", (event) => {
         const applyButton = event.target.closest("[data-apply-scale]");
         const deleteButton = event.target.closest("[data-delete-scale]");
@@ -819,54 +970,40 @@ function configureSavedScaleActions() {
             deleteSavedScale(Number(deleteButton.dataset.deleteScale));
         }
     });
+
+    elements.resetScalesButton.addEventListener("click", resetSavedScales);
 }
 
-function configureGsapIntro() {
-    if (!window.gsap) {
-        return;
-    }
+function bootInitialSimulation() {
+    const start = parseDateInput(setDefaultDateValues());
+    const items = generateCycleDaysItems(start, 14, 6, 3);
 
-    window.gsap.from(".brand", { y: -16, opacity: 0, duration: 0.5, ease: "power2.out" });
-    window.gsap.from(".nav-links a", { y: -12, opacity: 0, duration: 0.4, stagger: 0.04, delay: 0.1 });
-    window.gsap.from(".hero-copy > *", { y: 24, opacity: 0, duration: 0.65, stagger: 0.08, delay: 0.15, ease: "power3.out" });
-    window.gsap.from(".demo-window", { rotate: -8, scale: 0.92, opacity: 0, duration: 0.8, delay: 0.2, ease: "back.out(1.4)" });
+    showResult(
+        "Exemplo: Trabalhando",
+        "Este é um exemplo automático usando uma escala 6x3.",
+        items
+    );
 }
 
-function initializeDefaultSimulation() {
-    runDaysSimulation();
-}
-
-function initialize() {
+function init() {
     state.savedScales = loadSavedScales();
 
     configureTheme();
-    configureMenu();
-    configureScaleButtons();
+    renderDynamicFields();
+    renderSavedDynamicFields();
+    renderSavedScales();
     configureTabs();
     configureRevealAnimations();
     configureScrollProgress();
-    configureSavedScaleActions();
-
-    renderSimulatorFields();
-    renderSavedDynamicFields();
-    renderSavedScales();
-
-    elements.simulatorForm.addEventListener("submit", runSimulation);
-    elements.savedScaleForm.addEventListener("submit", handleSavedScaleSubmit);
-    elements.savedType.addEventListener("change", renderSavedDynamicFields);
-    elements.resetScalesButton.addEventListener("click", () => {
-        state.savedScales = DEFAULT_SCALES.map(cloneScale);
-        saveScales();
-        renderSavedScales();
-    });
+    configureHeroDemo();
+    configureProcessDemo();
+    configureMobileMenu();
+    configureEvents();
+    bootInitialSimulation();
 
     if (window.lucide) {
         window.lucide.createIcons();
     }
-
-    startHeroDemo();
-    configureGsapIntro();
-    initializeDefaultSimulation();
 }
 
-document.addEventListener("DOMContentLoaded", initialize);
+document.addEventListener("DOMContentLoaded", init);
