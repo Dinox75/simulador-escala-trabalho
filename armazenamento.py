@@ -104,6 +104,17 @@ TURNOS_PADRONIZADOS = {
 }
 
 
+TURNOS_VALIDOS = list(TURNOS_PADRONIZADOS.values())
+
+def existe_turno_invalido(sequencia_turnos):
+    sequencia_normalizada = normalizar_sequencia_turnos(sequencia_turnos)
+
+    for turno in sequencia_normalizada:
+        if turno not in TURNOS_VALIDOS:
+            return True
+
+    return False
+
 def remover_acentos(texto):
     texto_normalizado = unicodedata.normalize("NFD", texto)
 
@@ -255,6 +266,9 @@ def adicionar_escala_turno_rotativo(nome, sequencia_turnos):
     if not sequencia_normalizada:
         return "sequencia_vazia"
 
+    if existe_turno_invalido(sequencia_turnos):
+        return "turno_invalido"
+
     if existe_nome_duplicado(escalas, nome):
         return "nome_duplicado"
 
@@ -356,6 +370,9 @@ def editar_escala_turno_rotativo(indice, novo_nome, nova_sequencia_turnos):
 
     if not sequencia_normalizada:
         return "sequencia_vazia"
+
+    if existe_turno_invalido(sequencia_normalizada):
+        return "turno_invalido"
 
     if existe_nome_duplicado(escalas, novo_nome, indice):
         return "nome_duplicado"
