@@ -799,3 +799,32 @@ def test_editar_escala_turno_rotativo_com_sequencia_vazia(tmp_path, monkeypatch)
     )
 
     assert resultado == "sequencia_vazia"
+
+def test_normalizar_turno_manha_sem_acento():
+    resultado = armazenamento.normalizar_turno("manha")
+
+    assert resultado == "Manhã"
+
+
+def test_normalizar_turno_manha_com_acento():
+    resultado = armazenamento.normalizar_turno("manhã")
+
+    assert resultado == "Manhã"
+
+
+def test_normalizar_turno_com_espacos_e_maiusculas():
+    resultado = armazenamento.normalizar_turno(" TARDE ")
+
+    assert resultado == "Tarde"
+
+
+def test_normalizar_sequencia_turnos_padroniza_nomes():
+    resultado = armazenamento.normalizar_sequencia_turnos([
+        " manha ",
+        "TARDE",
+        "noite",
+        "folga",
+        ""
+    ])
+
+    assert resultado == ["Manhã", "Tarde", "Noite", "Folga"]

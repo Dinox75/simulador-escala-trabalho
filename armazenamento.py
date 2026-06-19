@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import unicodedata
 
 from tipos_escala import (
     TIPO_ESCALA_PADRAO,
@@ -95,9 +96,34 @@ def criar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
         "horas_folga": horas_folga
     }
 
+TURNOS_PADRONIZADOS = {
+    "manha": "Manhã",
+    "tarde": "Tarde",
+    "noite": "Noite",
+    "folga": "Folga"
+}
+
+
+def remover_acentos(texto):
+    texto_normalizado = unicodedata.normalize("NFD", texto)
+
+    return "".join(
+        caractere
+        for caractere in texto_normalizado
+        if unicodedata.category(caractere) != "Mn"
+    )
+
+
+def normalizar_turno(turno):
+    turno_limpo = str(turno).strip().lower()
+    turno_sem_acento = remover_acentos(turno_limpo)
+
+    return TURNOS_PADRONIZADOS.get(turno_sem_acento, str(turno).strip())
+
+
 def normalizar_sequencia_turnos(sequencia_turnos):
     return [
-        str(turno).strip()
+        normalizar_turno(turno)
         for turno in sequencia_turnos
         if str(turno).strip()
     ]
