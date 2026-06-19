@@ -29,7 +29,10 @@ from armazenamento import (
     remover_escala,
     editar_escala_ciclo_horas,
     editar_escala_turno_rotativo,
-    editar_escala
+    editar_escala,
+    normalizar_sequencia_turnos,
+    existe_turno_invalido,
+    TURNOS_VALIDOS
 )
 
 from tipos_escala import (
@@ -40,34 +43,62 @@ from tipos_escala import (
 )
 
 
-def normalizar_sequencia_turnos(sequencia):
-    if isinstance(sequencia, str):
-        sequencia = sequencia.split(",")
-
-    return [
-        str(turno).strip()
-        for turno in sequencia
-        if str(turno).strip()
-    ]
-
-
 def formatar_sequencia_turnos(sequencia_turnos):
     return " -> ".join(sequencia_turnos)
 
 
-def ler_sequencia_turnos():
+def formatar_turnos_validos():
+    return ", ".join(TURNOS_VALIDOS)
+
+
+def obter_turnos_invalidos(sequencia_turnos):
+    return [
+        turno
+        for turno in sequencia_turnos
+        if turno not in TURNOS_VALIDOS
+    ]
+
+
+def exibir_previa_sequencia_turnos(sequencia_turnos):
+    print("\nPrévia da sequência:")
+
+    for indice, turno in enumerate(sequencia_turnos, start=1):
+        print(f"Dia {indice}: {turno}")
+
+    print(f"\nTotal do ciclo: {len(sequencia_turnos)} dias")
+
+
+def ler_sequencia_turnos(confirmar_previa=True):
     while True:
         texto = ler_texto(
             "Digite a sequência de turnos separados por vírgula "
             "(ex: Manhã,Tarde,Noite,Folga): "
         )
 
-        sequencia_turnos = normalizar_sequencia_turnos(texto)
+        partes_sequencia = texto.split(",")
+        sequencia_turnos = normalizar_sequencia_turnos(partes_sequencia)
 
-        if sequencia_turnos:
+        if not sequencia_turnos:
+            print("A sequência de turnos não pode ficar vazia.")
+            continue
+
+        if existe_turno_invalido(sequencia_turnos):
+            turnos_invalidos = obter_turnos_invalidos(sequencia_turnos)
+
+            print("\nA sequência possui turno inválido.")
+            print(f"Turnos inválidos: {formatar_sequencia_turnos(turnos_invalidos)}")
+            print(f"Turnos permitidos: {formatar_turnos_validos()}")
+            continue
+
+        exibir_previa_sequencia_turnos(sequencia_turnos)
+
+        if not confirmar_previa:
             return sequencia_turnos
 
-        print("A sequência de turnos não pode ficar vazia.")
+        if confirmar_acao("Deseja usar essa sequência?"):
+            return sequencia_turnos
+
+        print("Digite a sequência novamente.")
 
 
 def criar_escala_manual(dias_trabalho=6, dias_folga=3):
@@ -100,6 +131,17 @@ def criar_escala_turno_rotativo(sequencia_turnos=None):
             "Folga",
             "Folga"
         ]
+
+    sequencia_turnos = normalizar_sequencia_turnos(sequencia_turnos)
+
+    if not sequencia_turnos:
+        raise ValueError("A sequência de turnos não pode ficar vazia.")
+
+    if existe_turno_invalido(sequencia_turnos):
+        raise ValueError(
+            f"A sequência possui turno inválido. "
+            f"Use apenas: {formatar_turnos_validos()}."
+        )
 
     return {
         "nome": "Escala turno rotativo",
@@ -264,7 +306,6 @@ def alterar_escala_atual():
         return escala_atual
 
     sequencia_turnos = ler_sequencia_turnos()
-
     escala_atual = criar_escala_turno_rotativo(sequencia_turnos)
 
     print("\nEscala de turno rotativo aplicada com sucesso.")
@@ -342,6 +383,10 @@ def cadastrar_escala():
     elif resultado == "sequencia_vazia":
         print("A sequência de turnos não pode ficar vazia.")
 
+    elif resultado == "turno_invalido":
+        print("\nA sequência possui turno inválido.")
+        print(f"Use apenas: {formatar_turnos_validos()}.")
+
 
 def editar_escala_salva(escala_atual):
     escalas = carregar_escalas()
@@ -366,14 +411,24 @@ def editar_escala_salva(escala_atual):
         print(f"Horas trabalhadas atuais: {escala_selecionada['horas_trabalho']}")
         print(f"Horas de folga atuais: {escala_selecionada['horas_folga']}")
 
-        novas_horas_trabalho = ler_numero("Digite a nova quantidade de horas trabalhadas: ")
-        novas_horas_folga = ler_numero("Digite a nova quantidade de horas de folga: ")
+        novas_horas_trabalho = ler_numero(
+            "Digite a nova quantidade de horas trabalhadas: "
+        )
+        novas_horas_folga = ler_numero(
+            "Digite a nova quantidade de horas de folga: "
+        )
 
         print("\nResumo da alteração:")
         print(f"Nome: {escala_selecionada['nome']} -> {novo_nome}")
         print(f"Tipo: {tipo_formatado}")
-        print(f"Horas trabalhadas: {escala_selecionada['horas_trabalho']} -> {novas_horas_trabalho}")
-        print(f"Horas de folga: {escala_selecionada['horas_folga']} -> {novas_horas_folga}")
+        print(
+            "Horas trabalhadas: "
+            f"{escala_selecionada['horas_trabalho']} -> {novas_horas_trabalho}"
+        )
+        print(
+            "Horas de folga: "
+            f"{escala_selecionada['horas_folga']} -> {novas_horas_folga}"
+        )
 
         confirmacao = confirmar_acao("Deseja salvar essa alteração?")
 
@@ -400,13 +455,14 @@ def editar_escala_salva(escala_atual):
 
         print(f"Sequência atual: {formatar_sequencia_turnos(sequencia_atual)}")
 
-        nova_sequencia_turnos = ler_sequencia_turnos()
+        nova_sequencia_turnos = ler_sequencia_turnos(confirmar_previa=False)
 
         print("\nResumo da alteração:")
         print(f"Nome: {escala_selecionada['nome']} -> {novo_nome}")
         print(f"Tipo: {tipo_formatado}")
-        print(f"Sequência: {formatar_sequencia_turnos(sequencia_atual)}")
+        print(f"Sequência atual: {formatar_sequencia_turnos(sequencia_atual)}")
         print(f"Nova sequência: {formatar_sequencia_turnos(nova_sequencia_turnos)}")
+        print(f"Total do novo ciclo: {len(nova_sequencia_turnos)} dias")
 
         confirmacao = confirmar_acao("Deseja salvar essa alteração?")
 
@@ -430,14 +486,24 @@ def editar_escala_salva(escala_atual):
         print(f"Dias trabalhados atuais: {escala_selecionada['dias_trabalho']}")
         print(f"Dias de folga atuais: {escala_selecionada['dias_folga']}")
 
-        novos_dias_trabalho = ler_numero("Digite a nova quantidade de dias trabalhados: ")
-        novos_dias_folga = ler_numero("Digite a nova quantidade de dias de folga: ")
+        novos_dias_trabalho = ler_numero(
+            "Digite a nova quantidade de dias trabalhados: "
+        )
+        novos_dias_folga = ler_numero(
+            "Digite a nova quantidade de dias de folga: "
+        )
 
         print("\nResumo da alteração:")
         print(f"Nome: {escala_selecionada['nome']} -> {novo_nome}")
         print(f"Tipo: {tipo_formatado}")
-        print(f"Dias trabalhados: {escala_selecionada['dias_trabalho']} -> {novos_dias_trabalho}")
-        print(f"Dias de folga: {escala_selecionada['dias_folga']} -> {novos_dias_folga}")
+        print(
+            "Dias trabalhados: "
+            f"{escala_selecionada['dias_trabalho']} -> {novos_dias_trabalho}"
+        )
+        print(
+            "Dias de folga: "
+            f"{escala_selecionada['dias_folga']} -> {novos_dias_folga}"
+        )
 
         confirmacao = confirmar_acao("Deseja salvar essa alteração?")
 
@@ -477,6 +543,10 @@ def editar_escala_salva(escala_atual):
 
     elif resultado == "sequencia_vazia":
         print("A sequência de turnos não pode ficar vazia.")
+
+    elif resultado == "turno_invalido":
+        print("\nA sequência possui turno inválido.")
+        print(f"Use apenas: {formatar_turnos_validos()}.")
 
     return escala_atual
 
