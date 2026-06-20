@@ -392,3 +392,19 @@ def editar_escala_turno_rotativo(indice, novo_nome, nova_sequencia_turnos):
     salvar_escalas(escalas)
 
     return "sucesso"
+
+def montar_sequencia_por_blocos(blocos):
+    sequencia = []
+
+    for turno, quantidade in blocos:
+        turno_normalizado = normalizar_turno(turno)
+
+        if turno_normalizado not in TURNOS_VALIDOS:
+            return None
+
+        if quantidade <= 0:
+            return None
+
+        sequencia.extend([turno_normalizado] * quantidade)
+
+    return sequencia

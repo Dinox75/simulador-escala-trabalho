@@ -27,7 +27,6 @@ def test_salvar_e_carregar_escalas(tmp_path, monkeypatch):
         }
     ]
 
-
 def test_adicionar_escala_com_sucesso(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -46,7 +45,6 @@ def test_adicionar_escala_com_sucesso(tmp_path, monkeypatch):
     assert escalas[0]["tipo"] == "ciclo_dias"
     assert escalas[0]["dias_trabalho"] == 3
     assert escalas[0]["dias_folga"] == 2
-
 
 def test_adicionar_escala_com_nome_duplicado(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -67,7 +65,6 @@ def test_adicionar_escala_com_nome_duplicado(tmp_path, monkeypatch):
 
     assert resultado == "nome_duplicado"
 
-
 def test_adicionar_escala_com_configuracao_duplicada(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -86,7 +83,6 @@ def test_adicionar_escala_com_configuracao_duplicada(tmp_path, monkeypatch):
     resultado = armazenamento.adicionar_escala("Minha escala nova", 6, 3)
 
     assert resultado == "configuracao_duplicada"
-
 
 def test_remover_escala_com_sucesso(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -117,7 +113,6 @@ def test_remover_escala_com_sucesso(tmp_path, monkeypatch):
     assert len(escalas) == 1
     assert escalas[0]["nome"] == "Escala administrativa 5x2"
 
-
 def test_remover_escala_com_indice_invalido(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -140,7 +135,6 @@ def test_remover_escala_com_indice_invalido(tmp_path, monkeypatch):
     escalas = armazenamento.carregar_escalas()
 
     assert len(escalas) == 1
-
 
 def test_editar_escala_com_sucesso(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -168,7 +162,6 @@ def test_editar_escala_com_sucesso(tmp_path, monkeypatch):
     assert escalas[0]["dias_trabalho"] == 5
     assert escalas[0]["dias_folga"] == 2
 
-
 def test_editar_escala_com_indice_invalido(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -187,7 +180,6 @@ def test_editar_escala_com_indice_invalido(tmp_path, monkeypatch):
     resultado = armazenamento.editar_escala(10, "Nova escala", 4, 2)
 
     assert resultado == "indice_invalido"
-
 
 def test_editar_escala_com_nome_duplicado(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -213,7 +205,6 @@ def test_editar_escala_com_nome_duplicado(tmp_path, monkeypatch):
 
     assert resultado == "nome_duplicado"
 
-
 def test_editar_escala_com_configuracao_duplicada(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -238,7 +229,6 @@ def test_editar_escala_com_configuracao_duplicada(tmp_path, monkeypatch):
 
     assert resultado == "configuracao_duplicada"
 
-
 def test_carregar_escala_antiga_sem_tipo(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -258,7 +248,6 @@ def test_carregar_escala_antiga_sem_tipo(tmp_path, monkeypatch):
 
     assert resultado[0]["tipo"] == "ciclo_dias"
 
-
 def test_adicionar_escala_com_tipo_padrao(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -270,7 +259,6 @@ def test_adicionar_escala_com_tipo_padrao(tmp_path, monkeypatch):
 
     assert resultado == "sucesso"
     assert escalas[0]["tipo"] == "ciclo_dias"
-
 
 def test_editar_escala_mantem_tipo(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -295,7 +283,6 @@ def test_editar_escala_mantem_tipo(tmp_path, monkeypatch):
     assert resultado == "sucesso"
     assert escalas_atualizadas[0]["tipo"] == "ciclo_dias"
 
-
 def test_carregar_escala_antiga_migra_arquivo_json(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -317,7 +304,6 @@ def test_carregar_escala_antiga_migra_arquivo_json(tmp_path, monkeypatch):
         escalas_salvas = json.load(arquivo)
 
     assert escalas_salvas[0]["tipo"] == "ciclo_dias"
-
 
 def test_carregar_escala_com_tipo_invalido_corrige_para_padrao(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -361,7 +347,6 @@ def test_adicionar_escala_ciclo_horas_com_sucesso(tmp_path, monkeypatch):
     assert escalas[0]["horas_trabalho"] == 12
     assert escalas[0]["horas_folga"] == 36
 
-
 def test_adicionar_escala_ciclo_horas_com_configuracao_duplicada(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -385,7 +370,6 @@ def test_adicionar_escala_ciclo_horas_com_configuracao_duplicada(tmp_path, monke
     )
 
     assert resultado == "configuracao_duplicada"
-
 
 def test_adicionar_escala_por_dias_nao_quebra_com_escala_por_horas_existente(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -416,7 +400,6 @@ def test_adicionar_escala_por_dias_nao_quebra_com_escala_por_horas_existente(tmp
     assert escalas[1]["tipo"] == "ciclo_dias"
     assert escalas[1]["dias_trabalho"] == 6
     assert escalas[1]["dias_folga"] == 3
-
 
 def test_editar_escala_por_dias_nao_quebra_com_escala_por_horas_existente(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -486,7 +469,6 @@ def test_editar_escala_ciclo_horas_com_sucesso(tmp_path, monkeypatch):
     assert escalas[0]["horas_trabalho"] == 24
     assert escalas[0]["horas_folga"] == 72
 
-
 def test_editar_escala_ciclo_horas_com_indice_invalido(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -502,7 +484,6 @@ def test_editar_escala_ciclo_horas_com_indice_invalido(tmp_path, monkeypatch):
     )
 
     assert resultado == "indice_invalido"
-
 
 def test_editar_escala_ciclo_horas_com_nome_duplicado(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -535,7 +516,6 @@ def test_editar_escala_ciclo_horas_com_nome_duplicado(tmp_path, monkeypatch):
 
     assert resultado == "nome_duplicado"
 
-
 def test_editar_escala_ciclo_horas_com_configuracao_duplicada(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -566,7 +546,6 @@ def test_editar_escala_ciclo_horas_com_configuracao_duplicada(tmp_path, monkeypa
     )
 
     assert resultado == "configuracao_duplicada"
-
 
 def test_editar_escala_ciclo_horas_nao_quebra_com_escala_por_dias_existente(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -625,7 +604,6 @@ def test_adicionar_escala_turno_rotativo_com_sucesso(tmp_path, monkeypatch):
     assert escalas[0]["tipo"] == "turno_rotativo"
     assert escalas[0]["sequencia_turnos"] == ["Manhã", "Tarde", "Noite", "Folga"]
 
-
 def test_adicionar_escala_turno_rotativo_com_nome_duplicado(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -646,7 +624,6 @@ def test_adicionar_escala_turno_rotativo_com_nome_duplicado(tmp_path, monkeypatc
 
     assert resultado == "nome_duplicado"
 
-
 def test_adicionar_escala_turno_rotativo_com_configuracao_duplicada(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -666,7 +643,6 @@ def test_adicionar_escala_turno_rotativo_com_configuracao_duplicada(tmp_path, mo
     )
 
     assert resultado == "configuracao_duplicada"
-
 
 def test_adicionar_escala_turno_rotativo_com_sequencia_vazia(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -708,7 +684,6 @@ def test_editar_escala_turno_rotativo_com_sucesso(tmp_path, monkeypatch):
     assert escalas[0]["tipo"] == "turno_rotativo"
     assert escalas[0]["sequencia_turnos"] == ["Manhã", "Tarde", "Noite", "Folga"]
 
-
 def test_editar_escala_turno_rotativo_com_indice_invalido(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -723,7 +698,6 @@ def test_editar_escala_turno_rotativo_com_indice_invalido(tmp_path, monkeypatch)
     )
 
     assert resultado == "indice_invalido"
-
 
 def test_editar_escala_turno_rotativo_com_nome_duplicado(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -751,7 +725,6 @@ def test_editar_escala_turno_rotativo_com_nome_duplicado(tmp_path, monkeypatch):
 
     assert resultado == "nome_duplicado"
 
-
 def test_editar_escala_turno_rotativo_com_configuracao_duplicada(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -777,7 +750,6 @@ def test_editar_escala_turno_rotativo_com_configuracao_duplicada(tmp_path, monke
     )
 
     assert resultado == "configuracao_duplicada"
-
 
 def test_editar_escala_turno_rotativo_com_sequencia_vazia(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
@@ -805,18 +777,15 @@ def test_normalizar_turno_manha_sem_acento():
 
     assert resultado == "Manhã"
 
-
 def test_normalizar_turno_manha_com_acento():
     resultado = armazenamento.normalizar_turno("manhã")
 
     assert resultado == "Manhã"
 
-
 def test_normalizar_turno_com_espacos_e_maiusculas():
     resultado = armazenamento.normalizar_turno(" TARDE ")
 
     assert resultado == "Tarde"
-
 
 def test_normalizar_sequencia_turnos_padroniza_nomes():
     resultado = armazenamento.normalizar_sequencia_turnos([
@@ -843,7 +812,6 @@ def test_adicionar_escala_turno_rotativo_com_turno_invalido(tmp_path, monkeypatc
 
     assert resultado == "turno_invalido"
 
-
 def test_editar_escala_turno_rotativo_com_turno_invalido(tmp_path, monkeypatch):
     arquivo_teste = tmp_path / "escalas.json"
 
@@ -864,3 +832,62 @@ def test_editar_escala_turno_rotativo_com_turno_invalido(tmp_path, monkeypatch):
     )
 
     assert resultado == "turno_invalido"
+
+def test_montar_sequencia_por_blocos_com_sucesso():
+    blocos = [
+        ("tarde", 3),
+        ("noite", 3),
+        ("folga", 3)
+    ]
+
+    resultado = armazenamento.montar_sequencia_por_blocos(blocos)
+
+    assert resultado == [
+        "Tarde", "Tarde", "Tarde",
+        "Noite", "Noite", "Noite",
+        "Folga", "Folga", "Folga"
+    ]
+
+def test_montar_sequencia_por_blocos_normaliza_turnos():
+    blocos = [
+        (" MANHA ", 2),
+        ("tarde", 1),
+        ("folga", 1)
+    ]
+
+    resultado = armazenamento.montar_sequencia_por_blocos(blocos)
+
+    assert resultado == [
+        "Manhã", "Manhã",
+        "Tarde",
+        "Folga"
+    ]
+
+def test_montar_sequencia_por_blocos_com_turno_invalido():
+    blocos = [
+        ("tarde", 3),
+        ("banana", 2)
+    ]
+
+    resultado = armazenamento.montar_sequencia_por_blocos(blocos)
+
+    assert resultado is None
+
+def test_montar_sequencia_por_blocos_com_quantidade_zero():
+    blocos = [
+        ("tarde", 0)
+    ]
+
+    resultado = armazenamento.montar_sequencia_por_blocos(blocos)
+
+    assert resultado is None
+
+def test_montar_sequencia_por_blocos_com_quantidade_negativa():
+    blocos = [
+        ("noite", -2)
+    ]
+
+    resultado = armazenamento.montar_sequencia_por_blocos(blocos)
+
+    assert resultado is None
+      
