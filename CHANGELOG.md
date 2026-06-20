@@ -1,3 +1,36 @@
+## [0.6.1] - Refinamento do turno rotativo
+
+### Adicionado
+
+* Adicionada normalização automática dos nomes dos turnos.
+* Adicionada validação para bloquear turnos inválidos em escalas rotativas.
+* Adicionada montagem de sequência de turno rotativo por blocos.
+* Adicionada prévia da sequência antes de aplicar ou salvar uma escala rotativa.
+* Adicionada exibição do total de dias do ciclo da sequência rotativa.
+
+### Melhorado
+
+* Entrada de turnos agora aceita variações como `manha`, `MANHA`, `manhã`, `tarde`, `noite` e `folga`, convertendo automaticamente para nomes padronizados.
+* Fluxo de criação de turno rotativo ficou mais guiado e menos dependente de digitação manual longa.
+* Mensagens de erro ficaram mais claras quando a sequência está vazia ou contém turnos inválidos.
+* O usuário agora pode montar ciclos maiores com menos risco de erro, usando blocos como `Tarde x3`, `Noite x3` e `Folga x3`.
+
+### Corrigido
+
+* Evitado salvamento de escalas rotativas com nomes de turnos fora do padrão permitido.
+* Reduzido o risco de inconsistência no arquivo JSON causada por turnos digitados com maiúsculas, espaços extras ou ausência de acento.
+
+### Testes
+
+* Adicionados testes para normalização de turnos.
+* Adicionados testes para validação de turnos inválidos.
+* Mantidos os testes de cálculo, geração, cadastro e edição de escalas rotativas.
+
+### Observação
+
+Esta versão não altera a regra principal de cálculo do turno rotativo. O foco da `v0.6.1` é refinar a experiência de cadastro, melhorar a segurança da entrada de dados e preparar a base para ciclos rotativos mais complexos nas próximas versões.
+
+
 ## [0.6.0] - Suporte inicial a turno rotativo
 
 ### Adicionado
