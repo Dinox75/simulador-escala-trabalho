@@ -32,7 +32,8 @@ from armazenamento import (
     editar_escala,
     normalizar_sequencia_turnos,
     existe_turno_invalido,
-    TURNOS_VALIDOS
+    TURNOS_VALIDOS,
+    montar_sequencia_por_blocos as montar_sequencia_por_blocos_dados
 )
 
 from tipos_escala import (
@@ -67,8 +68,7 @@ def exibir_previa_sequencia_turnos(sequencia_turnos):
 
     print(f"\nTotal do ciclo: {len(sequencia_turnos)} dias")
 
-
-def ler_sequencia_turnos(confirmar_previa=True):
+def ler_sequencia_manual(confirmar_previa=True):
     while True:
         texto = ler_texto(
             "Digite a sequência de turnos separados por vírgula "
@@ -100,6 +100,87 @@ def ler_sequencia_turnos(confirmar_previa=True):
 
         print("Digite a sequência novamente.")
 
+def ler_turno_bloco():
+    while True:
+        texto_turno = ler_texto(
+            f"Digite o turno do bloco ({formatar_turnos_validos()}): "
+        )
+
+        turno_normalizado = normalizar_sequencia_turnos([texto_turno])
+
+        if not turno_normalizado:
+            print("O turno não pode ficar vazio.")
+            continue
+
+        if existe_turno_invalido(turno_normalizado):
+            print("\nTurno inválido.")
+            print(f"Use apenas: {formatar_turnos_validos()}.")
+            continue
+
+        return turno_normalizado[0]
+
+def ler_quantidade_dias_bloco():
+    while True:
+        quantidade_dias = ler_numero("Quantos dias seguidos neste turno? ")
+
+        if quantidade_dias > 0:
+            return quantidade_dias
+
+        print("A quantidade de dias precisa ser maior que zero.")
+
+def ler_sequencia_por_blocos(confirmar_previa=True):
+    blocos = []
+
+    while True:
+        turno = ler_turno_bloco()
+        quantidade_dias = ler_quantidade_dias_bloco()
+
+        blocos.append((turno, quantidade_dias))
+
+        sequencia_turnos = montar_sequencia_por_blocos_dados(blocos)
+
+        if sequencia_turnos is None:
+            print("\nNão foi possível montar a sequência.")
+            print(f"Use apenas: {formatar_turnos_validos()}.")
+            continue
+
+        print("\nBloco adicionado:")
+        print(f"{turno} x{quantidade_dias}")
+
+        exibir_previa_sequencia_turnos(sequencia_turnos)
+
+        if not confirmar_acao("Deseja adicionar outro bloco?"):
+            break
+
+    sequencia_turnos = montar_sequencia_por_blocos_dados(blocos)
+
+    if not sequencia_turnos:
+        print("A sequência de turnos não pode ficar vazia.")
+        return ler_sequencia_por_blocos(confirmar_previa)
+
+    if not confirmar_previa:
+        return sequencia_turnos
+
+    if confirmar_acao("Deseja usar essa sequência completa?"):
+        return sequencia_turnos
+
+    print("Vamos montar a sequência novamente.")
+    return ler_sequencia_por_blocos(confirmar_previa)
+
+def ler_sequencia_turnos(confirmar_previa=True):
+    print("\nComo deseja montar a sequência de turnos?")
+    print("1 - Digitar sequência manualmente")
+    print("2 - Montar sequência por blocos")
+
+    opcao = ler_opcao_menu(
+        "Escolha uma opção: ",
+        ["1", "2"]
+    )
+
+    if opcao == "1":
+        return ler_sequencia_manual(confirmar_previa)
+
+    return ler_sequencia_por_blocos(confirmar_previa)
 
 def criar_escala_manual(dias_trabalho=6, dias_folga=3):
     return {
@@ -109,7 +190,6 @@ def criar_escala_manual(dias_trabalho=6, dias_folga=3):
         "dias_folga": dias_folga
     }
 
-
 def criar_escala_ciclo_horas(horas_trabalho=12, horas_folga=36):
     return {
         "nome": "Escala 12x36",
@@ -117,7 +197,6 @@ def criar_escala_ciclo_horas(horas_trabalho=12, horas_folga=36):
         "horas_trabalho": horas_trabalho,
         "horas_folga": horas_folga
     }
-
 
 def criar_escala_turno_rotativo(sequencia_turnos=None):
     if sequencia_turnos is None:
