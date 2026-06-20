@@ -799,3 +799,68 @@ def test_editar_escala_turno_rotativo_com_sequencia_vazia(tmp_path, monkeypatch)
     )
 
     assert resultado == "sequencia_vazia"
+
+def test_normalizar_turno_manha_sem_acento():
+    resultado = armazenamento.normalizar_turno("manha")
+
+    assert resultado == "Manhã"
+
+
+def test_normalizar_turno_manha_com_acento():
+    resultado = armazenamento.normalizar_turno("manhã")
+
+    assert resultado == "Manhã"
+
+
+def test_normalizar_turno_com_espacos_e_maiusculas():
+    resultado = armazenamento.normalizar_turno(" TARDE ")
+
+    assert resultado == "Tarde"
+
+
+def test_normalizar_sequencia_turnos_padroniza_nomes():
+    resultado = armazenamento.normalizar_sequencia_turnos([
+        " manha ",
+        "TARDE",
+        "noite",
+        "folga",
+        ""
+    ])
+
+    assert resultado == ["Manhã", "Tarde", "Noite", "Folga"]
+
+def test_adicionar_escala_turno_rotativo_com_turno_invalido(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([])
+
+    resultado = armazenamento.adicionar_escala_turno_rotativo(
+        "Escala inválida",
+        ["Manhã", "Banana", "Folga"]
+    )
+
+    assert resultado == "turno_invalido"
+
+
+def test_editar_escala_turno_rotativo_com_turno_invalido(tmp_path, monkeypatch):
+    arquivo_teste = tmp_path / "escalas.json"
+
+    monkeypatch.setattr(armazenamento, "CAMINHO_ESCALAS", arquivo_teste)
+
+    armazenamento.salvar_escalas([
+        {
+            "nome": "Escala A",
+            "tipo": "turno_rotativo",
+            "sequencia_turnos": ["Manhã", "Tarde"]
+        }
+    ])
+
+    resultado = armazenamento.editar_escala_turno_rotativo(
+        0,
+        "Escala A",
+        ["Manhã", "Banana", "Folga"]
+    )
+
+    assert resultado == "turno_invalido"

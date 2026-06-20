@@ -5,22 +5,22 @@
 <h1 align="center">⏰ Simulador de Escala de Trabalho</h1>
 
 <p align="center">
-  <strong>Aplicação em Python para consultar, simular, salvar, reutilizar, editar e excluir escalas de trabalho por dias, por horas e por turnos rotativos, com suporte real para 12x36, CRUD completo, persistência em JSON, testes automatizados e uma demo web moderna para apresentação do projeto.</strong>
+  <strong>Aplicação em Python para consultar, simular, cadastrar, editar, reutilizar e excluir escalas de trabalho por dias, por horas e por turnos rotativos, com persistência em JSON, testes automatizados, demo web e evolução planejada para interface mais profissional, banco de dados e arquitetura orientada a objetos.</strong>
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=1000&lines=Simule+escalas+de+trabalho+com+Python;Agora+com+suporte+inicial+a+turno+rotativo;Escalas+por+dias%2C+por+horas+e+por+revezamento;CRUD+completo+com+persist%C3%AAncia+em+JSON;Projeto+evoluindo+com+vis%C3%A3o+de+produto" alt="Typing SVG">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=1000&lines=Simule+escalas+de+trabalho+com+Python;Agora+com+turno+rotativo+mais+seguro;Monte+sequ%C3%AAncias+por+blocos;Escalas+por+dias%2C+horas+e+revezamento;Projeto+evoluindo+com+vis%C3%A3o+de+produto" alt="Typing SVG">
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.6.0-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.6.1-00B4D8?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/STATUS-EM%20DESENVOLVIMENTO-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PYTHON-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=061A2B">
   <img src="https://img.shields.io/badge/INTERFACE-CLI-00C2FF?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PERSIST%C3%8ANCIA-JSON-90E0EF?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/CRUD-COMPLETO-00B4D8?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/12x36-IMPLEMENTADO-48CAE4?style=for-the-badge&labelColor=061A2B">
-  <img src="https://img.shields.io/badge/TURNO%20ROTATIVO-v0.6.0-90E0EF?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/TURNO%20ROTATIVO-v0.6.1-90E0EF?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/TESTES-PYTEST-CAF0F8?style=for-the-badge&logo=pytest&logoColor=061A2B&labelColor=061A2B">
 </p>
 
@@ -50,7 +50,7 @@
     </td>
     <td width="25%" align="center">
       <h3>🔄 Turno rotativo</h3>
-      <p>Sequências como manhã, tarde, noite e folga.</p>
+      <p>Sequências manuais ou montadas por blocos.</p>
     </td>
     <td width="25%" align="center">
       <h3>🧪 Testes</h3>
@@ -65,53 +65,59 @@
 
 O **Simulador de Escala de Trabalho** é um projeto em Python criado para consultar, simular e gerenciar escalas de trabalho de forma simples, prática e evolutiva.
 
-A aplicação começou como um simulador de escala `6x3`, mas foi crescendo de forma organizada até se tornar uma ferramenta com:
+A aplicação começou como um simulador de escala `6x3`, mas foi crescendo de forma organizada até se tornar uma base com:
 
 - suporte a escalas por dias;
 - suporte a escalas por horas;
-- suporte inicial a turnos rotativos;
-- CRUD completo de escalas salvas;
-- persistência em JSON;
+- suporte a turnos rotativos;
+- cadastro, edição, exclusão e aplicação de escalas salvas;
+- persistência em arquivo JSON;
 - validações de entrada;
 - testes automatizados;
 - arquitetura modular;
-- demo web interativa para apresentação visual;
-- visão de evolução para colaborador e empresa.
+- demo web interativa;
+- visão de evolução para colaborador, empresa, banco de dados e aplicativo.
 
-O foco do projeto é transformar uma necessidade comum de trabalhadores em uma solução simples de consultar, fácil de expandir e boa o suficiente para compor um portfólio técnico.
+O foco do projeto é transformar uma necessidade comum de trabalhadores em uma solução simples de consultar, fácil de expandir e boa o suficiente para compor um portfólio técnico com evolução real.
 
 ---
 
 ## 🚀 Versão atual
 
-> **v0.6.0 - Suporte inicial a turno rotativo**
+> **v0.6.1 - Refinamento do turno rotativo**
 
-A versão `v0.6.0` marca uma evolução importante do projeto: além de escalas por dias e por horas, o simulador agora passa a suportar escalas baseadas em **sequência de turnos rotativos**.
+A versão `v0.6.1` melhora a experiência de uso do turno rotativo.  
+A lógica principal já existia na `v0.6.0`, mas agora o cadastro ficou mais seguro, mais guiado e menos dependente de digitação manual longa.
 
-Com isso, o sistema consegue trabalhar com modelos como:
+Antes, o usuário precisava digitar uma sequência inteira:
 
 ```text
-Manhã -> Manhã -> Tarde -> Tarde -> Noite -> Noite -> Folga -> Folga
+manha, manha, tarde, tarde, noite, noite, folga, folga
 ```
 
-A lógica identifica a posição da data consultada dentro da sequência e retorna qual turno corresponde àquele dia.
+Agora o sistema consegue:
 
-### Principais entregas da v0.6.0
+- normalizar automaticamente os nomes dos turnos;
+- bloquear turnos inválidos;
+- mostrar prévia da sequência;
+- exibir o total de dias do ciclo;
+- montar a sequência por blocos, como `Tarde x3`, `Noite x3`, `Folga x3`.
+
+### Principais entregas da v0.6.1
 
 | Categoria | Entrega |
 |---|---|
-| 🔄 Turno rotativo | Implementação funcional do tipo `turno_rotativo` |
-| 📆 Consulta por data | Cálculo do turno correspondente a uma data consultada |
-| 🔁 Sequência de turnos | Suporte a sequências como manhã, tarde, noite e folga |
-| ⭐ CRUD completo | Cadastro, aplicação, edição e exclusão de escalas rotativas |
-| 🛡️ Validação | Bloqueio de sequência de turnos vazia |
-| 💾 Persistência | Escalas rotativas salvas em `data/escalas.json` |
-| 🖥️ CLI | Menu principal integrado ao novo tipo de escala |
-| 🧪 Testes | Novos testes para cálculo, geração, cadastro e edição |
-| 🌐 Demo web | Repaginação visual com foco em apresentação profissional |
+| 🔤 Normalização | `manha`, `MANHA` e `manhã` viram `Manhã` |
+| 🛡️ Validação | Turnos inválidos são bloqueados antes de salvar |
+| 🧱 Blocos | Sequências podem ser montadas por blocos de turno |
+| 👀 Prévia | O sistema mostra os dias do ciclo antes de aplicar ou salvar |
+| 🔁 Ciclo | Exibe o total de dias da sequência rotativa |
+| 🖥️ CLI | Fluxo de criação de turno rotativo ficou mais guiado |
+| 🧪 Testes | Novos testes para normalização e validação |
+| 📚 Docs | README e CHANGELOG atualizados para a v0.6.1 |
 
 > [!NOTE]
-> A demo web funciona como vitrine visual do projeto. A implementação mais completa da v0.6.0 está na aplicação Python executada pelo terminal.
+> A `v0.6.1` não muda a regra matemática do turno rotativo. Ela melhora a entrada de dados, a segurança e a experiência de uso.
 
 ---
 
@@ -129,7 +135,11 @@ A demo web apresenta uma versão visual do projeto, com interface moderna, simul
 https://dinox75.github.io/simulador-escala-trabalho/demo/
 ```
 
-A demo foi pensada para deixar o projeto mais apresentável para portfólio, LinkedIn e recrutadores. Ela ajuda a explicar a ideia do sistema, a dor que ele resolve e a visão de evolução para uso por colaboradores e empresas.
+A demo foi pensada para deixar o projeto mais apresentável para portfólio, LinkedIn e recrutadores.  
+Ela ajuda a explicar a ideia do sistema, a dor que ele resolve e a visão de evolução para uso por colaboradores e empresas.
+
+> [!IMPORTANT]
+> A demo web funciona como vitrine visual. A implementação principal e mais completa ainda está na aplicação Python executada pelo terminal.
 
 ---
 
@@ -147,8 +157,7 @@ Em ambientes com escalas alternadas, isso pode gerar:
 - dependência de planilhas, murais ou anotações;
 - dificuldade para reutilizar escalas já conhecidas;
 - dificuldade para editar ou remover escalas cadastradas incorretamente;
-- dificuldade para lidar com diferentes modelos de escala em um mesmo sistema;
-- falta de uma visão clara para o colaborador e para a empresa.
+- dificuldade para lidar com diferentes modelos de escala em um mesmo sistema.
 
 Este projeto nasceu a partir de uma necessidade real: transformar uma regra repetitiva em uma ferramenta prática, testável e expansível.
 
@@ -170,6 +179,9 @@ A versão atual permite:
 - cadastrar escalas por dias;
 - cadastrar escalas por horas;
 - cadastrar escalas por turno rotativo;
+- montar turnos rotativos manualmente;
+- montar turnos rotativos por blocos;
+- validar turnos permitidos;
 - listar escalas salvas;
 - aplicar uma escala salva como escala atual;
 - editar escalas salvas por dias;
@@ -182,7 +194,6 @@ A versão atual permite:
 - bloquear sequência de turnos vazia;
 - persistir dados em JSON;
 - normalizar escalas antigas sem campo `tipo`;
-- validar os tipos de escala;
 - testar a lógica com testes automatizados.
 
 ---
@@ -196,11 +207,12 @@ A versão atual permite:
 | ⏱️ Ver próximos períodos | Gera blocos de trabalho e folga para escalas por horas |
 | ⚙️ Alterar escala atual | Permite trocar rapidamente a escala em uso |
 | ⭐ Cadastrar escala | Salva escalas por dias, por horas ou por turno rotativo |
+| 🧱 Montar por blocos | Cria sequência rotativa usando blocos como `Tarde x3` |
 | 📋 Listar escalas salvas | Exibe escalas registradas no JSON |
 | ✅ Aplicar escala salva | Define uma escala salva como escala atual |
 | ✏️ Editar escala salva | Atualiza nome e configuração da escala |
 | 🗑️ Excluir escala salva | Remove escalas cadastradas |
-| 🛡️ Confirmação de ação | Evita alterações e exclusões acidentais |
+| 🛡️ Validação de turnos | Bloqueia turnos inválidos em escalas rotativas |
 | 💾 Persistência JSON | Mantém escalas salvas fora do código |
 | 🧪 Testes automatizados | Reduz risco de regressão |
 | 🌐 Demo web | Apresenta o projeto visualmente no navegador |
@@ -289,29 +301,79 @@ O ciclo se repete automaticamente quando chega ao fim da sequência.
 
 ---
 
+### 🧱 Montagem por blocos
+
+A partir da `v0.6.1`, o usuário não precisa digitar a sequência inteira manualmente.
+
+Em vez disso, pode montar assim:
+
+```text
+Turno: Tarde
+Quantidade de dias: 3
+
+Turno: Noite
+Quantidade de dias: 3
+
+Turno: Folga
+Quantidade de dias: 3
+```
+
+O sistema monta automaticamente:
+
+```text
+Tarde -> Tarde -> Tarde -> Noite -> Noite -> Noite -> Folga -> Folga -> Folga
+```
+
+E mostra uma prévia:
+
+```text
+Dia 1: Tarde
+Dia 2: Tarde
+Dia 3: Tarde
+Dia 4: Noite
+Dia 5: Noite
+Dia 6: Noite
+Dia 7: Folga
+Dia 8: Folga
+Dia 9: Folga
+
+Total do ciclo: 9 dias
+```
+
+Esse refinamento prepara a base para ciclos mais complexos nas próximas versões.
+
+---
+
 ## 🖥️ Menu principal da CLI
 
 ```text
-==== SIMULADOR DE ESCALA DE TRABALHO ====
+==== SIMULADOR DE ESCALAS ====
 
 Escala atual: 6x3 dias
 
-1 - Consultar status em uma data
-2 - Visualizar próximos dias/períodos
-3 - Alterar escala atual
-4 - Usar escala salva
+1 - Consultar status
+2 - Ver próximos dias/períodos
+3 - Alterar escala
+4 - Ver escalas salvas
 5 - Cadastrar nova escala
 6 - Editar escala salva
 7 - Excluir escala salva
 8 - Sair
 ```
 
-A opção de alterar, cadastrar e editar escala agora trabalha com três tipos:
+Ao alterar, cadastrar ou editar uma escala, o sistema trabalha com três tipos:
 
 ```text
 1 - Ciclo por dias
 2 - Ciclo por horas
 3 - Turno rotativo
+```
+
+No turno rotativo, a sequência pode ser criada de duas formas:
+
+```text
+1 - Digitar sequência manualmente
+2 - Montar sequência por blocos
 ```
 
 ---
@@ -349,12 +411,13 @@ As escalas são armazenadas em JSON, facilitando persistência e reutilização.
   "nome": "Turno rotativo operacional",
   "tipo": "turno_rotativo",
   "sequencia_turnos": [
-    "Manhã",
-    "Manhã",
+    "Tarde",
     "Tarde",
     "Tarde",
     "Noite",
     "Noite",
+    "Noite",
+    "Folga",
     "Folga",
     "Folga"
   ]
@@ -407,7 +470,7 @@ simulador-escala-trabalho/
 |---|---|
 | `main.py` | Controla o fluxo principal da aplicação e o menu da CLI |
 | `escala.py` | Contém as regras de cálculo das escalas |
-| `armazenamento.py` | Gerencia leitura, escrita, cadastro, edição e exclusão no JSON |
+| `armazenamento.py` | Gerencia leitura, escrita, cadastro, edição, normalização e validação das escalas |
 | `interface.py` | Centraliza exibições, menus e mensagens visuais |
 | `validacoes.py` | Controla leitura e validação de entradas do usuário |
 | `tipos_escala.py` | Define os tipos de escala suportados |
@@ -429,6 +492,8 @@ Os testes cobrem:
 - geração de próximos períodos;
 - cálculo de turno rotativo;
 - geração de próximos dias para turno rotativo;
+- normalização de turnos;
+- validação de turnos inválidos;
 - validação de sequência vazia;
 - cadastro de escalas;
 - edição de escalas;
@@ -484,6 +549,7 @@ pytest
 | `v0.4.0` | Preparação para múltiplos tipos de escala |
 | `v0.5.0` | Escalas por horas e suporte real ao 12x36 |
 | `v0.6.0` | Suporte inicial a turno rotativo |
+| `v0.6.1` | Refinamento do turno rotativo, validação e montagem por blocos |
 
 ---
 
@@ -495,7 +561,7 @@ O projeto começou como uma aplicação de terminal, mas está sendo estruturado
 
 Ideias futuras:
 
-- consultar rapidamente se trabalha ou folga;
+- consultar rapidamente se trabalha, folga ou qual turno fará;
 - visualizar calendário mensal da escala;
 - receber alertas de próximos turnos;
 - salvar múltiplas escalas pessoais;
@@ -522,13 +588,18 @@ Ideias futuras:
 
 ### Próximas melhorias técnicas
 
+- Fechar a `v0.6.1` com documentação e release.
+- Melhorar exibição visual dos turnos no terminal.
+- Criar suporte para ciclo rotativo avançado.
+- Preparar a lógica para ciclos personalizados maiores, como ciclos de 24 dias.
 - Refatorar `main.py` para reduzir responsabilidades.
-- Mover exibições específicas de turno rotativo para `interface.py`.
-- Melhorar mensagens de erro no CLI.
+- Mover mais exibições específicas para `interface.py`.
+- Criar classes para representar os tipos de escala.
+- Evoluir a estrutura para POO.
+- Trocar persistência em JSON por SQLite.
+- Criar camada de banco de dados.
 - Criar testes para fluxos mais próximos do uso real.
-- Melhorar tratamento de datas anteriores à data inicial.
-- Padronizar retornos e mensagens.
-- Atualizar a demo web para representar 100% dos recursos da CLI.
+- Atualizar a demo web para representar melhor os recursos da CLI.
 
 ### Próximas melhorias de produto
 
@@ -541,6 +612,7 @@ Ideias futuras:
 - Configuração de feriados.
 - Notificações.
 - Interface web completa.
+- Futuro aplicativo.
 
 ---
 
@@ -560,7 +632,9 @@ Durante o desenvolvimento foram aplicados conceitos importantes de programação
 - Pull Requests;
 - documentação técnica;
 - visão de produto;
-- evolução incremental por versões.
+- evolução incremental por versões;
+- preparação para refatoração com POO;
+- preparação para banco de dados.
 
 ---
 
@@ -569,7 +643,7 @@ Durante o desenvolvimento foram aplicados conceitos importantes de programação
 | Tecnologia | Uso |
 |---|---|
 | Python | Lógica principal da aplicação |
-| JSON | Persistência das escalas |
+| JSON | Persistência temporária das escalas |
 | pytest | Testes automatizados |
 | HTML | Estrutura da demo web |
 | CSS | Estilização da demo web |
@@ -609,6 +683,7 @@ Esta versão já entrega uma base funcional, mas ainda possui pontos planejados 
 - a aplicação principal ainda é CLI;
 - a demo web funciona como vitrine e pode não refletir todos os recursos avançados da CLI;
 - o turno rotativo ainda é baseado em sequência diária simples;
+- ciclos avançados específicos ainda não possuem um modelo próprio;
 - ainda não há cadastro de colaboradores;
 - ainda não há login;
 - ainda não há banco de dados;
@@ -618,19 +693,22 @@ Esta versão já entrega uma base funcional, mas ainda possui pontos planejados 
 
 ---
 
-## ✅ Status da v0.6.0
+## ✅ Status da v0.6.1
 
-- [x] Cálculo de turno rotativo
-- [x] Geração de próximos dias para turno rotativo
-- [x] Validação de sequência vazia
+- [x] Normalização de turnos rotativos
+- [x] Validação de turnos inválidos
+- [x] Bloqueio de sequência vazia
 - [x] Cadastro de turno rotativo
 - [x] Edição de turno rotativo
 - [x] Aplicação de escala rotativa salva
+- [x] Montagem de sequência por blocos
+- [x] Prévia da sequência de turnos
+- [x] Exibição do total de dias do ciclo
 - [x] Integração com menu principal
 - [x] Testes automatizados
-- [x] README atualizado
 - [x] CHANGELOG atualizado
-- [x] Demo web repaginada para apresentação profissional
+- [x] README atualizado
+- [ ] Release publicada
 
 ---
 

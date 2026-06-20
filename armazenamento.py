@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import unicodedata
 
 from tipos_escala import (
     TIPO_ESCALA_PADRAO,
@@ -95,9 +96,45 @@ def criar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
         "horas_folga": horas_folga
     }
 
+TURNOS_PADRONIZADOS = {
+    "manha": "Manhã",
+    "tarde": "Tarde",
+    "noite": "Noite",
+    "folga": "Folga"
+}
+
+
+TURNOS_VALIDOS = list(TURNOS_PADRONIZADOS.values())
+
+def existe_turno_invalido(sequencia_turnos):
+    sequencia_normalizada = normalizar_sequencia_turnos(sequencia_turnos)
+
+    for turno in sequencia_normalizada:
+        if turno not in TURNOS_VALIDOS:
+            return True
+
+    return False
+
+def remover_acentos(texto):
+    texto_normalizado = unicodedata.normalize("NFD", texto)
+
+    return "".join(
+        caractere
+        for caractere in texto_normalizado
+        if unicodedata.category(caractere) != "Mn"
+    )
+
+
+def normalizar_turno(turno):
+    turno_limpo = str(turno).strip().lower()
+    turno_sem_acento = remover_acentos(turno_limpo)
+
+    return TURNOS_PADRONIZADOS.get(turno_sem_acento, str(turno).strip())
+
+
 def normalizar_sequencia_turnos(sequencia_turnos):
     return [
-        str(turno).strip()
+        normalizar_turno(turno)
         for turno in sequencia_turnos
         if str(turno).strip()
     ]
@@ -229,6 +266,9 @@ def adicionar_escala_turno_rotativo(nome, sequencia_turnos):
     if not sequencia_normalizada:
         return "sequencia_vazia"
 
+    if existe_turno_invalido(sequencia_turnos):
+        return "turno_invalido"
+
     if existe_nome_duplicado(escalas, nome):
         return "nome_duplicado"
 
@@ -330,6 +370,9 @@ def editar_escala_turno_rotativo(indice, novo_nome, nova_sequencia_turnos):
 
     if not sequencia_normalizada:
         return "sequencia_vazia"
+
+    if existe_turno_invalido(sequencia_normalizada):
+        return "turno_invalido"
 
     if existe_nome_duplicado(escalas, novo_nome, indice):
         return "nome_duplicado"
