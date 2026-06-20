@@ -6,13 +6,15 @@ from tipos_escala import (
 )
 
 def formatar_status(status):
-    if status == "Trabalhando":
-        return "🟢 Trabalhando"
+    status_formatado = {
+        "Trabalhando": "🟢 Trabalhando",
+        "Folga": "💤 Folga",
+        "Manhã": "🌅 Manhã",
+        "Tarde": "🌇 Tarde",
+        "Noite": "🌙 Noite"
+    }
 
-    elif status == "Folga":
-        return "🌙 Folga"
-
-    return status
+    return status_formatado.get(status, status)
 
 def exibir_proximos_dias(proximos_dias):
     print("\n==== PRÓXIMOS PERÍODOS ====")
@@ -73,7 +75,6 @@ def obter_resumo_escala(escala):
 
     return f"{escala['dias_trabalho']}x{escala['dias_folga']} dias"
 
-
 def exibir_escala_atual(escala_atual):
     tipo = escala_atual.get("tipo", TIPO_ESCALA_PADRAO)
     tipo_formatado = obter_nome_tipo(tipo)
@@ -89,14 +90,15 @@ def exibir_escala_atual(escala_atual):
         print(f"Dias trabalhados: {escala_atual['dias_trabalho']}")
         print(f"Dias de folga: {escala_atual['dias_folga']}")
 
-
 def exibir_resultado_consulta_por_tipo(data_consulta, status, tipo):
+    status_formatado = formatar_status(status)
+
     if tipo == TIPO_CICLO_HORAS:
         data_formatada = data_consulta.strftime("%d/%m/%Y %H:%M")
-        print(f"\nNa data e hora {data_formatada}, você estará: {status}")
+        print(f"\nNa data e hora {data_formatada}, você estará: {status_formatado}")
     else:
-        exibir_resultado_consulta(data_consulta, status)
-
+        data_formatada = data_consulta.strftime("%d/%m/%Y")
+        print(f"\nNa data {data_formatada}, você estará: {status_formatado}")
 
 def exibir_proximos_periodos(periodos):
     print("\n==== PRÓXIMOS PERÍODOS ====")
