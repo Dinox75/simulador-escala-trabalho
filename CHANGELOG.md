@@ -1,3 +1,5 @@
+
+
 ## [0.7.0] - Modelos predefinidos de escala
 
 ### Adicionado
@@ -53,6 +55,42 @@
 ### Observação
 
 Esta versão marca uma mudança importante no projeto: além de permitir criar escalas personalizadas, o sistema agora oferece modelos prontos para uso. Isso torna a aplicação mais prática para o usuário final e prepara a base para futuras melhorias, como refatoração com orientação a objetos, banco de dados e interface mais completa.
+
+## [0.6.2] - Correção da montagem por blocos
+
+### Adicionado
+
+* Adicionada função pura para montar sequência de turnos por blocos.
+* Adicionados testes automatizados para validar a montagem de sequência por blocos.
+* Integrada a montagem por blocos ao menu principal da aplicação.
+* Adicionada opção para o usuário escolher entre:
+
+  * digitar a sequência manualmente;
+  * montar a sequência por blocos.
+
+### Corrigido
+
+* Corrigido desalinhamento entre documentação e implementação da `v0.6.1`.
+* A funcionalidade de montagem por blocos, já mencionada no README e no CHANGELOG, passou a estar disponível de fato no fluxo principal da CLI.
+* Corrigido o fluxo de criação de turnos rotativos para permitir montar ciclos maiores com mais segurança e menos digitação manual.
+
+### Melhorado
+
+* O cadastro de turnos rotativos ficou mais guiado e prático.
+* O usuário agora pode criar sequências como `Tarde x3`, `Noite x3` e `Folga x3` sem digitar cada turno individualmente.
+* A base do projeto ficou mais preparada para modelos complexos de escala, como ciclos rotativos de 24 dias.
+
+### Testes
+
+* Adicionados testes para montagem de sequência por blocos.
+* Validada montagem correta de sequências com turnos normalizados.
+* Validado bloqueio de turnos inválidos dentro dos blocos.
+* Validado bloqueio de quantidades inválidas, como zero ou valores negativos.
+
+### Observação
+
+Esta versão foi criada como uma correção complementar da `v0.6.1`. O foco foi garantir que a montagem por blocos estivesse realmente integrada ao sistema antes da evolução para modelos predefinidos na `v0.7.0`.
+
 
 ## [0.6.1] - Refinamento do turno rotativo
 
