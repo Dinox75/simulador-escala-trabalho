@@ -24,6 +24,12 @@
 </p>
 
 <p align="center">
+  <a href="https://dinox75.github.io/simulador-escala-trabalho/demo/" target="_blank">
+    <img src="https://img.shields.io/badge/%F0%9F%8C%90%20ACESSAR%20DEMO%20INTERATIVA-00B4D8?style=for-the-badge&labelColor=061A2B" alt="Acessar demo interativa">
+  </a>
+</p>
+
+<p align="center">
   <a href="#-sobre-o-projeto">Sobre</a> •
   <a href="#-vers%C3%A3o-atual">Versão atual</a> •
   <a href="#-gr%C3%A1fico-de-evolu%C3%A7%C3%A3o">Evolução</a> •
