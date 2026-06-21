@@ -6,7 +6,7 @@
         "tipo": "ciclo_dias"
     },
     {
-        "nome": "Escala Administativa 5x2",
+        "nome": "Escala Administrativa 5x2",
         "dias_trabalho": 5,
         "dias_folga": 2,
         "tipo": "ciclo_dias"
@@ -16,5 +16,35 @@
         "tipo": "ciclo_horas",
         "horas_trabalho": 12,
         "horas_folga": 36
+    },
+    {
+        "nome": "Minha escala real 24 dias",
+        "tipo": "turno_rotativo",
+        "sequencia_turnos": [
+            "Tarde",
+            "Tarde",
+            "Tarde",
+            "Noite",
+            "Noite",
+            "Noite",
+            "Folga",
+            "Folga",
+            "Folga",
+            "Tarde",
+            "Tarde",
+            "Tarde",
+            "Noite",
+            "Noite",
+            "Noite",
+            "Folga",
+            "Folga",
+            "Manhã",
+            "Manhã",
+            "Manhã",
+            "Manhã",
+            "Manhã",
+            "Manhã",
+            "Folga"
+        ]
     }
 ]

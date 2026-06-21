@@ -43,6 +43,7 @@ from tipos_escala import (
     obter_nome_tipo
 )
 
+from modelos_escala import listar_modelos_escala
 
 def formatar_sequencia_turnos(sequencia_turnos):
     return " -> ".join(sequencia_turnos)
@@ -277,6 +278,71 @@ def exibir_escalas_salvas(escalas):
 
         print(f"{indice} - {escala['nome']} | {tipo_formatado} | {resumo}")
 
+def exibir_modelos_escala(modelos):
+    print("\n==== MODELOS DE ESCALA ====")
+
+    for indice, modelo in enumerate(modelos, start=1):
+        tipo = modelo.get("tipo", TIPO_ESCALA_PADRAO)
+        tipo_formatado = obter_nome_tipo(tipo)
+        resumo = obter_resumo_escala(modelo)
+
+        print(f"{indice} - {modelo['nome']} | {tipo_formatado} | {resumo}")
+
+def salvar_modelo_como_escala(modelo):
+    tipo = modelo.get("tipo", TIPO_ESCALA_PADRAO)
+    nome = modelo["nome"]
+
+    if tipo == TIPO_CICLO_HORAS:
+        resultado = adicionar_escala_ciclo_horas(
+            nome,
+            modelo["horas_trabalho"],
+            modelo["horas_folga"]
+        )
+
+    elif tipo == TIPO_TURNO_ROTATIVO:
+        resultado = adicionar_escala_turno_rotativo(
+            nome,
+            modelo["sequencia_turnos"]
+        )
+
+    else:
+        resultado = adicionar_escala(
+            nome,
+            modelo["dias_trabalho"],
+            modelo["dias_folga"]
+        )
+
+    if resultado == "sucesso":
+        print("Modelo salvo nas escalas salvas com sucesso!")
+
+    elif resultado == "nome_duplicado":
+        print(f"A escala '{nome}' já existe nas escalas salvas.")
+
+    elif resultado == "configuracao_duplicada":
+        print("Já existe uma escala salva com essa mesma configuração.")
+
+    elif resultado == "sequencia_vazia":
+        print("A sequência de turnos não pode ficar vazia.")
+
+    elif resultado == "turno_invalido":
+        print("\nA sequência possui turno inválido.")
+        print(f"Use apenas: {formatar_turnos_validos()}.")
+
+
+def escolher_modelo_escala():
+    modelos = listar_modelos_escala()
+    exibir_modelos_escala(modelos)
+
+    indice = ler_indice_lista("Escolha um modelo de escala: ", len(modelos))
+    modelo_escolhido = modelos[indice]
+
+    print("\nModelo aplicado como escala atual.")
+    exibir_escala_atual(modelo_escolhido)
+
+    if confirmar_acao("Deseja salvar este modelo nas escalas salvas?"):
+        salvar_modelo_como_escala(modelo_escolhido)
+
+    return modelo_escolhido
 
 def consultar_status(escala_atual):
     tipo = escala_atual.get("tipo", TIPO_ESCALA_PADRAO)
@@ -346,7 +412,19 @@ def visualizar_proximos(escala_atual):
 
 
 def alterar_escala_atual():
-    print("\nTipo de escala:")
+    print("\nComo deseja alterar a escala?")
+    print("1 - Usar modelo predefinido")
+    print("2 - Criar escala personalizada")
+
+    modo_escolhido = ler_opcao_menu(
+        "Escolha uma opção: ",
+        ["1", "2"]
+    )
+
+    if modo_escolhido == "1":
+        return escolher_modelo_escala()
+
+    print("\nTipo de escala personalizada:")
     print("1 - Ciclo por dias")
     print("2 - Ciclo por horas")
     print("3 - Turno rotativo")

@@ -1,3 +1,59 @@
+## [0.7.0] - Modelos predefinidos de escala
+
+### Adicionado
+
+- Adicionado arquivo `modelos_escala.py` para centralizar modelos prontos de escala.
+- Adicionados modelos predefinidos:
+  - Escala 6x3;
+  - Escala 5x2;
+  - Escala 4x2;
+  - Escala 12x36;
+  - Turno rotativo simples;
+  - Minha escala real 24 dias.
+- Adicionada função para listar todos os modelos disponíveis.
+- Adicionada escala real de 24 dias baseada em ciclo rotativo:
+  - `Tarde x3`;
+  - `Noite x3`;
+  - `Folga x3`;
+  - `Tarde x3`;
+  - `Noite x3`;
+  - `Folga x2`;
+  - `Manhã x6`;
+  - `Folga x1`.
+- Adicionada integração dos modelos predefinidos ao menu principal.
+- Adicionada opção para aplicar um modelo predefinido como escala atual.
+- Adicionada opção para salvar um modelo predefinido nas escalas salvas.
+
+### Melhorado
+
+- O usuário não precisa mais criar manualmente escalas comuns como `6x3`, `5x2`, `4x2` e `12x36`.
+- A criação de escalas rotativas complexas ficou mais prática usando modelos prontos.
+- A escala real de 24 dias pode ser aplicada rapidamente sem digitar toda a sequência manualmente.
+- O fluxo de alteração de escala ficou mais objetivo, separando modelos predefinidos de escalas personalizadas.
+- O projeto passa a ter uma base mais útil para uso real, não apenas para simulação genérica.
+
+### Corrigido
+
+- Corrigido desalinhamento anterior entre a documentação e a funcionalidade de montagem por blocos.
+- Corrigido nome da escala administrativa, se aplicável.
+
+### Testes
+
+- Adicionados testes para os modelos predefinidos.
+- Adicionados testes para validar a escala real de 24 dias.
+- Testado se a escala real possui exatamente 24 dias.
+- Testado se a escala real mantém a ordem correta dos turnos.
+- Testado se a escala real possui:
+  - 6 dias de Tarde;
+  - 6 dias de Noite;
+  - 6 dias de Manhã;
+  - 6 dias de Folga.
+- Mantidos os testes existentes de cálculo, armazenamento, validação e turno rotativo.
+
+### Observação
+
+Esta versão marca uma mudança importante no projeto: além de permitir criar escalas personalizadas, o sistema agora oferece modelos prontos para uso. Isso torna a aplicação mais prática para o usuário final e prepara a base para futuras melhorias, como refatoração com orientação a objetos, banco de dados e interface mais completa.
+
 ## [0.6.1] - Refinamento do turno rotativo
 
 ### Adicionado
