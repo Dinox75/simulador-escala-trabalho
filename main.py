@@ -288,6 +288,47 @@ def exibir_modelos_escala(modelos):
 
         print(f"{indice} - {modelo['nome']} | {tipo_formatado} | {resumo}")
 
+def salvar_modelo_como_escala(modelo):
+    tipo = modelo.get("tipo", TIPO_ESCALA_PADRAO)
+    nome = modelo["nome"]
+
+    if tipo == TIPO_CICLO_HORAS:
+        resultado = adicionar_escala_ciclo_horas(
+            nome,
+            modelo["horas_trabalho"],
+            modelo["horas_folga"]
+        )
+
+    elif tipo == TIPO_TURNO_ROTATIVO:
+        resultado = adicionar_escala_turno_rotativo(
+            nome,
+            modelo["sequencia_turnos"]
+        )
+
+    else:
+        resultado = adicionar_escala(
+            nome,
+            modelo["dias_trabalho"],
+            modelo["dias_folga"]
+        )
+
+    if resultado == "sucesso":
+        print("Modelo salvo nas escalas salvas com sucesso!")
+
+    elif resultado == "nome_duplicado":
+        print(f"A escala '{nome}' já existe nas escalas salvas.")
+
+    elif resultado == "configuracao_duplicada":
+        print("Já existe uma escala salva com essa mesma configuração.")
+
+    elif resultado == "sequencia_vazia":
+        print("A sequência de turnos não pode ficar vazia.")
+
+    elif resultado == "turno_invalido":
+        print("\nA sequência possui turno inválido.")
+        print(f"Use apenas: {formatar_turnos_validos()}.")
+
+
 def escolher_modelo_escala():
     modelos = listar_modelos_escala()
     exibir_modelos_escala(modelos)
@@ -297,6 +338,9 @@ def escolher_modelo_escala():
 
     print("\nModelo aplicado como escala atual.")
     exibir_escala_atual(modelo_escolhido)
+
+    if confirmar_acao("Deseja salvar este modelo nas escalas salvas?"):
+        salvar_modelo_como_escala(modelo_escolhido)
 
     return modelo_escolhido
 
