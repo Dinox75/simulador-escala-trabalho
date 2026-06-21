@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Demo web do Simulador de Escala de Trabalho: consulte escalas 6x3, 12x36, turnos rotativos e visualize ciclos de trabalho.">
+    <meta name="description" content="Demo web do Simulador de Escala de Trabalho v0.7.0: consulte escalas 6x3, 5x2, 4x2, 12x36, modelos predefinidos, turnos rotativos e a escala real de 24 dias.">
     <title>Simulador de Escala de Trabalho | Demo Interativa</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,6 +38,7 @@
 
         <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
             <a href="#simulador">Simulador</a>
+            <a href="#modelos">Modelos</a>
             <a href="#dor">Por quê?</a>
             <a href="#futuro">Futuro</a>
             <a href="#documentacao">Documentação</a>
@@ -60,13 +61,13 @@
             <div class="hero-copy reveal">
                 <span class="eyebrow">
                     <i data-lucide="sparkles"></i>
-                    Bem-vindo à demo v0.6
+                    Bem-vindo à demo v0.7.0
                 </span>
 
-                <h1>Transforme escala confusa em uma visão clara de trabalho, folga e turno.</h1>
+                <h1>Transforme escala confusa em uma visão clara de trabalho, folga, turno e modelos prontos.</h1>
 
                 <p class="hero-subtitle">
-                    Uma demo interativa para colaborador consultar a própria rotina e para empresas visualizarem ciclos de forma objetiva, bonita e fácil de explicar.
+                    Uma demo interativa atualizada para a v0.7.0, com modelos predefinidos, escala real de 24 dias, turnos rotativos e visualização clara para colaborador e empresa.
                 </p>
 
                 <div class="hero-actions">
@@ -83,6 +84,7 @@
                     <span><i data-lucide="calendar-check"></i> 6x3</span>
                     <span><i data-lucide="clock-3"></i> 12x36</span>
                     <span><i data-lucide="refresh-cw"></i> Rotativo</span>
+                    <span><i data-lucide="layers-3"></i> Modelos</span>
                     <span><i data-lucide="database"></i> JSON</span>
                 </div>
             </div>
@@ -99,9 +101,9 @@
                     <div class="terminal-demo" id="heroTerminal">
                         <div class="terminal-line command">$ python main.py</div>
                         <div class="terminal-line">Carregando escalas salvas...</div>
-                        <div class="terminal-line accent" id="heroTerminalLine">Aplicando escala 6x3</div>
+                        <div class="terminal-line accent" id="heroTerminalLine">Aplicando modelo v0.7.0</div>
                         <div class="terminal-output" id="heroTerminalOutput">
-                            Hoje: Trabalhando · Próxima folga em 2 dias
+                            Minha escala real 24 dias · Turno: Tarde
                         </div>
                     </div>
 
@@ -124,7 +126,7 @@
                     <div class="mini-progress">
                         <span id="heroProgressBar"></span>
                     </div>
-                    <small id="heroStatusMeta">Ciclo 6x3 em andamento</small>
+                    <small id="heroStatusMeta">Modelo predefinido aplicado</small>
                 </div>
 
                 <div class="orbit-card card-one">
@@ -208,7 +210,7 @@
             <div class="section-heading reveal">
                 <span class="eyebrow"><i data-lucide="play-circle"></i> Demonstração interativa</span>
                 <h2>Escolha o tipo de escala e veja o projeto rodando.</h2>
-                <p>O turno rotativo agora é montado por botões. O usuário vê a sequência, pode remover etapas e não se perde no preenchimento.</p>
+                <p>Agora a demo também possui modelos predefinidos. O usuário pode aplicar 6x3, 5x2, 4x2, 12x36, turno rotativo simples ou a escala real de 24 dias.</p>
             </div>
 
             <div class="simulator-layout">
@@ -230,6 +232,15 @@
                             <strong>Turno rotativo</strong>
                             <small>Manhã, tarde, noite e folga</small>
                         </button>
+                    </div>
+
+                    <div class="model-panel" id="modelos">
+                        <div class="model-panel-header">
+                            <span class="eyebrow"><i data-lucide="layers-3"></i> Modelos v0.7.0</span>
+                            <p>Escolha um modelo pronto para preencher automaticamente a simulação.</p>
+                        </div>
+
+                        <div class="model-grid" id="modelButtons" aria-label="Modelos predefinidos de escala"></div>
                     </div>
 
                     <form class="simulator-form" id="simulatorForm">
@@ -275,8 +286,8 @@
             <div class="saved-scales glass-card reveal">
                 <div>
                     <span class="eyebrow"><i data-lucide="save"></i> Escalas salvas</span>
-                    <h3>Cadastre e aplique modelos de escala na demo.</h3>
-                    <p>Esta área simula o armazenamento em JSON do projeto Python usando o localStorage do navegador.</p>
+                    <h3>Cadastre, aplique e teste escalas salvas na demo.</h3>
+                    <p>Esta área simula o armazenamento em JSON do projeto Python usando o localStorage do navegador. Os exemplos iniciais acompanham os modelos da v0.7.0.</p>
                 </div>
 
                 <form class="saved-form" id="savedScaleForm">
@@ -313,8 +324,8 @@
         <section class="section future-section" id="futuro">
             <div class="section-heading reveal">
                 <span class="eyebrow"><i data-lucide="rocket"></i> Visão de futuro</span>
-                <h2>O simulador pode crescer em duas frentes: colaborador e empresa.</h2>
-                <p>A v0.6 inicia o caminho dos turnos rotativos. As próximas versões podem transformar a demo em uma ferramenta mais completa.</p>
+                <h2>Depois da v0.7.0, o simulador pode crescer em duas frentes: colaborador e empresa.</h2>
+                <p>A v0.7.0 consolida modelos predefinidos e escala real de 24 dias. As próximas versões podem levar o projeto para POO, banco de dados e uma interface ainda mais completa.</p>
             </div>
 
             <div class="future-grid">
@@ -345,13 +356,13 @@
 
             <div class="complex-cycle glass-card reveal">
                 <div class="complex-copy">
-                    <span class="eyebrow"><i data-lucide="shuffle"></i> Futuro: ciclo de turnos sequenciais</span>
-                    <h3>Escalas em blocos, parecidas com a rotina real de revezamento.</h3>
+                    <span class="eyebrow"><i data-lucide="shuffle"></i> Implementado: ciclo real de 24 dias</span>
+                    <h3>Escala real em blocos, pronta para ser aplicada como modelo.</h3>
                     <p>
-                        Algumas empresas usam ciclos mais longos, com blocos de tarde, noite, folga e manhã. Ainda é uma ideia em estudo no projeto, mas pode ser chamada provisoriamente de <strong>ciclo de turnos sequenciais</strong> ou <strong>escala rotativa em blocos</strong>.
+                        Algumas empresas usam ciclos mais longos, com blocos de tarde, noite, folga e manhã. Na v0.7.0, esse padrão deixou de ser apenas uma ideia e passou a existir como <strong>Minha escala real 24 dias</strong>.
                     </p>
                     <p>
-                        Exemplo inspirado em uma rotina real: três tardes, três noites, três folgas, depois três tardes, três noites, duas folgas, depois seis manhãs, uma folga e o ciclo recomeça.
+                        Modelo implementado: três tardes, três noites, três folgas, depois três tardes, três noites, duas folgas, depois seis manhãs, uma folga e o ciclo recomeça.
                     </p>
                 </div>
 
@@ -403,6 +414,7 @@
                     <button class="doc-tab active" type="button" data-doc-tab="dias">Ciclo por dias</button>
                     <button class="doc-tab" type="button" data-doc-tab="horas">Ciclo por horas</button>
                     <button class="doc-tab" type="button" data-doc-tab="rotativo">Turno rotativo</button>
+                    <button class="doc-tab" type="button" data-doc-tab="modelos">Modelos</button>
                     <button class="doc-tab" type="button" data-doc-tab="arquitetura">Arquitetura</button>
                 </div>
 
@@ -430,14 +442,28 @@ posicao = dias_passados % len(sequencia)
 status = sequencia[posicao]</code></pre>
                 </article>
 
+                <article class="doc-panel" id="doc-modelos">
+                    <h3>Modelos predefinidos</h3>
+                    <p>Na v0.7.0, os modelos ficam centralizados no arquivo <code>modelos_escala.py</code>. A demo web replica essa ideia usando uma lista de modelos no JavaScript.</p>
+                    <pre><code>modelos = [
+    "Escala 6x3",
+    "Escala 5x2",
+    "Escala 4x2",
+    "Escala 12x36",
+    "Turno rotativo simples",
+    "Minha escala real 24 dias"
+]</code></pre>
+                </article>
+
                 <article class="doc-panel" id="doc-arquitetura">
                     <h3>Arquitetura inicial</h3>
-                    <p>O projeto Python separa responsabilidades: cálculo em <code>escala.py</code>, dados em <code>armazenamento.py</code>, validações em <code>validacoes.py</code> e exibição em <code>interface.py</code>.</p>
+                    <p>O projeto Python separa responsabilidades: cálculo em <code>escala.py</code>, dados em <code>armazenamento.py</code>, modelos em <code>modelos_escala.py</code>, validações em <code>validacoes.py</code> e exibição em <code>interface.py</code>.</p>
                     <pre><code>main.py → fluxo do programa
 escala.py → regras de cálculo
 armazenamento.py → JSON
 interface.py → saída visual
-validacoes.py → entradas seguras</code></pre>
+validacoes.py → entradas seguras
+modelos_escala.py → modelos prontos</code></pre>
                 </article>
             </div>
         </section>
@@ -454,7 +480,7 @@ validacoes.py → entradas seguras</code></pre>
                         A evolução natural foi transformar a lógica em uma demo web. Assim, o projeto deixa de ser apenas um script técnico e passa a comunicar valor para usuários reais: quem trabalha em escala e quem precisa organizar equipes.
                     </p>
                     <p>
-                        A proposta atual é manter o núcleo simples e confiável, enquanto a interface ganha clareza visual. Cada versão adiciona uma camada: primeiro ciclos por dias, depois ciclos por horas, agora turnos rotativos e futuramente ciclos em blocos mais complexos.
+                        A proposta atual é manter o núcleo simples e confiável, enquanto a interface ganha clareza visual. Cada versão adiciona uma camada: primeiro ciclos por dias, depois ciclos por horas, depois turnos rotativos e agora modelos predefinidos com uma escala real de 24 dias.
                     </p>
                 </div>
 
@@ -529,7 +555,7 @@ validacoes.py → entradas seguras</code></pre>
     </main>
 
     <footer class="site-footer">
-        <p>Simulador de Escala de Trabalho · Demo web · Projeto Python em evolução</p>
+        <p>Simulador de Escala de Trabalho · Demo web v0.7.0 · Projeto Python em evolução</p>
         <a href="#inicio">Voltar ao topo</a>
     </footer>
 </body>

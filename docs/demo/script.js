@@ -2,15 +2,38 @@ const TIPO_CICLO_DIAS = "ciclo_dias";
 const TIPO_CICLO_HORAS = "ciclo_horas";
 const TIPO_TURNO_ROTATIVO = "turno_rotativo";
 
-const STORAGE_KEY = "simulador_escala_demo_v06";
+const STORAGE_KEY = "simulador_escala_demo_v07";
 const THEME_KEY = "simulador_escala_theme";
 
-const DEFAULT_SCALES = [
+const ESCALA_REAL_24_DIAS = [
+    "Tarde", "Tarde", "Tarde",
+    "Noite", "Noite", "Noite",
+    "Folga", "Folga", "Folga",
+    "Tarde", "Tarde", "Tarde",
+    "Noite", "Noite", "Noite",
+    "Folga", "Folga",
+    "Manhã", "Manhã", "Manhã", "Manhã", "Manhã", "Manhã",
+    "Folga"
+];
+
+const PREDEFINED_MODELS = [
     {
-        nome: "Escala padrão 6x3",
+        nome: "Escala 6x3",
         tipo: TIPO_CICLO_DIAS,
         dias_trabalho: 6,
         dias_folga: 3
+    },
+    {
+        nome: "Escala 5x2",
+        tipo: TIPO_CICLO_DIAS,
+        dias_trabalho: 5,
+        dias_folga: 2
+    },
+    {
+        nome: "Escala 4x2",
+        tipo: TIPO_CICLO_DIAS,
+        dias_trabalho: 4,
+        dias_folga: 2
     },
     {
         nome: "Escala 12x36",
@@ -19,40 +42,47 @@ const DEFAULT_SCALES = [
         horas_folga: 36
     },
     {
-        nome: "Turno rotativo exemplo",
+        nome: "Turno rotativo simples",
         tipo: TIPO_TURNO_ROTATIVO,
         sequencia_turnos: ["Manhã", "Manhã", "Tarde", "Tarde", "Noite", "Noite", "Folga", "Folga"]
+    },
+    {
+        nome: "Minha escala real 24 dias",
+        tipo: TIPO_TURNO_ROTATIVO,
+        sequencia_turnos: ESCALA_REAL_24_DIAS
     }
 ];
 
+const DEFAULT_SCALES = PREDEFINED_MODELS;
+
 const HERO_FRAMES = [
     {
-        line: "Aplicando escala 6x3",
+        line: "Aplicando modelo 6x3",
         output: "Hoje: Trabalhando · Próxima folga em 2 dias",
         status: "Trabalhando",
-        meta: "Ciclo 6x3 em andamento",
+        meta: "Modelo por dias",
         progress: "62%"
     },
     {
         line: "Consultando escala 12x36",
         output: "01/06/2026 20:00 → Folga",
         status: "Folga",
-        meta: "Retorno previsto após 36h",
+        meta: "Modelo por horas",
         progress: "34%"
     },
     {
-        line: "Calculando turno rotativo",
-        output: "Sequência: Manhã → Tarde → Noite → Folga",
-        status: "Turno: Noite",
-        meta: "Rotação por sequência personalizada",
-        progress: "78%"
+        line: "Aplicando escala real 24 dias",
+        output: "Tarde x3 → Noite x3 → Folga x3 → ...",
+        status: "Turno: Tarde",
+        meta: "Modelo rotativo da v0.7.0",
+        progress: "86%"
     }
 ];
 
 const PROCESS_RESULTS = [
-    "Status: Trabalhando",
-    "Consulta: 03/05/2026",
-    "Posição no ciclo: 2",
+    "Modelo selecionado",
+    "Datas informadas",
+    "Ciclo calculado",
     "Resultado exibido no calendário"
 ];
 
@@ -87,6 +117,7 @@ const elements = {
     navLinks: $("#navLinks"),
     scrollProgress: $("#scrollProgress"),
     scaleTypeButtons: $("#scaleTypeButtons"),
+    modelButtons: $("#modelButtons"),
     simulatorForm: $("#simulatorForm"),
     dynamicFields: $("#dynamicFields"),
     resultCard: $("#resultCard"),
@@ -169,6 +200,70 @@ function getScaleSummary(scale) {
     }
 
     return `${scale.dias_trabalho}x${scale.dias_folga} dias`;
+}
+
+function getModelIcon(type) {
+    const icons = {
+        [TIPO_CICLO_DIAS]: "calendar-days",
+        [TIPO_CICLO_HORAS]: "clock",
+        [TIPO_TURNO_ROTATIVO]: "repeat-2"
+    };
+
+    return icons[type] || "layers-3";
+}
+
+function renderModelButtons() {
+    if (!elements.modelButtons) {
+        return;
+    }
+
+    elements.modelButtons.innerHTML = PREDEFINED_MODELS
+        .map((model, index) => `
+            <button class="model-button" type="button" data-model-index="${index}">
+                <span class="model-icon"><i data-lucide="${getModelIcon(model.tipo)}"></i></span>
+                <span>
+                    <strong>${model.nome}</strong>
+                    <small>${getTypeName(model.tipo)} · ${getScaleSummary(model)}</small>
+                </span>
+            </button>
+        `)
+        .join("");
+
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+}
+
+function applyModelToSimulator(model) {
+    if (!model) {
+        return;
+    }
+
+    state.selectedType = model.tipo;
+    updateScaleButtons();
+
+    if (model.tipo === TIPO_TURNO_ROTATIVO) {
+        state.simulatorTurns = normalizeTurns(model.sequencia_turnos);
+    }
+
+    renderDynamicFields();
+
+    if (model.tipo === TIPO_CICLO_HORAS) {
+        $("#workHours").value = model.horas_trabalho;
+        $("#offHours").value = model.horas_folga;
+    } else if (model.tipo === TIPO_CICLO_DIAS) {
+        $("#workDays").value = model.dias_trabalho;
+        $("#offDays").value = model.dias_folga;
+    }
+
+    const typeName = getTypeName(model.tipo);
+    const summary = getScaleSummary(model);
+
+    showResult(
+        `Modelo aplicado: ${model.nome}`,
+        `${typeName} · ${summary}. Preencha as datas ou clique em simular para recalcular.`,
+        []
+    );
 }
 
 function parseDateInput(value) {
@@ -319,7 +414,7 @@ function renderTurnBuilder(target, turns) {
             <div class="turn-builder-title">
                 <div>
                     <strong>Monte a sequência</strong>
-                    <small>Clique nos botões na ordem real do ciclo.</small>
+                    <small>Clique nos botões na ordem real do ciclo ou use o modelo pronto.</small>
                 </div>
             </div>
 
@@ -335,7 +430,7 @@ function renderTurnBuilder(target, turns) {
             <div class="turn-actions">
                 <button class="tiny-button" type="button" data-turn-action="undo" data-turn-target="${target}">Remover último</button>
                 <button class="tiny-button" type="button" data-turn-action="clear" data-turn-target="${target}">Limpar sequência</button>
-                <button class="tiny-button" type="button" data-turn-action="ferrero" data-turn-target="${target}">Exemplo em blocos</button>
+                <button class="tiny-button" type="button" data-turn-action="real24" data-turn-target="${target}">Escala real 24 dias</button>
             </div>
         </div>
     `;
@@ -758,19 +853,8 @@ function handleTurnBuilderClick(event) {
             list.splice(0, list.length);
         }
 
-        if (action === "ferrero") {
-            const example = [
-                "Tarde", "Tarde", "Tarde",
-                "Noite", "Noite", "Noite",
-                "Folga", "Folga", "Folga",
-                "Tarde", "Tarde", "Tarde",
-                "Noite", "Noite", "Noite",
-                "Folga", "Folga",
-                "Manhã", "Manhã", "Manhã", "Manhã", "Manhã", "Manhã",
-                "Folga"
-            ];
-
-            list.splice(0, list.length, ...example);
+        if (action === "real24" || action === "ferrero") {
+            list.splice(0, list.length, ...ESCALA_REAL_24_DIAS);
         }
 
         renderTurnPreview(target);
@@ -949,6 +1033,21 @@ function configureEvents() {
         }
     });
 
+    if (elements.modelButtons) {
+        elements.modelButtons.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-model-index]");
+
+            if (!button) {
+                return;
+            }
+
+            const model = PREDEFINED_MODELS[Number(button.dataset.modelIndex)];
+            applyModelToSimulator(cloneScale(model));
+
+            document.querySelector("#simulador").scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    }
+
     elements.simulatorForm.addEventListener("submit", handleSimulatorSubmit);
     elements.simulatorForm.addEventListener("click", handleTurnBuilderClick);
     elements.savedScaleForm.addEventListener("submit", handleSavedScaleSubmit);
@@ -980,7 +1079,7 @@ function bootInitialSimulation() {
 
     showResult(
         "Exemplo: Trabalhando",
-        "Este é um exemplo automático usando uma escala 6x3.",
+        "Este é um exemplo automático usando o modelo 6x3 da v0.7.0.",
         items
     );
 }
@@ -990,6 +1089,7 @@ function init() {
 
     configureTheme();
     renderDynamicFields();
+    renderModelButtons();
     renderSavedDynamicFields();
     renderSavedScales();
     configureTabs();
