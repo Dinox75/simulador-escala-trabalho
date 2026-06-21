@@ -6,7 +6,7 @@
         "tipo": "ciclo_dias"
     },
     {
-        "nome": "Escala Administativa 5x2",
+        "nome": "Escala Administrativa 5x2",
         "dias_trabalho": 5,
         "dias_folga": 2,
         "tipo": "ciclo_dias"
