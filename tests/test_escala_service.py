@@ -91,3 +91,39 @@ def test_service_retorna_nao_encontrada_ao_excluir_escala_inexistente(tmp_path):
     resultado = service.excluir_escala_por_nome("Escala inexistente")
 
     assert resultado == "nao_encontrada"
+
+from models.escala_turno_rotativo import EscalaTurnoRotativo
+
+
+def test_service_nao_adiciona_escala_com_configuracao_duplicada(tmp_path):
+    caminho = tmp_path / "escalas.json"
+    repository = JsonEscalaRepository(caminho)
+    service = EscalaService(repository)
+
+    escala_1 = EscalaCicloDias("Escala 6x3", 6, 3)
+    escala_2 = EscalaCicloDias("Minha escala 6x3", 6, 3)
+
+    service.adicionar_escala(escala_1)
+    resultado = service.adicionar_escala(escala_2)
+    escalas = service.listar_escalas()
+
+    assert resultado == "configuracao_duplicada"
+    assert len(escalas) == 1
+
+
+def test_service_identifica_configuracao_duplicada_em_turno_rotativo(tmp_path):
+    caminho = tmp_path / "escalas.json"
+    repository = JsonEscalaRepository(caminho)
+    service = EscalaService(repository)
+
+    sequencia = ["Manhã", "Tarde", "Noite", "Folga"]
+
+    escala_1 = EscalaTurnoRotativo("Turno rotativo simples", sequencia)
+    escala_2 = EscalaTurnoRotativo("Outro nome", sequencia)
+
+    service.adicionar_escala(escala_1)
+    resultado = service.adicionar_escala(escala_2)
+    escalas = service.listar_escalas()
+
+    assert resultado == "configuracao_duplicada"
+    assert len(escalas) == 1

@@ -14,6 +14,9 @@ class EscalaService:
         if escala_existente is not None:
             return "nome_duplicado"
 
+        if self._existe_configuracao_duplicada(escala):
+            return "configuracao_duplicada"
+
         self.repository.adicionar(escala)
         return "sucesso"
 
@@ -24,3 +27,21 @@ class EscalaService:
             return "sucesso"
 
         return "nao_encontrada"
+
+    def _existe_configuracao_duplicada(self, nova_escala):
+        escalas_salvas = self.repository.listar()
+
+        for escala_salva in escalas_salvas:
+            if self._tem_mesma_configuracao(escala_salva, nova_escala):
+                return True
+
+        return False
+
+    def _tem_mesma_configuracao(self, escala_a, escala_b):
+        dados_a = escala_a.to_dict()
+        dados_b = escala_b.to_dict()
+
+        dados_a.pop("nome", None)
+        dados_b.pop("nome", None)
+
+        return dados_a == dados_b
