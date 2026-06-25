@@ -5,9 +5,9 @@ from models.escala_factory import (
     converter_escalas_para_objetos,
     converter_escalas_para_dict
 )
+from repositories.escala_repository import EscalaRepository
 
-
-class JsonEscalaRepository:
+class JsonEscalaRepository(EscalaRepository):
     def __init__(self, caminho_arquivo="data/escalas.json"):
         self.caminho_arquivo = Path(caminho_arquivo)
 
