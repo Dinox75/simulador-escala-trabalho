@@ -15,6 +15,8 @@
 * Criada pasta `database/` para centralizar arquivos relacionados à futura integração com banco de dados.
 * Adicionado arquivo `database/schema_postgresql.sql` com proposta inicial de schema para PostgreSQL.
 * Adicionado arquivo `database/README.md` documentando a estrutura planejada para banco de dados.
+- Adicionada integração gradual do `armazenamento.py` com a camada `EscalaService`.
+- Adicionados testes de integração para validar o fluxo entre `armazenamento.py`, `EscalaService`, `JsonEscalaRepository` e JSON.
 
 ### Melhorado
 
@@ -23,6 +25,9 @@
 * A estrutura interna ficou mais próxima de uma arquitetura profissional, usando camadas como `models`, `repositories` e `database`.
 * A persistência em JSON passou a ter uma camada própria de repository, facilitando uma futura troca para PostgreSQL.
 * A nova estrutura mantém compatibilidade com o formato atual de dados em JSON.
+- O gerenciamento de escalas passou a usar a nova camada de service para adicionar, editar e remover registros.
+- O `armazenamento.py` manteve compatibilidade com o fluxo antigo, mas passou a utilizar a arquitetura nova internamente.
+- A migração foi feita preservando os retornos esperados pelo menu principal, como `sucesso`, `nome_duplicado`, `configuracao_duplicada`, `indice_invalido`, `sequencia_vazia` e `turno_invalido`.
 
 ### Testes
 
@@ -33,6 +38,11 @@
 * Adicionados testes para conversão entre dicionários e objetos.
 * Adicionados testes para o `JsonEscalaRepository`.
 * Mantidos os testes anteriores de cálculo, armazenamento, validações, modelos predefinidos e turnos rotativos.
+- Adicionados testes cobrindo adição de escala por dias usando service.
+- Adicionados testes cobrindo adição de escala por horas usando service.
+- Adicionados testes cobrindo adição de turno rotativo usando service.
+- Adicionados testes cobrindo edição e remoção de escalas usando service.
+- Adicionados testes garantindo que a montagem de sequência por blocos continua funcionando após a migração.
 
 ### Banco de dados
 
