@@ -9,9 +9,7 @@ class EscalaService:
         return self.repository.buscar_por_nome(nome)
 
     def adicionar_escala(self, escala):
-        escala_existente = self.repository.buscar_por_nome(escala.nome)
-
-        if escala_existente is not None:
+        if self._existe_nome_duplicado(escala.nome):
             return "nome_duplicado"
 
         if self._existe_configuracao_duplicada(escala):
@@ -27,6 +25,18 @@ class EscalaService:
             return "sucesso"
 
         return "nao_encontrada"
+
+    def _existe_nome_duplicado(self, nome):
+        nome_normalizado = self._normalizar_nome(nome)
+        escalas_salvas = self.repository.listar()
+
+        for escala_salva in escalas_salvas:
+            nome_existente = self._normalizar_nome(escala_salva.nome)
+
+            if nome_existente == nome_normalizado:
+                return True
+
+        return False
 
     def _existe_configuracao_duplicada(self, nova_escala):
         escalas_salvas = self.repository.listar()
@@ -45,3 +55,6 @@ class EscalaService:
         dados_b.pop("nome", None)
 
         return dados_a == dados_b
+
+    def _normalizar_nome(self, nome):
+        return str(nome).lower().strip()

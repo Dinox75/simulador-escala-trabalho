@@ -127,3 +127,18 @@ def test_service_identifica_configuracao_duplicada_em_turno_rotativo(tmp_path):
 
     assert resultado == "configuracao_duplicada"
     assert len(escalas) == 1
+
+def test_service_nao_adiciona_escala_com_nome_duplicado_normalizado(tmp_path):
+    caminho = tmp_path / "escalas.json"
+    repository = JsonEscalaRepository(caminho)
+    service = EscalaService(repository)
+
+    escala_1 = EscalaCicloDias("Escala 6x3", 6, 3)
+    escala_2 = EscalaCicloDias(" escala 6x3 ", 5, 2)
+
+    service.adicionar_escala(escala_1)
+    resultado = service.adicionar_escala(escala_2)
+    escalas = service.listar_escalas()
+
+    assert resultado == "nome_duplicado"
+    assert len(escalas) == 1
