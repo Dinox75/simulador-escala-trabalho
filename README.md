@@ -14,7 +14,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/VERS%C3%83O-v0.8.0-00B4D8?style=for-the-badge&labelColor=061A2B">
-  <img src="https://img.shields.io/badge/STATUS-EM%20DESENVOLVIMENTO-48CAE4?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/STATUS-%20ESTAVEL-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PYTHON-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=061A2B">
   <img src="https://img.shields.io/badge/INTERFACE-CLI-00C2FF?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/ARQUITETURA-POO%20%2B%20SERVICE%20%2B%20REPOSITORY-90E0EF?style=for-the-badge&labelColor=061A2B">
