@@ -1,6 +1,6 @@
 from models.escala_turno_rotativo import EscalaTurnoRotativo
 from tipos_escala import TIPO_TURNO_ROTATIVO
-
+import pytest
 
 def test_cria_escala_turno_rotativo():
     sequencia = ["Manhã", "Tarde", "Noite", "Folga"]
@@ -84,3 +84,17 @@ def test_escala_turno_rotativo_real_tem_quantidade_correta_de_turnos():
     assert escala.sequencia_turnos.count("Noite") == 6
     assert escala.sequencia_turnos.count("Manhã") == 6
     assert escala.sequencia_turnos.count("Folga") == 6
+
+def test_escala_turno_rotativo_nao_aceita_nome_vazio():
+    with pytest.raises(ValueError):
+        EscalaTurnoRotativo("", ["Manhã", "Folga"])
+
+
+def test_escala_turno_rotativo_nao_aceita_sequencia_vazia():
+    with pytest.raises(ValueError):
+        EscalaTurnoRotativo("Escala inválida", [])
+
+
+def test_escala_turno_rotativo_nao_aceita_turno_invalido():
+    with pytest.raises(ValueError):
+        EscalaTurnoRotativo("Escala inválida", ["Manhã", "Madrugada", "Folga"])

@@ -1,5 +1,6 @@
 from models.escala_ciclo_dias import EscalaCicloDias
 from tipos_escala import TIPO_ESCALA_PADRAO
+import pytest
 
 
 def test_cria_escala_ciclo_dias():
@@ -44,3 +45,17 @@ def test_criar_escala_ciclo_dias_a_partir_de_dict():
     assert escala.tipo == TIPO_ESCALA_PADRAO
     assert escala.dias_trabalho == 6
     assert escala.dias_folga == 3
+
+def test_escala_ciclo_dias_nao_aceita_nome_vazio():
+    with pytest.raises(ValueError):
+        EscalaCicloDias("", 6, 3)
+
+
+def test_escala_ciclo_dias_nao_aceita_dias_trabalho_invalido():
+    with pytest.raises(ValueError):
+        EscalaCicloDias("Escala inválida", 0, 3)
+
+
+def test_escala_ciclo_dias_nao_aceita_dias_folga_invalido():
+    with pytest.raises(ValueError):
+        EscalaCicloDias("Escala inválida", 6, -1)
