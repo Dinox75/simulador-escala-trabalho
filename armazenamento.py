@@ -206,29 +206,17 @@ def existe_sequencia_turnos_duplicada(
 
 
 def adicionar_escala(nome, dias_trabalho, dias_folga):
-    escalas = carregar_escalas()
-
-    if existe_nome_duplicado(escalas, nome):
-        return "nome_duplicado"
-
-    if existe_configuracao_duplicada(
-        escalas,
-        TIPO_CICLO_DIAS,
-        dias_trabalho,
-        dias_folga
-    ):
-        return "configuracao_duplicada"
-
-    nova_escala = criar_escala_ciclo_dias(
+    nova_escala_dict = criar_escala_ciclo_dias(
         nome,
         dias_trabalho,
         dias_folga
     )
 
-    escalas.append(nova_escala)
-    salvar_escalas(escalas)
+    nova_escala = criar_escala_a_partir_de_dict(nova_escala_dict)
 
-    return "sucesso"
+    service = obter_escala_service()
+
+    return service.adicionar_escala(nova_escala)
 
 
 def adicionar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
