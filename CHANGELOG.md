@@ -1,3 +1,56 @@
+## [0.8.0] - Em desenvolvimento - Refatoração arquitetural com POO e preparação para banco de dados
+
+### Adicionado
+
+* Criada pasta `models/` para centralizar os modelos orientados a objetos do projeto.
+* Adicionada classe `EscalaCicloDias` para representar escalas baseadas em dias, como `6x3`, `5x2` e `4x2`.
+* Adicionada classe `EscalaCicloHoras` para representar escalas baseadas em horas, como `12x36`, `18x36` e `24x72`.
+* Adicionada classe `EscalaTurnoRotativo` para representar escalas com sequência de turnos, incluindo turnos como `Manhã`, `Tarde`, `Noite` e `Folga`.
+* Adicionado suporte a conversão de objetos para dicionários com métodos `to_dict()`.
+* Adicionado suporte a criação de objetos a partir de dicionários com métodos `from_dict()`.
+* Criado arquivo `models/escala_factory.py` para converter automaticamente dicionários em objetos de escala.
+* Adicionadas funções para converter listas de escalas entre objetos e dicionários.
+* Criada pasta `repositories/` para iniciar a separação da camada de persistência.
+* Adicionado `JsonEscalaRepository` para listar, salvar, adicionar, buscar e excluir escalas usando arquivo JSON.
+* Criada pasta `database/` para centralizar arquivos relacionados à futura integração com banco de dados.
+* Adicionado arquivo `database/schema_postgresql.sql` com proposta inicial de schema para PostgreSQL.
+* Adicionado arquivo `database/README.md` documentando a estrutura planejada para banco de dados.
+
+### Melhorado
+
+* Iniciada a separação entre regras de negócio, modelos de dados e persistência.
+* O projeto passou a ter uma base mais preparada para evolução futura com banco de dados.
+* A estrutura interna ficou mais próxima de uma arquitetura profissional, usando camadas como `models`, `repositories` e `database`.
+* A persistência em JSON passou a ter uma camada própria de repository, facilitando uma futura troca para PostgreSQL.
+* A nova estrutura mantém compatibilidade com o formato atual de dados em JSON.
+
+### Testes
+
+* Adicionados testes para a classe `EscalaCicloDias`.
+* Adicionados testes para a classe `EscalaCicloHoras`.
+* Adicionados testes para a classe `EscalaTurnoRotativo`.
+* Adicionados testes para a factory de criação de escalas.
+* Adicionados testes para conversão entre dicionários e objetos.
+* Adicionados testes para o `JsonEscalaRepository`.
+* Mantidos os testes anteriores de cálculo, armazenamento, validações, modelos predefinidos e turnos rotativos.
+
+### Banco de dados
+
+* Criado schema inicial para futura integração com PostgreSQL.
+* Adicionada tabela principal `escalas`.
+* Adicionada tabela `escalas_ciclo_dias`.
+* Adicionada tabela `escalas_ciclo_horas`.
+* Adicionada tabela `escalas_turnos`.
+* Adicionadas constraints para validar tipos de escala, valores positivos e turnos válidos.
+* Adicionados índices iniciais para consultas por tipo de escala e por sequência de turnos.
+
+### Observação
+
+A versão `v0.8.0` ainda está em desenvolvimento.
+
+Nesta fase, a aplicação principal continua funcionando com JSON, mas a base arquitetural foi preparada para uma futura integração com PostgreSQL.
+
+A integração real com banco de dados ficará para uma versão posterior.
 
 
 ## [0.7.0] - Modelos predefinidos de escala
