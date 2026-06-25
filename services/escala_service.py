@@ -18,6 +18,34 @@ class EscalaService:
         self.repository.adicionar(escala)
         return "sucesso"
 
+    def remover_escala_por_indice(self, indice):
+        escalas = self.repository.listar()
+
+        if self._indice_invalido(indice, escalas):
+            return False
+
+        escalas.pop(indice)
+        self.repository.salvar_todos(escalas)
+
+        return True
+
+    def editar_escala_por_indice(self, indice, nova_escala):
+        escalas = self.repository.listar()
+
+        if self._indice_invalido(indice, escalas):
+            return "indice_invalido"
+
+        if self._existe_nome_duplicado(nova_escala.nome, indice):
+            return "nome_duplicado"
+
+        if self._existe_configuracao_duplicada(nova_escala, indice):
+            return "configuracao_duplicada"
+
+        escalas[indice] = nova_escala
+        self.repository.salvar_todos(escalas)
+
+        return "sucesso"
+
     def excluir_escala_por_nome(self, nome):
         escala_excluida = self.repository.excluir_por_nome(nome)
 
@@ -26,11 +54,17 @@ class EscalaService:
 
         return "nao_encontrada"
 
-    def _existe_nome_duplicado(self, nome):
+    def _indice_invalido(self, indice, escalas):
+        return indice < 0 or indice >= len(escalas)
+
+    def _existe_nome_duplicado(self, nome, indice_ignorado=None):
         nome_normalizado = self._normalizar_nome(nome)
         escalas_salvas = self.repository.listar()
 
-        for escala_salva in escalas_salvas:
+        for indice, escala_salva in enumerate(escalas_salvas):
+            if indice == indice_ignorado:
+                continue
+
             nome_existente = self._normalizar_nome(escala_salva.nome)
 
             if nome_existente == nome_normalizado:
@@ -38,10 +72,13 @@ class EscalaService:
 
         return False
 
-    def _existe_configuracao_duplicada(self, nova_escala):
+    def _existe_configuracao_duplicada(self, nova_escala, indice_ignorado=None):
         escalas_salvas = self.repository.listar()
 
-        for escala_salva in escalas_salvas:
+        for indice, escala_salva in enumerate(escalas_salvas):
+            if indice == indice_ignorado:
+                continue
+
             if self._tem_mesma_configuracao(escala_salva, nova_escala):
                 return True
 

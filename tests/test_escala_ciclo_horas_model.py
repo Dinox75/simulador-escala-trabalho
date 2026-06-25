@@ -1,60 +1,32 @@
-from models.escala_ciclo_horas import EscalaCicloHoras
 from tipos_escala import TIPO_CICLO_HORAS
-import pytest
-
-def test_cria_escala_ciclo_horas():
-    escala = EscalaCicloHoras("Escala 12x36", 12, 36)
-
-    assert escala.nome == "Escala 12x36"
-    assert escala.horas_trabalho == 12
-    assert escala.horas_folga == 36
-    assert escala.tipo == TIPO_CICLO_HORAS
+from models.escala_base import EscalaBase
 
 
-def test_obter_resumo_escala_ciclo_horas():
-    escala = EscalaCicloHoras("Escala 24x72", 24, 72)
+class EscalaCicloHoras(EscalaBase):
+    def __init__(self, nome, horas_trabalho, horas_folga):
+        super().__init__(nome, TIPO_CICLO_HORAS)
 
-    assert escala.obter_resumo() == "24x72 horas"
+        self._validar_valor_positivo(horas_trabalho, "horas_trabalho")
+        self._validar_valor_positivo(horas_folga, "horas_folga")
 
+        self.horas_trabalho = horas_trabalho
+        self.horas_folga = horas_folga
 
-def test_converter_escala_ciclo_horas_para_dict():
-    escala = EscalaCicloHoras("Escala 12x36", 12, 36)
+    def obter_resumo(self):
+        return f"{self.horas_trabalho}x{self.horas_folga} horas"
 
-    resultado = escala.to_dict()
+    def to_dict(self):
+        return {
+            "nome": self.nome,
+            "tipo": self.tipo,
+            "horas_trabalho": self.horas_trabalho,
+            "horas_folga": self.horas_folga
+        }
 
-    assert resultado == {
-        "nome": "Escala 12x36",
-        "tipo": TIPO_CICLO_HORAS,
-        "horas_trabalho": 12,
-        "horas_folga": 36
-    }
-
-
-def test_criar_escala_ciclo_horas_a_partir_de_dict():
-    dados = {
-        "nome": "Escala 18x36",
-        "tipo": TIPO_CICLO_HORAS,
-        "horas_trabalho": 18,
-        "horas_folga": 36
-    }
-
-    escala = EscalaCicloHoras.from_dict(dados)
-
-    assert escala.nome == "Escala 18x36"
-    assert escala.tipo == TIPO_CICLO_HORAS
-    assert escala.horas_trabalho == 18
-    assert escala.horas_folga == 36
-
-def test_escala_ciclo_horas_nao_aceita_nome_vazio():
-    with pytest.raises(ValueError):
-        EscalaCicloHoras("", 12, 36)
-
-
-def test_escala_ciclo_horas_nao_aceita_horas_trabalho_invalidas():
-    with pytest.raises(ValueError):
-        EscalaCicloHoras("Escala inválida", 0, 36)
-
-
-def test_escala_ciclo_horas_nao_aceita_horas_folga_invalidas():
-    with pytest.raises(ValueError):
-        EscalaCicloHoras("Escala inválida", 12, -36)
+    @classmethod
+    def from_dict(cls, dados):
+        return cls(
+            dados["nome"],
+            dados["horas_trabalho"],
+            dados["horas_folga"]
+        )

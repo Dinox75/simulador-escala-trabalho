@@ -233,8 +233,6 @@ def adicionar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
     return service.adicionar_escala(nova_escala)
 
 def adicionar_escala_turno_rotativo(nome, sequencia_turnos):
-    escalas = carregar_escalas()
-
     sequencia_normalizada = normalizar_sequencia_turnos(sequencia_turnos)
 
     if not sequencia_normalizada:
@@ -243,62 +241,36 @@ def adicionar_escala_turno_rotativo(nome, sequencia_turnos):
     if existe_turno_invalido(sequencia_normalizada):
         return "turno_invalido"
 
-    if existe_nome_duplicado(escalas, nome):
-        return "nome_duplicado"
-
-    if existe_sequencia_turnos_duplicada(escalas, sequencia_normalizada):
-        return "configuracao_duplicada"
-
-    nova_escala = criar_escala_turno_rotativo(
+    nova_escala_dict = criar_escala_turno_rotativo(
         nome,
         sequencia_normalizada
     )
 
-    escalas.append(nova_escala)
-    salvar_escalas(escalas)
+    nova_escala = criar_escala_a_partir_de_dict(nova_escala_dict)
 
-    return "sucesso"
+    service = obter_escala_service()
+
+    return service.adicionar_escala(nova_escala)
 
 
 def remover_escala(indice):
-    escalas = carregar_escalas()
+    service = obter_escala_service()
 
-    if indice < 0 or indice >= len(escalas):
-        return False
-
-    escalas.pop(indice)
-    salvar_escalas(escalas)
-
-    return True
+    return service.remover_escala_por_indice(indice)
 
 
 def editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga):
-    escalas = carregar_escalas()
-
-    if indice < 0 or indice >= len(escalas):
-        return "indice_invalido"
-
-    if existe_nome_duplicado(escalas, novo_nome, indice):
-        return "nome_duplicado"
-
-    if existe_configuracao_duplicada(
-        escalas,
-        TIPO_CICLO_DIAS,
-        novos_dias_trabalho,
-        novos_dias_folga,
-        indice
-    ):
-        return "configuracao_duplicada"
-
-    escalas[indice] = criar_escala_ciclo_dias(
+    nova_escala_dict = criar_escala_ciclo_dias(
         novo_nome,
         novos_dias_trabalho,
         novos_dias_folga
     )
 
-    salvar_escalas(escalas)
+    nova_escala = criar_escala_a_partir_de_dict(nova_escala_dict)
 
-    return "sucesso"
+    service = obter_escala_service()
+
+    return service.editar_escala_por_indice(indice, nova_escala)
 
 
 def editar_escala_ciclo_horas(
@@ -307,40 +279,20 @@ def editar_escala_ciclo_horas(
     novas_horas_trabalho,
     novas_horas_folga
 ):
-    escalas = carregar_escalas()
-
-    if indice < 0 or indice >= len(escalas):
-        return "indice_invalido"
-
-    if existe_nome_duplicado(escalas, novo_nome, indice):
-        return "nome_duplicado"
-
-    if existe_configuracao_duplicada(
-        escalas,
-        TIPO_CICLO_HORAS,
-        novas_horas_trabalho,
-        novas_horas_folga,
-        indice
-    ):
-        return "configuracao_duplicada"
-
-    escalas[indice] = criar_escala_ciclo_horas(
+    nova_escala_dict = criar_escala_ciclo_horas(
         novo_nome,
         novas_horas_trabalho,
         novas_horas_folga
     )
 
-    salvar_escalas(escalas)
+    nova_escala = criar_escala_a_partir_de_dict(nova_escala_dict)
 
-    return "sucesso"
+    service = obter_escala_service()
+
+    return service.editar_escala_por_indice(indice, nova_escala)
 
 
 def editar_escala_turno_rotativo(indice, novo_nome, nova_sequencia_turnos):
-    escalas = carregar_escalas()
-
-    if indice < 0 or indice >= len(escalas):
-        return "indice_invalido"
-
     sequencia_normalizada = normalizar_sequencia_turnos(nova_sequencia_turnos)
 
     if not sequencia_normalizada:
@@ -349,24 +301,16 @@ def editar_escala_turno_rotativo(indice, novo_nome, nova_sequencia_turnos):
     if existe_turno_invalido(sequencia_normalizada):
         return "turno_invalido"
 
-    if existe_nome_duplicado(escalas, novo_nome, indice):
-        return "nome_duplicado"
-
-    if existe_sequencia_turnos_duplicada(
-        escalas,
-        sequencia_normalizada,
-        indice
-    ):
-        return "configuracao_duplicada"
-
-    escalas[indice] = criar_escala_turno_rotativo(
+    nova_escala_dict = criar_escala_turno_rotativo(
         novo_nome,
         sequencia_normalizada
     )
 
-    salvar_escalas(escalas)
+    nova_escala = criar_escala_a_partir_de_dict(nova_escala_dict)
 
-    return "sucesso"
+    service = obter_escala_service()
+
+    return service.editar_escala_por_indice(indice, nova_escala)
 
 
 def montar_sequencia_por_blocos(blocos):

@@ -1,5 +1,6 @@
 from models.escala_ciclo_dias import EscalaCicloDias
 from models.escala_ciclo_horas import EscalaCicloHoras
+from models.escala_turno_rotativo import EscalaTurnoRotativo
 from repositories.json_escala_repository import JsonEscalaRepository
 from services.escala_service import EscalaService
 
@@ -142,3 +143,129 @@ def test_service_nao_adiciona_escala_com_nome_duplicado_normalizado(tmp_path):
 
     assert resultado == "nome_duplicado"
     assert len(escalas) == 1
+
+def test_service_remove_escala_por_indice(tmp_path):
+    caminho = tmp_path / "escalas.json"
+    repository = JsonEscalaRepository(caminho)
+    service = EscalaService(repository)
+
+    repository.salvar_todos([
+        EscalaCicloDias("Escala 6x3", 6, 3),
+        EscalaCicloHoras("Escala 12x36", 12, 36)
+    ])
+
+    resultado = service.remover_escala_por_indice(0)
+    escalas = service.listar_escalas()
+
+    assert resultado is True
+    assert len(escalas) == 1
+    assert escalas[0].nome == "Escala 12x36"
+
+
+def test_service_nao_remove_indice_invalido(tmp_path):
+    caminho = tmp_path / "escalas.json"
+    repository = JsonEscalaRepository(caminho)
+    service = EscalaService(repository)
+
+    repository.salvar_todos([
+        EscalaCicloDias("Escala 6x3", 6, 3)
+    ])
+
+    resultado = service.remover_escala_por_indice(99)
+    escalas = service.listar_escalas()
+
+    assert resultado is False
+    assert len(escalas) == 1
+
+
+def test_service_edita_escala_por_indice(tmp_path):
+    caminho = tmp_path / "escalas.json"
+    repository = JsonEscalaRepository(caminho)
+    service = EscalaService(repository)
+
+    repository.salvar_todos([
+        EscalaCicloDias("Escala 6x3", 6, 3)
+    ])
+
+    nova_escala = EscalaCicloDias("Escala 5x2", 5, 2)
+
+    resultado = service.editar_escala_por_indice(0, nova_escala)
+    escalas = service.listar_escalas()
+
+    assert resultado == "sucesso"
+    assert len(escalas) == 1
+    assert escalas[0].nome == "Escala 5x2"
+    assert escalas[0].dias_trabalho == 5
+    assert escalas[0].dias_folga == 2
+
+
+def test_service_nao_edita_indice_invalido(tmp_path):
+    caminho = tmp_path / "escalas.json"
+    repository = JsonEscalaRepository(caminho)
+    service = EscalaService(repository)
+
+    nova_escala = EscalaCicloDias("Escala 5x2", 5, 2)
+
+    resultado = service.editar_escala_por_indice(99, nova_escala)
+
+    assert resultado == "indice_invalido"
+
+
+def test_service_nao_edita_com_nome_duplicado(tmp_path):
+    caminho = tmp_path / "escalas.json"
+    repository = JsonEscalaRepository(caminho)
+    service = EscalaService(repository)
+
+    repository.salvar_todos([
+        EscalaCicloDias("Escala 6x3", 6, 3),
+        EscalaCicloHoras("Escala 12x36", 12, 36)
+    ])
+
+    nova_escala = EscalaCicloDias("Escala 12x36", 5, 2)
+
+    resultado = service.editar_escala_por_indice(0, nova_escala)
+    escalas = service.listar_escalas()
+
+    assert resultado == "nome_duplicado"
+    assert escalas[0].nome == "Escala 6x3"
+
+
+def test_service_nao_edita_com_configuracao_duplicada(tmp_path):
+    caminho = tmp_path / "escalas.json"
+    repository = JsonEscalaRepository(caminho)
+    service = EscalaService(repository)
+
+    repository.salvar_todos([
+        EscalaCicloDias("Escala 6x3", 6, 3),
+        EscalaCicloDias("Escala 5x2", 5, 2)
+    ])
+
+    nova_escala = EscalaCicloDias("Outra escala", 5, 2)
+
+    resultado = service.editar_escala_por_indice(0, nova_escala)
+    escalas = service.listar_escalas()
+
+    assert resultado == "configuracao_duplicada"
+    assert escalas[0].nome == "Escala 6x3"
+
+
+def test_service_edita_turno_rotativo_por_indice(tmp_path):
+    caminho = tmp_path / "escalas.json"
+    repository = JsonEscalaRepository(caminho)
+    service = EscalaService(repository)
+
+    repository.salvar_todos([
+        EscalaTurnoRotativo("Turno simples", ["Manhã", "Folga"])
+    ])
+
+    nova_escala = EscalaTurnoRotativo(
+        "Turno atualizado",
+        ["Tarde", "Noite", "Folga"]
+    )
+
+    resultado = service.editar_escala_por_indice(0, nova_escala)
+    escalas = service.listar_escalas()
+
+    assert resultado == "sucesso"
+    assert escalas[0].nome == "Turno atualizado"
+    assert escalas[0].sequencia_turnos == ["Tarde", "Noite", "Folga"]
