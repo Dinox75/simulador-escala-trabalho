@@ -47,6 +47,10 @@ def normalizar_escala(escala):
     return escala_normalizada
 
 
+def indice_invalido(indice, escalas):
+    return indice < 0 or indice >= len(escalas)
+
+
 def carregar_escalas():
     service = obter_escala_service()
     escalas = service.listar_escalas()
@@ -232,6 +236,7 @@ def adicionar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
 
     return service.adicionar_escala(nova_escala)
 
+
 def adicionar_escala_turno_rotativo(nome, sequencia_turnos):
     sequencia_normalizada = normalizar_sequencia_turnos(sequencia_turnos)
 
@@ -260,6 +265,11 @@ def remover_escala(indice):
 
 
 def editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga):
+    escalas = carregar_escalas()
+
+    if indice_invalido(indice, escalas):
+        return "indice_invalido"
+
     nova_escala_dict = criar_escala_ciclo_dias(
         novo_nome,
         novos_dias_trabalho,
@@ -279,6 +289,11 @@ def editar_escala_ciclo_horas(
     novas_horas_trabalho,
     novas_horas_folga
 ):
+    escalas = carregar_escalas()
+
+    if indice_invalido(indice, escalas):
+        return "indice_invalido"
+
     nova_escala_dict = criar_escala_ciclo_horas(
         novo_nome,
         novas_horas_trabalho,
@@ -293,6 +308,11 @@ def editar_escala_ciclo_horas(
 
 
 def editar_escala_turno_rotativo(indice, novo_nome, nova_sequencia_turnos):
+    escalas = carregar_escalas()
+
+    if indice_invalido(indice, escalas):
+        return "indice_invalido"
+
     sequencia_normalizada = normalizar_sequencia_turnos(nova_sequencia_turnos)
 
     if not sequencia_normalizada:
