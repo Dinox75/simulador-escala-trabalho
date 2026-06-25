@@ -1,4 +1,4 @@
-## [0.8.0] - Em desenvolvimento - Refatoração arquitetural com POO e preparação para banco de dados
+## [0.8.0] - Refatoração arquitetural com POO e preparação para banco de dados
 
 ### Adicionado
 
