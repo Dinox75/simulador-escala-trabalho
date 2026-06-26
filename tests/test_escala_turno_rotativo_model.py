@@ -1,42 +1,85 @@
+import pytest
+
 from tipos_escala import TIPO_TURNO_ROTATIVO
 from models.escala_base import EscalaBase
+from models.escala_turno_rotativo import EscalaTurnoRotativo
 
 
-TURNOS_VALIDOS = ["Manhã", "Tarde", "Noite", "Folga"]
+def test_deve_criar_escala_turno_rotativo():
+    escala = EscalaTurnoRotativo(
+        "Turno rotativo",
+        ["Manhã", "Tarde", "Noite", "Folga"]
+    )
+
+    assert escala.nome == "Turno rotativo"
+    assert escala.tipo == TIPO_TURNO_ROTATIVO
+    assert escala.sequencia_turnos == ["Manhã", "Tarde", "Noite", "Folga"]
+    assert isinstance(escala, EscalaBase)
 
 
-class EscalaTurnoRotativo(EscalaBase):
-    def __init__(self, nome, sequencia_turnos):
-        super().__init__(nome, TIPO_TURNO_ROTATIVO)
+def test_deve_retornar_resumo_da_escala_turno_rotativo():
+    escala = EscalaTurnoRotativo(
+        "Turno rotativo",
+        ["Manhã", "Tarde", "Noite", "Folga"]
+    )
 
-        self._validar_sequencia_turnos(sequencia_turnos)
+    assert escala.obter_resumo() == "Manhã -> Tarde -> Noite -> Folga"
 
-        self.sequencia_turnos = list(sequencia_turnos)
 
-    def obter_resumo(self):
-        return " -> ".join(self.sequencia_turnos)
+def test_deve_retornar_total_de_dias_do_ciclo():
+    escala = EscalaTurnoRotativo(
+        "Turno rotativo",
+        ["Manhã", "Tarde", "Noite", "Folga"]
+    )
 
-    def obter_total_dias_ciclo(self):
-        return len(self.sequencia_turnos)
+    assert escala.obter_total_dias_ciclo() == 4
 
-    def to_dict(self):
-        return {
-            "nome": self.nome,
-            "tipo": self.tipo,
-            "sequencia_turnos": self.sequencia_turnos
-        }
 
-    @classmethod
-    def from_dict(cls, dados):
-        return cls(
-            dados["nome"],
-            dados["sequencia_turnos"]
-        )
+def test_deve_converter_escala_turno_rotativo_para_dict():
+    escala = EscalaTurnoRotativo(
+        "Turno rotativo",
+        ["Manhã", "Tarde", "Noite", "Folga"]
+    )
 
-    def _validar_sequencia_turnos(self, sequencia_turnos):
-        if not isinstance(sequencia_turnos, list) or len(sequencia_turnos) == 0:
-            raise ValueError("A sequência de turnos não pode ser vazia.")
+    resultado = escala.to_dict()
 
-        for turno in sequencia_turnos:
-            if turno not in TURNOS_VALIDOS:
-                raise ValueError(f"Turno inválido: {turno}.")
+    assert resultado == {
+        "nome": "Turno rotativo",
+        "tipo": TIPO_TURNO_ROTATIVO,
+        "sequencia_turnos": ["Manhã", "Tarde", "Noite", "Folga"]
+    }
+
+
+def test_deve_criar_escala_turno_rotativo_a_partir_de_dict():
+    dados = {
+        "nome": "Turno rotativo",
+        "tipo": TIPO_TURNO_ROTATIVO,
+        "sequencia_turnos": ["Manhã", "Tarde", "Noite", "Folga"]
+    }
+
+    escala = EscalaTurnoRotativo.from_dict(dados)
+
+    assert escala.nome == "Turno rotativo"
+    assert escala.tipo == TIPO_TURNO_ROTATIVO
+    assert escala.sequencia_turnos == ["Manhã", "Tarde", "Noite", "Folga"]
+    assert isinstance(escala, EscalaBase)
+
+
+def test_deve_lancar_erro_quando_nome_for_vazio():
+    with pytest.raises(ValueError):
+        EscalaTurnoRotativo("", ["Manhã", "Tarde"])
+
+
+def test_deve_lancar_erro_quando_sequencia_for_vazia():
+    with pytest.raises(ValueError):
+        EscalaTurnoRotativo("Turno inválido", [])
+
+
+def test_deve_lancar_erro_quando_sequencia_nao_for_lista():
+    with pytest.raises(ValueError):
+        EscalaTurnoRotativo("Turno inválido", "Manhã,Tarde")
+
+
+def test_deve_lancar_erro_quando_turno_for_invalido():
+    with pytest.raises(ValueError):
+        EscalaTurnoRotativo("Turno inválido", ["Manhã", "Madrugada"])

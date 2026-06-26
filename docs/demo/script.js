@@ -2,7 +2,7 @@ const TIPO_CICLO_DIAS = "ciclo_dias";
 const TIPO_CICLO_HORAS = "ciclo_horas";
 const TIPO_TURNO_ROTATIVO = "turno_rotativo";
 
-const STORAGE_KEY = "simulador_escala_demo_v07";
+const STORAGE_KEY = "simulador_escala_demo_v08";
 const THEME_KEY = "simulador_escala_theme";
 
 const ESCALA_REAL_24_DIAS = [
@@ -74,7 +74,7 @@ const HERO_FRAMES = [
         line: "Aplicando escala real 24 dias",
         output: "Tarde x3 → Noite x3 → Folga x3 → ...",
         status: "Turno: Tarde",
-        meta: "Modelo rotativo da v0.7.0",
+        meta: "Modelo rotativo da v0.8.0",
         progress: "86%"
     }
 ];
@@ -1079,7 +1079,7 @@ function bootInitialSimulation() {
 
     showResult(
         "Exemplo: Trabalhando",
-        "Este é um exemplo automático usando o modelo 6x3 da v0.7.0.",
+        "Este é um exemplo automático usando o modelo 6x3 da v0.8.0.",
         items
     );
 }
