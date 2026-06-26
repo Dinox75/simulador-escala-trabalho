@@ -1,17 +1,17 @@
 from tipos_escala import TIPO_TURNO_ROTATIVO
+from models.escala_base import EscalaBase
 
 
 TURNOS_VALIDOS = ["Manhã", "Tarde", "Noite", "Folga"]
 
 
-class EscalaTurnoRotativo:
+class EscalaTurnoRotativo(EscalaBase):
     def __init__(self, nome, sequencia_turnos):
-        self._validar_nome(nome)
+        super().__init__(nome, TIPO_TURNO_ROTATIVO)
+
         self._validar_sequencia_turnos(sequencia_turnos)
 
-        self.nome = nome
         self.sequencia_turnos = list(sequencia_turnos)
-        self.tipo = TIPO_TURNO_ROTATIVO
 
     def obter_resumo(self):
         return " -> ".join(self.sequencia_turnos)
@@ -32,10 +32,6 @@ class EscalaTurnoRotativo:
             dados["nome"],
             dados["sequencia_turnos"]
         )
-
-    def _validar_nome(self, nome):
-        if not isinstance(nome, str) or not nome.strip():
-            raise ValueError("O nome da escala não pode ser vazio.")
 
     def _validar_sequencia_turnos(self, sequencia_turnos):
         if not isinstance(sequencia_turnos, list) or len(sequencia_turnos) == 0:
