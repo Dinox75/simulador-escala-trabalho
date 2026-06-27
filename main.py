@@ -33,7 +33,8 @@ from armazenamento import (
     normalizar_sequencia_turnos,
     existe_turno_invalido,
     TURNOS_VALIDOS,
-    montar_sequencia_por_blocos as montar_sequencia_por_blocos_dados
+    montar_sequencia_por_blocos as montar_sequencia_por_blocos_dados,
+    obter_tipo_repository
 )
 
 from tipos_escala import (
@@ -44,6 +45,24 @@ from tipos_escala import (
 )
 
 from modelos_escala import listar_modelos_escala
+
+
+def formatar_tipo_repository(tipo_repository):
+    if tipo_repository == "postgres":
+        return "PostgreSQL"
+
+    if tipo_repository == "json":
+        return "JSON"
+
+    return tipo_repository
+
+
+def exibir_armazenamento_ativo():
+    tipo_repository = obter_tipo_repository()
+    tipo_formatado = formatar_tipo_repository(tipo_repository)
+
+    print(f"\nArmazenamento ativo: {tipo_formatado}")
+
 
 def formatar_sequencia_turnos(sequencia_turnos):
     return " -> ".join(sequencia_turnos)
@@ -68,6 +87,7 @@ def exibir_previa_sequencia_turnos(sequencia_turnos):
         print(f"Dia {indice}: {turno}")
 
     print(f"\nTotal do ciclo: {len(sequencia_turnos)} dias")
+
 
 def ler_sequencia_manual(confirmar_previa=True):
     while True:
@@ -101,6 +121,7 @@ def ler_sequencia_manual(confirmar_previa=True):
 
         print("Digite a sequência novamente.")
 
+
 def ler_turno_bloco():
     while True:
         texto_turno = ler_texto(
@@ -120,6 +141,7 @@ def ler_turno_bloco():
 
         return turno_normalizado[0]
 
+
 def ler_quantidade_dias_bloco():
     while True:
         quantidade_dias = ler_numero("Quantos dias seguidos neste turno? ")
@@ -128,6 +150,7 @@ def ler_quantidade_dias_bloco():
             return quantidade_dias
 
         print("A quantidade de dias precisa ser maior que zero.")
+
 
 def ler_sequencia_por_blocos(confirmar_previa=True):
     blocos = []
@@ -168,6 +191,7 @@ def ler_sequencia_por_blocos(confirmar_previa=True):
     print("Vamos montar a sequência novamente.")
     return ler_sequencia_por_blocos(confirmar_previa)
 
+
 def ler_sequencia_turnos(confirmar_previa=True):
     print("\nComo deseja montar a sequência de turnos?")
     print("1 - Digitar sequência manualmente")
@@ -183,6 +207,7 @@ def ler_sequencia_turnos(confirmar_previa=True):
 
     return ler_sequencia_por_blocos(confirmar_previa)
 
+
 def criar_escala_manual(dias_trabalho=6, dias_folga=3):
     return {
         "nome": "Escala manual",
@@ -191,6 +216,7 @@ def criar_escala_manual(dias_trabalho=6, dias_folga=3):
         "dias_folga": dias_folga
     }
 
+
 def criar_escala_ciclo_horas(horas_trabalho=12, horas_folga=36):
     return {
         "nome": "Escala 12x36",
@@ -198,6 +224,7 @@ def criar_escala_ciclo_horas(horas_trabalho=12, horas_folga=36):
         "horas_trabalho": horas_trabalho,
         "horas_folga": horas_folga
     }
+
 
 def criar_escala_turno_rotativo(sequencia_turnos=None):
     if sequencia_turnos is None:
@@ -278,6 +305,7 @@ def exibir_escalas_salvas(escalas):
 
         print(f"{indice} - {escala['nome']} | {tipo_formatado} | {resumo}")
 
+
 def exibir_modelos_escala(modelos):
     print("\n==== MODELOS DE ESCALA ====")
 
@@ -287,6 +315,7 @@ def exibir_modelos_escala(modelos):
         resumo = obter_resumo_escala(modelo)
 
         print(f"{indice} - {modelo['nome']} | {tipo_formatado} | {resumo}")
+
 
 def salvar_modelo_como_escala(modelo):
     tipo = modelo.get("tipo", TIPO_ESCALA_PADRAO)
@@ -343,6 +372,7 @@ def escolher_modelo_escala():
         salvar_modelo_como_escala(modelo_escolhido)
 
     return modelo_escolhido
+
 
 def consultar_status(escala_atual):
     tipo = escala_atual.get("tipo", TIPO_ESCALA_PADRAO)
@@ -744,6 +774,8 @@ def excluir_escala_salva(escala_atual):
 
 def main():
     escala_atual = criar_escala_manual()
+
+    exibir_armazenamento_ativo()
 
     while True:
         resumo_escala_atual = obter_resumo_escala(escala_atual)
