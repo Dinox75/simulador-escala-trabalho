@@ -2,7 +2,7 @@
 -- Versão planejada para futura integração com banco de dados.
 -- Este arquivo ainda não é executado pela aplicação na v0.8.0.
 
-CREATE TABLE escalas (
+CREATE TABLE IF NOT EXISTS escalas (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL UNIQUE,
     tipo VARCHAR(30) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE escalas (
         CHECK (tipo IN ('ciclo_dias', 'ciclo_horas', 'turno_rotativo'))
 );
 
-CREATE TABLE escalas_ciclo_dias (
+CREATE TABLE IF NOT EXISTS escalas_ciclo_dias (
     escala_id INTEGER PRIMARY KEY,
     dias_trabalho INTEGER NOT NULL,
     dias_folga INTEGER NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE escalas_ciclo_dias (
         CHECK (dias_folga > 0)
 );
 
-CREATE TABLE escalas_ciclo_horas (
+CREATE TABLE IF NOT EXISTS escalas_ciclo_horas (
     escala_id INTEGER PRIMARY KEY,
     horas_trabalho INTEGER NOT NULL,
     horas_folga INTEGER NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE escalas_ciclo_horas (
         CHECK (horas_folga > 0)
 );
 
-CREATE TABLE escalas_turnos (
+CREATE TABLE IF NOT EXISTS escalas_turnos (
     id SERIAL PRIMARY KEY,
     escala_id INTEGER NOT NULL,
     ordem INTEGER NOT NULL,
@@ -68,8 +68,8 @@ CREATE TABLE escalas_turnos (
         UNIQUE (escala_id, ordem)
 );
 
-CREATE INDEX idx_escalas_tipo
+CREATE INDEX IF NOT EXISTS iidx_escalas_tipo
     ON escalas(tipo);
 
-CREATE INDEX idx_escalas_turnos_escala_id
+CREATE INDEX IF NOT EXISTS idx_escalas_turnos_escala_id
     ON escalas_turnos(escala_id);
