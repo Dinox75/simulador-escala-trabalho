@@ -1,0 +1,128 @@
+    <!DOCTYPE html>
+    <html lang="pt-BR" data-theme="dark">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Termos de uso responsável da demo do Simulador de Escala de Trabalho.">
+        <title>Termos de uso | Simulador de Escala</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script defer src="script.js"></script>
+
+    </head>
+    <body>
+        <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+        <div class="theme-flash" id="themeFlash" aria-hidden="true"></div>
+
+        <div class="background-scene" aria-hidden="true">
+            <span class="orb orb-a"></span>
+            <span class="orb orb-b"></span>
+            <span class="orb orb-c"></span>
+            <span class="grid-overlay"></span>
+            <span class="grain-overlay"></span>
+        </div>
+
+        <header class="site-header" id="siteHeader">
+            <a class="brand" href="index.html" aria-label="Ir para a página inicial">
+                <span class="brand-mark">SE</span>
+                <span>
+                    <strong>Simulador de Escala</strong>
+                    <small>Planejamento de turnos</small>
+                </span>
+            </a>
+
+            <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
+                <a href="index.html">Início</a>
+                <a href="simulador.html">Simulador</a>
+                <a href="documentacao.html">Documentação</a>
+                <a href="sobre.html">Sobre</a>
+                <a href="termos.html">Termos</a>
+            </nav>
+
+            <div class="header-actions">
+                <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro ou escuro">
+                    <i data-lucide="moon"></i>
+                </button>
+                <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu">
+                    <i data-lucide="menu"></i>
+                </button>
+            </div>
+        </header>
+
+        <main id="topo">
+    <section class="section page-hero">
+        <div class="section-heading reveal">
+            <span class="eyebrow"><i data-lucide="shield-check"></i> Termos de uso</span>
+            <h1>Uso responsável da demo.</h1>
+            <p>
+                Esta página apresenta uma simulação para fins educacionais, técnicos e demonstrativos.
+            </p>
+        </div>
+    </section>
+
+    <section class="section terms-section" id="termos">
+        <div class="terms-grid">
+            <article class="terms-card reveal">
+                <h3>1. Finalidade</h3>
+                <p>
+                    O simulador é um projeto de estudo e portfólio. Ele demonstra cálculos de escala com base em dados
+                    informados pelo usuário, sem substituir sistemas oficiais de RH, folha, ponto ou gestão corporativa.
+                </p>
+            </article>
+
+            <article class="terms-card reveal">
+                <h3>2. Conferência obrigatória</h3>
+                <p>
+                    Antes de usar qualquer resultado em contexto real, confira com a empresa, liderança ou documento oficial
+                    da escala. A demo ajuda na visualização, mas não deve ser a única fonte de decisão.
+                </p>
+            </article>
+
+            <article class="terms-card reveal">
+                <h3>3. Dados locais</h3>
+                <p>
+                    As escalas salvas na demonstração ficam no navegador por meio de localStorage. Elas não são enviadas
+                    para servidor e podem ser apagadas ao limpar os dados do navegador.
+                </p>
+            </article>
+
+            <article class="terms-card reveal">
+                <h3>4. Limitações</h3>
+                <p>
+                    Regras especiais como feriados, banco de horas, trocas de turno, afastamentos, férias, faltas,
+                    horas extras e exceções operacionais ainda não fazem parte do cálculo padrão.
+                </p>
+            </article>
+
+            <article class="terms-card reveal">
+                <h3>5. Evolução do projeto</h3>
+                <p>
+                    Novas versões podem alterar textos, interface, estrutura de dados e comportamento da demo.
+                    O objetivo é evoluir com testes e melhorias graduais.
+                </p>
+            </article>
+
+            <article class="terms-card reveal">
+                <h3>6. Responsabilidade</h3>
+                <p>
+                    O uso da ferramenta é livre para estudo e avaliação. Em caso de uso profissional, recomenda-se validação
+                    técnica, jurídica e operacional antes de qualquer implantação real.
+                </p>
+            </article>
+        </div>
+    </section>
+</main>
+
+
+        <footer class="site-footer">
+            <p>Simulador de Escala de Trabalho · Demo web v0.9.0 · Python, PostgreSQL, JSON e arquitetura em camadas</p>
+            <a href="#topo">Voltar ao topo</a>
+        </footer>
+    </body>
+    </html>

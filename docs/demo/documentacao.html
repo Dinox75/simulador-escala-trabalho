@@ -1,0 +1,175 @@
+    <!DOCTYPE html>
+    <html lang="pt-BR" data-theme="dark">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Documentação técnica do Simulador de Escala v0.9.0 com lógica de cálculo, arquitetura em camadas, JSON e PostgreSQL.">
+        <title>Documentação | Simulador de Escala</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script defer src="script.js"></script>
+
+    </head>
+    <body>
+        <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+        <div class="theme-flash" id="themeFlash" aria-hidden="true"></div>
+
+        <div class="background-scene" aria-hidden="true">
+            <span class="orb orb-a"></span>
+            <span class="orb orb-b"></span>
+            <span class="orb orb-c"></span>
+            <span class="grid-overlay"></span>
+            <span class="grain-overlay"></span>
+        </div>
+
+        <header class="site-header" id="siteHeader">
+            <a class="brand" href="index.html" aria-label="Ir para a página inicial">
+                <span class="brand-mark">SE</span>
+                <span>
+                    <strong>Simulador de Escala</strong>
+                    <small>Planejamento de turnos</small>
+                </span>
+            </a>
+
+            <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
+                <a href="index.html">Início</a>
+                <a href="simulador.html">Simulador</a>
+                <a href="documentacao.html">Documentação</a>
+                <a href="sobre.html">Sobre</a>
+                <a href="termos.html">Termos</a>
+            </nav>
+
+            <div class="header-actions">
+                <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro ou escuro">
+                    <i data-lucide="moon"></i>
+                </button>
+                <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu">
+                    <i data-lucide="menu"></i>
+                </button>
+            </div>
+        </header>
+
+        <main id="topo">
+    <section class="section page-hero">
+        <div class="section-heading reveal">
+            <span class="eyebrow"><i data-lucide="book-open"></i> Documentação v0.9.0</span>
+            <h1>Como a regra funciona por trás da interface.</h1>
+            <p>
+                Um resumo técnico da lógica de escalas, da organização em camadas e da persistência com JSON e PostgreSQL.
+            </p>
+        </div>
+    </section>
+
+    <section class="section docs-section" id="documentacao">
+        <div class="docs-card glass-card reveal">
+            <div class="docs-tabs" role="tablist" aria-label="Documentação do projeto">
+                <button class="doc-tab active" type="button" data-doc-tab="dias">Ciclo por dias</button>
+                <button class="doc-tab" type="button" data-doc-tab="horas">Ciclo por horas</button>
+                <button class="doc-tab" type="button" data-doc-tab="rotativo">Turno rotativo</button>
+                <button class="doc-tab" type="button" data-doc-tab="persistencia">Persistência</button>
+                <button class="doc-tab" type="button" data-doc-tab="arquitetura">Arquitetura</button>
+            </div>
+
+            <article class="doc-panel active" id="doc-dias">
+                <h3>Ciclo por dias</h3>
+                <p>Usa a soma dos dias trabalhados e dias de folga para formar um ciclo.</p>
+                <pre><code>ciclo = dias_trabalho + dias_folga
+posicao = dias_passados % ciclo
+status = "Trabalhando" se posicao &lt; dias_trabalho</code></pre>
+            </article>
+
+            <article class="doc-panel" id="doc-horas">
+                <h3>Ciclo por horas</h3>
+                <p>Segue o mesmo princípio, mas trabalha com data e hora. É útil para escalas como 12x36.</p>
+                <pre><code>ciclo = horas_trabalho + horas_folga
+posicao = horas_passadas % ciclo
+status = "Trabalhando" se posicao &lt; horas_trabalho</code></pre>
+            </article>
+
+            <article class="doc-panel" id="doc-rotativo">
+                <h3>Turno rotativo</h3>
+                <p>Usa uma sequência personalizada. Cada posição da lista representa um dia do ciclo.</p>
+                <pre><code>sequencia = ["Manhã", "Tarde", "Noite", "Folga"]
+posicao = dias_passados % len(sequencia)
+status = sequencia[posicao]</code></pre>
+            </article>
+
+            <article class="doc-panel" id="doc-persistencia">
+                <h3>Persistência</h3>
+                <p>
+                    Na v0.9.0, a aplicação pode usar JSON ou PostgreSQL. A escolha é técnica e feita por variável de ambiente.
+                </p>
+                <pre><code>ESCALA_REPOSITORY=json      # modo padrão
+ESCALA_REPOSITORY=postgres  # usa PostgreSQL
+
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=SUA_SENHA_AQUI
+POSTGRES_DB=simulador_escala
+POSTGRES_HOST=127.0.0.1
+POSTGRES_PORT=5432</code></pre>
+            </article>
+
+            <article class="doc-panel" id="doc-arquitetura">
+                <h3>Arquitetura v0.9.0</h3>
+                <p>O projeto separa interface, validação, regra de negócio e persistência.</p>
+                <pre><code>main.py
+  ↓
+armazenamento.py
+  ↓
+EscalaService
+  ↓
+EscalaRepository
+  ├── JsonEscalaRepository
+  └── PostgresEscalaRepository
+      ↓
+      PostgreSQL</code></pre>
+            </article>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-heading reveal">
+            <span class="eyebrow"><i data-lucide="database"></i> Schema PostgreSQL</span>
+            <h2>O banco foi dividido por tipo de escala.</h2>
+            <p>
+                A tabela principal guarda nome e tipo. As tabelas específicas guardam os campos de cada modelo.
+            </p>
+        </div>
+
+        <div class="version-grid">
+            <article class="version-card reveal">
+                <h3>escalas</h3>
+                <p>Tabela principal com id, nome, tipo, criado_em e atualizado_em.</p>
+            </article>
+
+            <article class="version-card reveal">
+                <h3>escalas_ciclo_dias</h3>
+                <p>Guarda dias_trabalho e dias_folga.</p>
+            </article>
+
+            <article class="version-card reveal">
+                <h3>escalas_ciclo_horas</h3>
+                <p>Guarda horas_trabalho e horas_folga.</p>
+            </article>
+
+            <article class="version-card reveal">
+                <h3>escalas_turnos</h3>
+                <p>Guarda a sequência ordenada de turnos rotativos.</p>
+            </article>
+        </div>
+    </section>
+</main>
+
+
+        <footer class="site-footer">
+            <p>Simulador de Escala de Trabalho · Demo web v0.9.0 · Python, PostgreSQL, JSON e arquitetura em camadas</p>
+            <a href="#topo">Voltar ao topo</a>
+        </footer>
+    </body>
+    </html>
