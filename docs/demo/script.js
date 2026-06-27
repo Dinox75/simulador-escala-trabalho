@@ -2,7 +2,7 @@ const TIPO_CICLO_DIAS = "ciclo_dias";
 const TIPO_CICLO_HORAS = "ciclo_horas";
 const TIPO_TURNO_ROTATIVO = "turno_rotativo";
 
-const STORAGE_KEY = "simulador_escala_demo_v08";
+const STORAGE_KEY = "simulador_escala_demo_v09";
 const THEME_KEY = "simulador_escala_theme";
 
 const ESCALA_REAL_24_DIAS = [
@@ -57,25 +57,25 @@ const DEFAULT_SCALES = PREDEFINED_MODELS;
 
 const HERO_FRAMES = [
     {
-        line: "Aplicando modelo 6x3",
-        output: "Hoje: Trabalhando · Próxima folga em 2 dias",
-        status: "Trabalhando",
-        meta: "Modelo por dias",
-        progress: "62%"
+        line: "Repository conectado",
+        output: "Escala 6x3 salva no banco com sucesso",
+        status: "PostgreSQL",
+        meta: "Persistência relacional funcionando",
+        progress: "82%"
     },
     {
-        line: "Consultando escala 12x36",
-        output: "01/06/2026 20:00 → Folga",
-        status: "Folga",
-        meta: "Modelo por horas",
-        progress: "34%"
+        line: "ESCALA_REPOSITORY=postgres",
+        output: "Aplicação alternando de JSON para PostgreSQL",
+        status: "v0.9.0",
+        meta: "Configuração técnica por ambiente",
+        progress: "68%"
     },
     {
-        line: "Aplicando escala real 24 dias",
-        output: "Tarde x3 → Noite x3 → Folga x3 → ...",
-        status: "Turno: Tarde",
-        meta: "Modelo rotativo da v0.8.0",
-        progress: "86%"
+        line: "pytest",
+        output: "Testes de repository e armazenamento passando",
+        status: "Testado",
+        meta: "JSON preservado como padrão seguro",
+        progress: "94%"
     }
 ];
 
@@ -142,6 +142,10 @@ const elements = {
 
 function cloneScale(scale) {
     return JSON.parse(JSON.stringify(scale));
+}
+
+function hasSimulator() {
+    return Boolean(elements.simulatorForm && elements.dynamicFields);
 }
 
 function loadSavedScales() {
@@ -229,13 +233,11 @@ function renderModelButtons() {
         `)
         .join("");
 
-    if (window.lucide) {
-        window.lucide.createIcons();
-    }
+    createLucideIcons();
 }
 
 function applyModelToSimulator(model) {
-    if (!model) {
+    if (!model || !hasSimulator()) {
         return;
     }
 
@@ -256,12 +258,9 @@ function applyModelToSimulator(model) {
         $("#offDays").value = model.dias_folga;
     }
 
-    const typeName = getTypeName(model.tipo);
-    const summary = getScaleSummary(model);
-
     showResult(
         `Modelo aplicado: ${model.nome}`,
-        `${typeName} · ${summary}. Preencha as datas ou clique em simular para recalcular.`,
+        `${getTypeName(model.tipo)} · ${getScaleSummary(model)}. Preencha as datas ou clique em simular para recalcular.`,
         []
     );
 }
@@ -315,6 +314,7 @@ function addHours(date, amount) {
 function getDaysDifference(start, query) {
     const startUtc = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
     const queryUtc = Date.UTC(query.getFullYear(), query.getMonth(), query.getDate());
+
     return Math.floor((queryUtc - startUtc) / 86400000);
 }
 
@@ -406,7 +406,7 @@ function setDefaultDateTimeValues() {
     return `${setDefaultDateValues()}T06:00`;
 }
 
-function renderTurnBuilder(target, turns) {
+function renderTurnBuilder(target) {
     const previewId = `${target}TurnPreview`;
 
     return `
@@ -460,6 +460,10 @@ function renderTurnPreview(target) {
 }
 
 function renderDynamicFields() {
+    if (!elements.dynamicFields) {
+        return;
+    }
+
     if (state.selectedType === TIPO_CICLO_HORAS) {
         elements.dynamicFields.innerHTML = `
             <div class="field-grid">
@@ -504,7 +508,7 @@ function renderDynamicFields() {
                     <input id="quantityDays" type="number" min="1" max="60" value="14" required>
                 </label>
             </div>
-            ${renderTurnBuilder("simulator", state.simulatorTurns)}
+            ${renderTurnBuilder("simulator")}
         `;
         renderTurnPreview("simulator");
         return;
@@ -537,6 +541,10 @@ function renderDynamicFields() {
 }
 
 function renderSavedDynamicFields() {
+    if (!elements.savedType || !elements.savedDynamicFields) {
+        return;
+    }
+
     const type = elements.savedType.value;
 
     if (type === TIPO_CICLO_HORAS) {
@@ -556,7 +564,7 @@ function renderSavedDynamicFields() {
     }
 
     if (type === TIPO_TURNO_ROTATIVO) {
-        elements.savedDynamicFields.innerHTML = renderTurnBuilder("saved", state.savedTurns);
+        elements.savedDynamicFields.innerHTML = renderTurnBuilder("saved");
         renderTurnPreview("saved");
         return;
     }
@@ -576,6 +584,10 @@ function renderSavedDynamicFields() {
 }
 
 function renderTimeline(items) {
+    if (!elements.timelineList) {
+        return;
+    }
+
     if (!items.length) {
         elements.timelineList.innerHTML = `<p class="turn-empty">A linha do tempo aparecerá aqui depois da simulação.</p>`;
         return;
@@ -592,7 +604,16 @@ function renderTimeline(items) {
         .join("");
 }
 
+function parseDateFromLabel(label) {
+    const [day, month, year] = label.split("/").map(Number);
+    return new Date(year, month - 1, day);
+}
+
 function renderCalendar(items) {
+    if (!elements.calendarGrid || !elements.calendarMonth) {
+        return;
+    }
+
     const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
     const today = new Date();
     const monthBase = items.length ? parseDateFromLabel(items[0].dateLabel) : today;
@@ -629,12 +650,11 @@ function renderCalendar(items) {
     elements.calendarGrid.innerHTML = cells.join("");
 }
 
-function parseDateFromLabel(label) {
-    const [day, month, year] = label.split("/").map(Number);
-    return new Date(year, month - 1, day);
-}
-
 function showResult(title, description, items) {
+    if (!elements.resultTitle || !elements.resultDescription || !elements.resultCard) {
+        return;
+    }
+
     elements.resultTitle.textContent = title;
     elements.resultDescription.textContent = description;
     state.resultItems = items;
@@ -702,6 +722,10 @@ function handleSimulatorSubmit(event) {
 }
 
 function renderSavedScales() {
+    if (!elements.savedScalesList) {
+        return;
+    }
+
     if (!state.savedScales.length) {
         elements.savedScalesList.innerHTML = `<p class="turn-empty">Nenhuma escala salva.</p>`;
         return;
@@ -794,7 +818,11 @@ function applySavedScale(index) {
         $("#offDays").value = scale.dias_folga;
     }
 
-    document.querySelector("#simulador").scrollIntoView({ behavior: "smooth", block: "start" });
+    const simulator = document.querySelector("#simulador");
+
+    if (simulator) {
+        simulator.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
 }
 
 function deleteSavedScale(index) {
@@ -853,7 +881,7 @@ function handleTurnBuilderClick(event) {
             list.splice(0, list.length);
         }
 
-        if (action === "real24" || action === "ferrero") {
+        if (action === "real24") {
             list.splice(0, list.length, ...ESCALA_REAL_24_DIAS);
         }
 
@@ -868,8 +896,14 @@ function configureTabs() {
             button.classList.add("active");
 
             const tab = button.dataset.resultTab;
+
             $$(".tab-content").forEach((panel) => panel.classList.remove("active"));
-            $(`#${tab}Tab`).classList.add("active");
+
+            const panel = $(`#${tab}Tab`);
+
+            if (panel) {
+                panel.classList.add("active");
+            }
         });
     });
 
@@ -879,12 +913,21 @@ function configureTabs() {
             button.classList.add("active");
 
             $$(".doc-panel").forEach((panel) => panel.classList.remove("active"));
-            $(`#doc-${button.dataset.docTab}`).classList.add("active");
+
+            const panel = $(`#doc-${button.dataset.docTab}`);
+
+            if (panel) {
+                panel.classList.add("active");
+            }
         });
     });
 }
 
 function configureTheme() {
+    if (!elements.themeToggle) {
+        return;
+    }
+
     const savedTheme = localStorage.getItem(THEME_KEY) || "dark";
     elements.root.setAttribute("data-theme", savedTheme);
     updateThemeIcon(savedTheme);
@@ -892,15 +935,18 @@ function configureTheme() {
     elements.themeToggle.addEventListener("click", (event) => {
         const current = elements.root.getAttribute("data-theme") || "dark";
         const next = current === "dark" ? "light" : "dark";
-        const rect = elements.themeToggle.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
 
-        elements.themeFlash.style.setProperty("--x", `${x}px`);
-        elements.themeFlash.style.setProperty("--y", `${y}px`);
-        elements.themeFlash.classList.remove("active");
-        void elements.themeFlash.offsetWidth;
-        elements.themeFlash.classList.add("active");
+        if (elements.themeFlash) {
+            const rect = elements.themeToggle.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            elements.themeFlash.style.setProperty("--x", `${x}px`);
+            elements.themeFlash.style.setProperty("--y", `${y}px`);
+            elements.themeFlash.classList.remove("active");
+            void elements.themeFlash.offsetWidth;
+            elements.themeFlash.classList.add("active");
+        }
 
         elements.root.setAttribute("data-theme", next);
         localStorage.setItem(THEME_KEY, next);
@@ -919,12 +965,14 @@ function configureTheme() {
 }
 
 function updateThemeIcon(theme) {
+    if (!elements.themeToggle) {
+        return;
+    }
+
     const iconName = theme === "dark" ? "moon" : "sun";
     elements.themeToggle.innerHTML = `<i data-lucide="${iconName}"></i>`;
 
-    if (window.lucide) {
-        window.lucide.createIcons();
-    }
+    createLucideIcons();
 }
 
 function configureRevealAnimations() {
@@ -951,6 +999,10 @@ function configureRevealAnimations() {
 }
 
 function configureScrollProgress() {
+    if (!elements.scrollProgress) {
+        return;
+    }
+
     window.addEventListener("scroll", () => {
         if (state.scrollTicking) {
             return;
@@ -961,6 +1013,7 @@ function configureScrollProgress() {
         window.requestAnimationFrame(() => {
             const total = document.documentElement.scrollHeight - window.innerHeight;
             const progress = total > 0 ? (window.scrollY / total) * 100 : 0;
+
             elements.scrollProgress.style.width = `${progress}%`;
             state.scrollTicking = false;
         });
@@ -968,6 +1021,18 @@ function configureScrollProgress() {
 }
 
 function configureHeroDemo() {
+    const requiredElements = [
+        elements.heroTerminalLine,
+        elements.heroTerminalOutput,
+        elements.heroStatusText,
+        elements.heroStatusMeta,
+        elements.heroProgressBar
+    ];
+
+    if (requiredElements.some((item) => !item)) {
+        return;
+    }
+
     window.setInterval(() => {
         state.heroIndex = (state.heroIndex + 1) % HERO_FRAMES.length;
         const frame = HERO_FRAMES[state.heroIndex];
@@ -989,7 +1054,11 @@ function configureHeroDemo() {
 }
 
 function configureProcessDemo() {
-    const lines = $$('[data-process-line]');
+    const lines = $$("[data-process-line]");
+
+    if (!lines.length || !elements.processResultText) {
+        return;
+    }
 
     window.setInterval(() => {
         state.processIndex = (state.processIndex + 1) % lines.length;
@@ -1003,6 +1072,10 @@ function configureProcessDemo() {
 }
 
 function configureMobileMenu() {
+    if (!elements.mobileMenuButton || !elements.navLinks) {
+        return;
+    }
+
     elements.mobileMenuButton.addEventListener("click", () => {
         elements.navLinks.classList.toggle("open");
         document.body.classList.toggle("menu-open");
@@ -1017,21 +1090,20 @@ function configureMobileMenu() {
 }
 
 function configureEvents() {
-    elements.scaleTypeButtons.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-type]");
+    if (elements.scaleTypeButtons) {
+        elements.scaleTypeButtons.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-type]");
 
-        if (!button) {
-            return;
-        }
+            if (!button) {
+                return;
+            }
 
-        state.selectedType = button.dataset.type;
-        updateScaleButtons();
-        renderDynamicFields();
-
-        if (window.lucide) {
-            window.lucide.createIcons();
-        }
-    });
+            state.selectedType = button.dataset.type;
+            updateScaleButtons();
+            renderDynamicFields();
+            createLucideIcons();
+        });
+    }
 
     if (elements.modelButtons) {
         elements.modelButtons.addEventListener("click", (event) => {
@@ -1044,54 +1116,87 @@ function configureEvents() {
             const model = PREDEFINED_MODELS[Number(button.dataset.modelIndex)];
             applyModelToSimulator(cloneScale(model));
 
-            document.querySelector("#simulador").scrollIntoView({ behavior: "smooth", block: "start" });
+            const simulator = document.querySelector("#simulador");
+
+            if (simulator) {
+                simulator.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
         });
     }
 
-    elements.simulatorForm.addEventListener("submit", handleSimulatorSubmit);
-    elements.simulatorForm.addEventListener("click", handleTurnBuilderClick);
-    elements.savedScaleForm.addEventListener("submit", handleSavedScaleSubmit);
-    elements.savedScaleForm.addEventListener("click", handleTurnBuilderClick);
+    if (elements.simulatorForm) {
+        elements.simulatorForm.addEventListener("submit", handleSimulatorSubmit);
+        elements.simulatorForm.addEventListener("click", handleTurnBuilderClick);
+    }
 
-    elements.savedType.addEventListener("change", () => {
-        renderSavedDynamicFields();
-    });
+    if (elements.savedScaleForm) {
+        elements.savedScaleForm.addEventListener("submit", handleSavedScaleSubmit);
+        elements.savedScaleForm.addEventListener("click", handleTurnBuilderClick);
+    }
 
-    elements.savedScalesList.addEventListener("click", (event) => {
-        const applyButton = event.target.closest("[data-apply-scale]");
-        const deleteButton = event.target.closest("[data-delete-scale]");
+    if (elements.savedType) {
+        elements.savedType.addEventListener("change", () => {
+            renderSavedDynamicFields();
+        });
+    }
 
-        if (applyButton) {
-            applySavedScale(Number(applyButton.dataset.applyScale));
-        }
+    if (elements.savedScalesList) {
+        elements.savedScalesList.addEventListener("click", (event) => {
+            const applyButton = event.target.closest("[data-apply-scale]");
+            const deleteButton = event.target.closest("[data-delete-scale]");
 
-        if (deleteButton) {
-            deleteSavedScale(Number(deleteButton.dataset.deleteScale));
-        }
-    });
+            if (applyButton) {
+                applySavedScale(Number(applyButton.dataset.applyScale));
+            }
 
-    elements.resetScalesButton.addEventListener("click", resetSavedScales);
+            if (deleteButton) {
+                deleteSavedScale(Number(deleteButton.dataset.deleteScale));
+            }
+        });
+    }
+
+    if (elements.resetScalesButton) {
+        elements.resetScalesButton.addEventListener("click", resetSavedScales);
+    }
 }
 
 function bootInitialSimulation() {
+    if (!hasSimulator()) {
+        return;
+    }
+
     const start = parseDateInput(setDefaultDateValues());
     const items = generateCycleDaysItems(start, 14, 6, 3);
 
     showResult(
         "Exemplo: Trabalhando",
-        "Este é um exemplo automático usando o modelo 6x3 da v0.8.0.",
+        "Este é um exemplo automático usando o modelo 6x3 da v0.9.0.",
         items
     );
 }
 
-function init() {
+function createLucideIcons() {
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+}
+
+function initSimulatorPage() {
+    if (!hasSimulator()) {
+        return;
+    }
+
     state.savedScales = loadSavedScales();
 
-    configureTheme();
     renderDynamicFields();
     renderModelButtons();
     renderSavedDynamicFields();
     renderSavedScales();
+    bootInitialSimulation();
+}
+
+function init() {
+    configureTheme();
     configureTabs();
     configureRevealAnimations();
     configureScrollProgress();
@@ -1099,11 +1204,8 @@ function init() {
     configureProcessDemo();
     configureMobileMenu();
     configureEvents();
-    bootInitialSimulation();
-
-    if (window.lucide) {
-        window.lucide.createIcons();
-    }
+    initSimulatorPage();
+    createLucideIcons();
 }
 
 document.addEventListener("DOMContentLoaded", init);
