@@ -1,3 +1,4 @@
+import os
 import unicodedata
 
 from tipos_escala import (
@@ -9,10 +10,14 @@ from tipos_escala import (
 )
 
 from models.escala_factory import criar_escala_a_partir_de_dict
-from services.escala_service_factory import criar_escala_service
+from services.escala_service_factory import (
+    criar_escala_service,
+    TIPO_REPOSITORY_JSON
+)
 
 
 CAMINHO_ESCALAS = "data/escalas.json"
+VARIAVEL_REPOSITORY = "ESCALA_REPOSITORY"
 
 
 TURNOS_PADRONIZADOS = {
@@ -26,8 +31,18 @@ TURNOS_PADRONIZADOS = {
 TURNOS_VALIDOS = list(TURNOS_PADRONIZADOS.values())
 
 
+def obter_tipo_repository():
+    return os.getenv(
+        VARIAVEL_REPOSITORY,
+        TIPO_REPOSITORY_JSON
+    ).strip().lower()
+
+
 def obter_escala_service():
-    return criar_escala_service(CAMINHO_ESCALAS)
+    return criar_escala_service(
+        caminho_arquivo=CAMINHO_ESCALAS,
+        tipo_repository=obter_tipo_repository()
+    )
 
 
 def normalizar_nome(nome):

@@ -1,5 +1,84 @@
 
 
+## [0.9.0] - PostgreSQL funcional
+
+### Adicionado
+
+- Adicionado suporte real a PostgreSQL como opção de persistência do projeto.
+- Criado o módulo `config/database_config.py` para centralizar as configurações do banco usando variáveis de ambiente.
+- Criado o módulo `database/postgres_connection.py` para abrir conexões com PostgreSQL.
+- Criado o módulo `database/inicializar_postgres.py` para executar o schema SQL diretamente pelo projeto.
+- Criado o repository `PostgresEscalaRepository`.
+- Adicionada dependência `psycopg2-binary` ao `requirements.txt`.
+- Adicionada variável técnica `ESCALA_REPOSITORY` para alternar entre `json` e `postgres`.
+- Adicionada exibição do armazenamento ativo na inicialização da aplicação.
+- Adicionados testes automatizados para o repository PostgreSQL.
+- Adicionados testes para validar a seleção do tipo de armazenamento.
+- Adicionado suporte a PostgreSQL para escalas do tipo:
+  - ciclo por dias;
+  - ciclo por horas;
+  - turno rotativo.
+
+### Alterado
+
+- Atualizado `armazenamento.py` para obter o tipo de repository por variável de ambiente.
+- Atualizado `services/escala_service_factory.py` para criar `EscalaService` com JSON ou PostgreSQL.
+- Atualizado `main.py` para exibir se a aplicação está usando JSON ou PostgreSQL.
+- Atualizado `database/schema_postgresql.sql` para permitir execução segura com `IF NOT EXISTS`.
+- Mantido JSON como armazenamento padrão para preservar compatibilidade com o fluxo antigo e com os testes existentes.
+
+### Corrigido
+
+- Evitado que a aplicação tente usar PostgreSQL por padrão quando o ambiente não estiver configurado.
+- Corrigido o fluxo de criação do service para impedir que testes antigos que usam JSON tentem conectar ao banco.
+- Protegido o projeto contra exposição de senha real no código, usando `POSTGRES_PASSWORD` via variável de ambiente.
+- Garantida compatibilidade dos testes gerais mesmo com PostgreSQL instalado ou ausente.
+
+### Testado
+
+- Testado cadastro de escala por dias no PostgreSQL.
+- Testado cadastro de escala por horas no PostgreSQL.
+- Testado cadastro de turno rotativo no PostgreSQL.
+- Testada listagem de escalas salvas no PostgreSQL.
+- Testada busca de escala por nome no PostgreSQL.
+- Testada exclusão de escala no PostgreSQL.
+- Testada aplicação real usando `ESCALA_REPOSITORY=postgres`.
+- Testado retorno ao fluxo padrão usando `ESCALA_REPOSITORY=json`.
+- Testes automatizados executados com sucesso.
+
+### Observações técnicas
+
+- O usuário final não escolhe entre JSON e PostgreSQL pela interface.
+- A escolha entre JSON e PostgreSQL é uma configuração técnica do ambiente.
+- O JSON permanece como padrão seguro para execução simples.
+- O PostgreSQL passa a ser o caminho de evolução para versões futuras com login, usuários e perfis.
+- A senha do banco não deve ser commitada no GitHub.
+- Para usar PostgreSQL, configure:
+
+```powershell
+$env:POSTGRES_USER="postgres"
+$env:POSTGRES_PASSWORD="SUA_SENHA_AQUI"
+$env:POSTGRES_DB="simulador_escala"
+$env:POSTGRES_HOST="127.0.0.1"
+$env:POSTGRES_PORT="5432"
+$env:ESCALA_REPOSITORY="postgres"
+```
+
+### Impacto da versão
+
+A v0.9.0 transforma o projeto de uma aplicação com persistência local em JSON para uma aplicação preparada para persistência relacional real.
+
+Essa versão aproxima o projeto de uma estrutura mais profissional e abre caminho para:
+
+- autenticação;
+- cadastro de usuários;
+- associação de escalas a colaboradores;
+- painel administrativo;
+- API;
+- aplicação web conectada ao backend;
+- evolução para a v1.0.0.
+
+
 ## [0.8.0] - Refatoração arquitetural com POO e preparação para banco de dados
 
 ### Adicionado
