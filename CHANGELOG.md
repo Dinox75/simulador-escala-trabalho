@@ -1,5 +1,59 @@
 
 
+## [0.10.0] - Demo web profissional
+
+### Adicionado
+
+* Adicionada página inicial dedicada para apresentação do projeto.
+* Adicionada página separada para o simulador interativo.
+* Adicionada página separada para documentação técnica.
+* Adicionada página sobre o projeto.
+* Adicionada página de termos de uso.
+* Adicionados novos textos destacando a evolução do projeto com PostgreSQL, arquitetura em camadas e testes automatizados.
+* Adicionada estrutura de navegação entre páginas da demo.
+* Adicionada comunicação mais clara para portfólio e divulgação profissional.
+
+### Alterado
+
+* Reorganizada a demo web, que antes concentrava simulador, documentação, sobre e termos em uma única página.
+* Atualizada a landing page para uma apresentação mais objetiva e profissional.
+* Atualizado o conteúdo visual para refletir a fase atual do projeto.
+* Atualizado o JavaScript para funcionar corretamente em múltiplas páginas, evitando erros quando elementos específicos do simulador não existem em determinada página.
+* Atualizado o CSS para manter a identidade visual do projeto em uma estrutura multipágina.
+* Melhorada a separação entre conteúdo de produto, documentação técnica e termos de uso.
+* Melhorada a experiência de navegação da demo web.
+
+### Corrigido
+
+* Corrigida a concentração excessiva de conteúdo em uma única página.
+* Corrigida a comunicação visual que ainda misturava informações de versões anteriores.
+* Corrigido o risco de quebra do script em páginas sem elementos do simulador.
+* Corrigida a apresentação da demo para ficar mais coerente com a evolução técnica da `v0.9.0`.
+
+### Melhorado
+
+* Melhorada a clareza da proposta do projeto.
+* Melhorada a organização da documentação visual.
+* Melhorada a apresentação da demo para recrutadores, devs e avaliadores técnicos.
+* Melhorada a leitura do projeto como portfólio.
+* Melhorada a conexão entre produto, problema real e evolução técnica.
+
+### Observações
+
+* Esta versão não teve como foco adicionar novas regras de cálculo ao simulador.
+* O foco principal foi apresentação, organização visual e documentação da demo.
+* A base funcional com PostgreSQL foi implementada na `v0.9.0`.
+* A `v0.10.0` prepara melhor o projeto para divulgação pública e futuras evoluções.
+
+### Próximos passos planejados
+
+* Criar API inicial.
+* Implementar login.
+* Criar cadastro de usuários.
+* Associar escalas a colaboradores.
+* Evoluir a demo para uma aplicação web mais completa.
+
+
 ## [0.9.0] - PostgreSQL funcional
 
 ### Adicionado
