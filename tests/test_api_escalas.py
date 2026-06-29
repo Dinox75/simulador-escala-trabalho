@@ -120,3 +120,35 @@ def test_criar_escala_ciclo_dias_deve_retornar_status_201():
     assert data["message"] == "Escala criada com sucesso."
     assert data["escala"]["nome"] == "Escala API Teste 21x8"
     assert data["escala"]["tipo"] == "ciclo_dias"
+
+def test_buscar_escala_por_nome_deve_retornar_status_200():
+    payload = {
+        "nome": "Escala API Busca 14x5",
+        "tipo": "ciclo_dias",
+        "dias_trabalho": 14,
+        "dias_folga": 5
+    }
+
+    client.delete("/api/v1/escalas/Escala API Busca 14x5")
+    client.post("/api/v1/escalas", json=payload)
+
+    response = client.get("/api/v1/escalas/Escala API Busca 14x5")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["escala"]["nome"] == "Escala API Busca 14x5"
+    assert data["escala"]["tipo"] == "ciclo_dias"
+
+    client.delete("/api/v1/escalas/Escala API Busca 14x5")
+
+
+def test_buscar_escala_por_nome_inexistente_deve_retornar_404():
+    response = client.get("/api/v1/escalas/Escala Inexistente API")
+
+    assert response.status_code == 404
+
+    data = response.json()
+
+    assert data["detail"] == "Escala não encontrada."

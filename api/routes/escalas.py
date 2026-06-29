@@ -140,3 +140,19 @@ def excluir_escala(nome: str):
         "message": "Escala excluída com sucesso.",
         "nome": nome
     }
+
+@router.get("/escalas/{nome}")
+def buscar_escala_por_nome(nome: str):
+    service = obter_service()
+
+    escala = service.buscar_escala_por_nome(nome)
+
+    if escala is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Escala não encontrada."
+        )
+
+    return {
+        "escala": escala.to_dict()
+    }
