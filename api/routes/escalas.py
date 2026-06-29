@@ -32,6 +32,12 @@ class CriarEscalaRequest(BaseModel):
 def obter_service():
     return criar_escala_service()
 
+def obter_indice_escala_por_nome(escalas, nome):
+    for indice, escala in enumerate(escalas):
+        if escala.nome == nome:
+            return indice
+
+    return None
 
 def criar_escala_a_partir_payload(payload: CriarEscalaRequest):
     if not validar_tipo_escala(payload.tipo):
@@ -155,4 +161,44 @@ def buscar_escala_por_nome(nome: str):
 
     return {
         "escala": escala.to_dict()
+    }
+
+@router.put("/escalas/{nome}")
+def editar_escala(nome: str, payload: CriarEscalaRequest):
+    service = obter_service()
+    escalas = service.listar_escalas()
+
+    indice = obter_indice_escala_por_nome(escalas, nome)
+
+    if indice is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Escala não encontrada."
+        )
+
+    nova_escala = criar_escala_a_partir_payload(payload)
+
+    resultado = service.editar_escala_por_indice(indice, nova_escala)
+
+    if resultado == "nome_duplicado":
+        raise HTTPException(
+            status_code=409,
+            detail="Já existe uma escala salva com esse nome."
+        )
+
+    if resultado == "configuracao_duplicada":
+        raise HTTPException(
+            status_code=409,
+            detail="Já existe uma escala salva com essa configuração."
+        )
+
+    if resultado == "indice_invalido":
+        raise HTTPException(
+            status_code=404,
+            detail="Escala não encontrada."
+        )
+
+    return {
+        "message": "Escala editada com sucesso.",
+        "escala": nova_escala.to_dict()
     }
