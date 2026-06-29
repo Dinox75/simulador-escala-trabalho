@@ -1,8 +1,19 @@
 # Documentação da API - Simulador de Escala de Trabalho
 
-Esta documentação descreve os endpoints iniciais da API do projeto **Simulador de Escala de Trabalho**.
+Documentação dos endpoints iniciais da API do projeto **Simulador de Escala de Trabalho**.
 
-A API foi criada na versão `v0.11.0` com o objetivo de expor funcionalidades do projeto por meio de endpoints HTTP, mantendo a lógica principal do simulador separada da interface de linha de comando.
+A API foi criada na versão `v0.11.0` com o objetivo de expor funcionalidades do simulador por meio de endpoints HTTP, mantendo a lógica principal separada da interface de linha de comando.
+
+---
+
+## Visão geral
+
+A API permite:
+
+* verificar se o serviço está funcionando;
+* listar modelos de escala disponíveis;
+* consultar o status de uma escala em uma data específica;
+* consultar uma sequência de próximos dias da escala.
 
 ---
 
@@ -30,11 +41,26 @@ http://127.0.0.1:8000/docs
 
 A rota `/docs` abre a documentação automática gerada pelo FastAPI.
 
+Também é possível acessar:
+
+```text
+http://127.0.0.1:8000/redoc
+```
+
 ---
 
-# Endpoints disponíveis
+## Endpoints disponíveis
 
-## Health Check
+| Método | Endpoint                          | Descrição                                        |
+| ------ | --------------------------------- | ------------------------------------------------ |
+| `GET`  | `/health`                         | Verifica se a API está funcionando               |
+| `GET`  | `/api/v1/modelos`                 | Lista os modelos de escala disponíveis           |
+| `POST` | `/api/v1/simulacao/status`        | Consulta o status de uma escala em uma data      |
+| `POST` | `/api/v1/simulacao/proximos-dias` | Retorna uma sequência de próximos dias da escala |
+
+---
+
+# Health Check
 
 Verifica se a API está funcionando.
 
@@ -42,7 +68,7 @@ Verifica se a API está funcionando.
 GET /health
 ```
 
-### Exemplo de resposta
+## Exemplo de resposta
 
 ```json
 {
@@ -52,9 +78,15 @@ GET /health
 }
 ```
 
+## Status esperado
+
+```text
+200 OK
+```
+
 ---
 
-## Listar modelos de escala
+# Listar modelos de escala
 
 Retorna os modelos de escala disponíveis para simulação.
 
@@ -62,7 +94,7 @@ Retorna os modelos de escala disponíveis para simulação.
 GET /api/v1/modelos
 ```
 
-### Exemplo de resposta
+## Exemplo de resposta
 
 ```json
 {
@@ -72,23 +104,61 @@ GET /api/v1/modelos
       "nome": "Escala 6x3",
       "tipo": "ciclo_dias",
       "descricao": "Ciclo com 6 dias de trabalho e 3 dias de folga."
+    },
+    {
+      "id": "5x2",
+      "nome": "Escala 5x2",
+      "tipo": "ciclo_dias",
+      "descricao": "Ciclo com 5 dias de trabalho e 2 dias de folga."
+    },
+    {
+      "id": "4x2",
+      "nome": "Escala 4x2",
+      "tipo": "ciclo_dias",
+      "descricao": "Ciclo com 4 dias de trabalho e 2 dias de folga."
+    },
+    {
+      "id": "12x36",
+      "nome": "Escala 12x36",
+      "tipo": "ciclo_horas",
+      "descricao": "Ciclo com 12 horas de trabalho e 36 horas de folga."
+    },
+    {
+      "id": "turno_rotativo_simples",
+      "nome": "Turno rotativo simples",
+      "tipo": "turno_rotativo",
+      "descricao": "Sequência rotativa com turnos definidos manualmente."
+    },
+    {
+      "id": "escala_real_24_dias",
+      "nome": "Minha escala real 24 dias",
+      "tipo": "turno_rotativo",
+      "descricao": "Modelo de turno rotativo baseado em uma sequência de 24 dias."
     }
   ]
 }
 ```
 
-### Modelos disponíveis
+## Modelos disponíveis
 
-* `6x3`
-* `5x2`
-* `4x2`
-* `12x36`
-* `turno_rotativo_simples`
-* `escala_real_24_dias`
+| ID                       | Tipo             | Descrição                                                |
+| ------------------------ | ---------------- | -------------------------------------------------------- |
+| `6x3`                    | `ciclo_dias`     | Ciclo com 6 dias de trabalho e 3 dias de folga           |
+| `5x2`                    | `ciclo_dias`     | Ciclo com 5 dias de trabalho e 2 dias de folga           |
+| `4x2`                    | `ciclo_dias`     | Ciclo com 4 dias de trabalho e 2 dias de folga           |
+| `12x36`                  | `ciclo_horas`    | Ciclo com 12 horas de trabalho e 36 horas de folga       |
+| `turno_rotativo_simples` | `turno_rotativo` | Sequência rotativa com turnos definidos manualmente      |
+| `escala_real_24_dias`    | `turno_rotativo` | Modelo de turno rotativo baseado em sequência de 24 dias |
+
+## Status esperado
+
+```text
+200 OK
+```
 
 ---
 
-## Consultar status da escala
+# Consultar status da escala
 
 Consulta o status de uma escala em determinada data.
 
@@ -96,89 +166,19 @@ Consulta o status de uma escala em determinada data.
 POST /api/v1/simulacao/status
 ```
 
----
+## Campos da requisição
 
-## Consultar próximos dias da escala
-
-Retorna uma sequência de dias calculados a partir da data inicial da escala.
-
-```http
-POST /api/v1/simulacao/proximos-dias
-Exemplo - Escala 6x3
-Requisição
-{
-  "modelo_id": "6x3",
-  "data_inicio": "01/07/2026",
-  "quantidade_dias": 10
-}
-Resposta esperada
-{
-  "modelo_id": "6x3",
-  "modelo_nome": "Escala 6x3",
-  "tipo": "ciclo_dias",
-  "data_inicio": "01/07/2026",
-  "quantidade_dias": 10,
-  "dias": [
-    {
-      "data": "01/07/2026",
-      "status": "Trabalhando"
-    },
-    {
-      "data": "07/07/2026",
-      "status": "Folga"
-    }
-  ]
-}
-Exemplo - Escala 12x36
-
-Para escalas por horas, é necessário informar hora_inicio.
-O campo hora_consulta é opcional. Se não for informado, a API usa a mesma hora de início.
-
-Requisição
-{
-  "modelo_id": "12x36",
-  "data_inicio": "01/07/2026",
-  "hora_inicio": "07:00",
-  "hora_consulta": "10:00",
-  "quantidade_dias": 2
-}
-Resposta esperada
-{
-  "modelo_id": "12x36",
-  "modelo_nome": "Escala 12x36",
-  "tipo": "ciclo_horas",
-  "data_inicio": "01/07/2026",
-  "quantidade_dias": 2,
-  "dias": [
-    {
-      "data": "01/07/2026",
-      "hora_consulta": "10:00",
-      "status": "Trabalhando"
-    }
-  ]
-}
-Limite de dias
-
-O campo quantidade_dias aceita valores de:
-
-mínimo: 1
-máximo: 60
-
-Caso o valor fique fora desse intervalo, a API retorna erro de validação.
-
+| Campo           | Tipo     | Obrigatório          | Descrição                                        |
+| --------------- | -------- | -------------------- | ------------------------------------------------ |
+| `modelo_id`     | `string` | Sim                  | ID do modelo de escala                           |
+| `data_inicio`   | `string` | Sim                  | Data inicial da escala no formato `dd/mm/aaaa`   |
+| `data_consulta` | `string` | Sim                  | Data que será consultada no formato `dd/mm/aaaa` |
+| `hora_inicio`   | `string` | Somente para `12x36` | Hora inicial no formato `HH:MM`                  |
+| `hora_consulta` | `string` | Somente para `12x36` | Hora consultada no formato `HH:MM`               |
 
 ---
 
-## 3. Rodar testes
-
-Depois de atualizar os arquivos:
-
-```powershell
-python -m pytest
-
----
-
-## Exemplo - Escala 6x3
+## Exemplo - Escala 6x3 trabalhando
 
 ### Requisição
 
@@ -203,6 +203,12 @@ python -m pytest
 }
 ```
 
+### Status esperado
+
+```text
+200 OK
+```
+
 ---
 
 ## Exemplo - Escala 6x3 com folga
@@ -217,19 +223,30 @@ python -m pytest
 }
 ```
 
-### Resultado esperado
+### Resposta esperada
 
 ```json
 {
+  "modelo_id": "6x3",
+  "modelo_nome": "Escala 6x3",
+  "tipo": "ciclo_dias",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "07/07/2026",
   "status": "Folga"
 }
+```
+
+### Status esperado
+
+```text
+200 OK
 ```
 
 ---
 
 ## Exemplo - Escala 12x36
 
-Para escalas por horas, é necessário informar também `hora_inicio` e `hora_consulta`.
+Para escalas por horas, é necessário informar `hora_inicio` e `hora_consulta`.
 
 ### Requisição
 
@@ -243,13 +260,165 @@ Para escalas por horas, é necessário informar também `hora_inicio` e `hora_co
 }
 ```
 
-### Resultado esperado
+### Resposta esperada
 
 ```json
 {
   "modelo_id": "12x36",
+  "modelo_nome": "Escala 12x36",
+  "tipo": "ciclo_horas",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "01/07/2026",
   "status": "Trabalhando"
 }
+```
+
+### Status esperado
+
+```text
+200 OK
+```
+
+---
+
+# Consultar próximos dias da escala
+
+Retorna uma sequência de dias calculados a partir da data inicial da escala.
+
+```http
+POST /api/v1/simulacao/proximos-dias
+```
+
+## Campos da requisição
+
+| Campo             | Tipo      | Obrigatório          | Descrição                                             |
+| ----------------- | --------- | -------------------- | ----------------------------------------------------- |
+| `modelo_id`       | `string`  | Sim                  | ID do modelo de escala                                |
+| `data_inicio`     | `string`  | Sim                  | Data inicial da escala no formato `dd/mm/aaaa`        |
+| `quantidade_dias` | `integer` | Sim                  | Quantidade de dias que serão retornados               |
+| `hora_inicio`     | `string`  | Somente para `12x36` | Hora inicial no formato `HH:MM`                       |
+| `hora_consulta`   | `string`  | Não                  | Hora usada para consultar cada dia no formato `HH:MM` |
+
+## Limite de dias
+
+O campo `quantidade_dias` aceita valores de:
+
+| Mínimo | Máximo |
+| ------ | ------ |
+| `1`    | `60`   |
+
+Caso o valor fique fora desse intervalo, a API retorna erro de validação do FastAPI.
+
+---
+
+## Exemplo - Próximos dias da escala 6x3
+
+### Requisição
+
+```json
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 7
+}
+```
+
+### Resposta esperada
+
+```json
+{
+  "modelo_id": "6x3",
+  "modelo_nome": "Escala 6x3",
+  "tipo": "ciclo_dias",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 7,
+  "dias": [
+    {
+      "data": "01/07/2026",
+      "status": "Trabalhando"
+    },
+    {
+      "data": "02/07/2026",
+      "status": "Trabalhando"
+    },
+    {
+      "data": "03/07/2026",
+      "status": "Trabalhando"
+    },
+    {
+      "data": "04/07/2026",
+      "status": "Trabalhando"
+    },
+    {
+      "data": "05/07/2026",
+      "status": "Trabalhando"
+    },
+    {
+      "data": "06/07/2026",
+      "status": "Trabalhando"
+    },
+    {
+      "data": "07/07/2026",
+      "status": "Folga"
+    }
+  ]
+}
+```
+
+### Status esperado
+
+```text
+200 OK
+```
+
+---
+
+## Exemplo - Próximos dias da escala 12x36
+
+Para escalas por horas, é necessário informar `hora_inicio`.
+
+O campo `hora_consulta` é opcional. Se não for informado, a API usa a mesma hora de início.
+
+### Requisição
+
+```json
+{
+  "modelo_id": "12x36",
+  "data_inicio": "01/07/2026",
+  "hora_inicio": "07:00",
+  "hora_consulta": "10:00",
+  "quantidade_dias": 2
+}
+```
+
+### Resposta esperada
+
+```json
+{
+  "modelo_id": "12x36",
+  "modelo_nome": "Escala 12x36",
+  "tipo": "ciclo_horas",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 2,
+  "dias": [
+    {
+      "data": "01/07/2026",
+      "hora_consulta": "10:00",
+      "status": "Trabalhando"
+    },
+    {
+      "data": "02/07/2026",
+      "hora_consulta": "10:00",
+      "status": "Folga"
+    }
+  ]
+}
+```
+
+### Status esperado
+
+```text
+200 OK
 ```
 
 ---
@@ -312,7 +481,7 @@ Para escalas por horas, é necessário informar também `hora_inicio` e `hora_co
 
 ---
 
-## Escala 12x36 sem horário
+## Escala 12x36 sem horário na consulta de status
 
 ### Requisição
 
@@ -340,6 +509,60 @@ Para escalas por horas, é necessário informar também `hora_inicio` e `hora_co
 
 ---
 
+## Escala 12x36 sem hora inicial em próximos dias
+
+### Requisição
+
+```json
+{
+  "modelo_id": "12x36",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 2
+}
+```
+
+### Resposta esperada
+
+```json
+{
+  "detail": "Para escala 12x36, informe hora_inicio no formato HH:MM."
+}
+```
+
+### Status HTTP esperado
+
+```text
+400 Bad Request
+```
+
+---
+
+## Quantidade de dias fora do limite
+
+### Requisição
+
+```json
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 100
+}
+```
+
+### Resposta esperada
+
+A validação desse campo é feita automaticamente pelo FastAPI/Pydantic.
+
+O retorno segue o padrão de erro de validação da ferramenta.
+
+### Status HTTP esperado
+
+```text
+422 Unprocessable Entity
+```
+
+---
+
 # Testes manuais
 
 Os exemplos de requisições manuais estão disponíveis em:
@@ -350,10 +573,10 @@ docs/api_requests.http
 
 Esse arquivo pode ser usado como apoio para testar a API com ferramentas como:
 
-* Thunder Client
-* Postman
-* Insomnia
-* Extensões REST Client
+* Thunder Client;
+* Postman;
+* Insomnia;
+* extensões REST Client.
 
 ---
 
@@ -367,34 +590,34 @@ python -m pytest
 
 A API possui testes para:
 
-* Health check
-* Listagem de modelos
-* Consulta de status
-* Tratamento de modelo inexistente
-* Validação de data inválida
-* Validação de escala 12x36 sem horário
+* health check;
+* listagem de modelos;
+* consulta de status;
+* consulta de próximos dias;
+* tratamento de modelo inexistente;
+* validação de data inválida;
+* validação de escala 12x36 sem horário;
+* validação de quantidade de dias fora do limite.
 
 ---
 
-# Observação
+# Observações
 
 Esta é a primeira versão da API do projeto.
 
 O foco da `v0.11.0` é expor funcionalidades básicas do simulador via HTTP, mantendo a estrutura existente do projeto e preparando caminho para futuras evoluções, como:
 
-* API completa
-* Login
-* Usuários
-* Associação de escalas a colaboradores
+* API mais completa;
+* integração com frontend;
+* login;
+* usuários;
+* associação de escalas a colaboradores;
+* deploy da API.
 
 ---
 
-# Comandos Git
+# Versão
 
-Depois de salvar este conteúdo no arquivo `docs/API.md`, rode:
-
-```powershell
-git add docs/API.md
-git commit -m "docs: adiciona documentacao da API"
-git push origin feat/v0.11.0-api-inicial
+```text
+v0.11.0 - API inicial
 ```

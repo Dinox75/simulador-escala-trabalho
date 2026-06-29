@@ -1,5 +1,99 @@
 
 
+## [0.11.0] - API inicial
+
+### Adicionado
+
+* Adicionada estrutura inicial da API com FastAPI.
+* Adicionado endpoint de verificação da API:
+
+```http
+GET /health
+```
+
+* Adicionado endpoint para listar modelos de escala disponíveis:
+
+```http
+GET /api/v1/modelos
+```
+
+* Adicionado endpoint para consultar o status de uma escala em uma data específica:
+
+```http
+POST /api/v1/simulacao/status
+```
+
+* Adicionado endpoint para consultar uma sequência de próximos dias da escala:
+
+```http
+POST /api/v1/simulacao/proximos-dias
+```
+
+* Adicionados testes automatizados para os endpoints da API.
+* Adicionado arquivo `docs/API.md` com documentação dos endpoints.
+* Adicionado arquivo `docs/api_requests.http` com exemplos de requisições manuais para testes.
+* Adicionado suporte para testes manuais com ferramentas como Thunder Client, Postman, Insomnia ou REST Client.
+* Adicionadas dependências da API no `requirements.txt`:
+
+  * `fastapi`
+  * `uvicorn`
+  * `httpx`
+
+### Alterado
+
+* Atualizada a estrutura do projeto para incluir a pasta `api/`.
+* Separada a camada de rotas da API em arquivos próprios.
+* Atualizada a documentação para apresentar a API como uma nova forma de consumir as funcionalidades do simulador.
+* Mantida a compatibilidade com a interface de linha de comando existente.
+* Mantido o JSON como persistência padrão do projeto.
+
+### Melhorado
+
+* Melhorada a organização do projeto para permitir futuras integrações com frontend.
+* Melhorada a exposição das regras de negócio por meio de endpoints HTTP.
+* Melhorada a documentação técnica da aplicação.
+* Melhorada a validação manual da API com exemplos prontos de requisição.
+* Melhorada a preparação do projeto para próximas versões com API mais completa.
+
+### Corrigido
+
+* Corrigida a ausência de uma camada HTTP para consumo externo das funcionalidades do simulador.
+* Corrigida a falta de exemplos documentados para testar a API manualmente.
+* Corrigida a documentação da API para incluir os endpoints atuais da versão `v0.11.0`.
+
+### Testado
+
+* Testado endpoint `/health`.
+* Testado endpoint `/api/v1/modelos`.
+* Testado endpoint `/api/v1/simulacao/status`.
+* Testado endpoint `/api/v1/simulacao/proximos-dias`.
+* Testadas respostas de sucesso.
+* Testados cenários de erro, incluindo:
+
+  * modelo inexistente;
+  * data inválida;
+  * escala `12x36` sem horário obrigatório;
+  * quantidade de dias fora do limite permitido.
+* Testes automatizados executados com `pytest`.
+* Testes manuais realizados com Thunder Client.
+
+### Observações
+
+* Esta versão não implementa login, usuários ou autenticação.
+* Esta versão não conecta a demo web diretamente à API.
+* Esta versão não altera a lógica principal do simulador no terminal.
+* O objetivo da `v0.11.0` é criar a primeira camada de API do projeto, mantendo a aplicação estável e preparando a base para futuras evoluções.
+
+### Próximos passos planejados
+
+* Evoluir a API para trabalhar com escalas salvas.
+* Integrar frontend com a API.
+* Criar estrutura para usuários.
+* Implementar login em versão futura.
+* Associar escalas a colaboradores.
+* Preparar deploy da API.
+
+
 ## [0.10.0] - Demo web profissional
 
 ### Adicionado

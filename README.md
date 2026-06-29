@@ -5,17 +5,18 @@
 <h1 align="center">⏰ Simulador de Escala de Trabalho</h1>
 
 <p align="center">
-  <strong>Aplicação em Python para consultar, simular, cadastrar, editar, reutilizar e excluir escalas de trabalho por dias, por horas e por turnos rotativos, com modelos predefinidos, persistência em JSON e PostgreSQL, testes automatizados e arquitetura em camadas.</strong>
+  <strong>Aplicação em Python para consultar, simular, cadastrar, editar e excluir escalas de trabalho por dias, por horas e por turnos rotativos, com CLI, API inicial em FastAPI, persistência em JSON/PostgreSQL, testes automatizados e arquitetura em camadas.</strong>
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=1000&lines=Simule+escalas+de+trabalho+com+Python;Arquitetura+com+POO%2C+Service+e+Repository;Persist%C3%AAncia+em+JSON+e+PostgreSQL;Escala+real+de+24+dias+implementada;Projeto+evoluindo+com+vis%C3%A3o+de+produto" alt="Typing SVG">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=1000&lines=Simule+escalas+de+trabalho+com+Python;API+inicial+com+FastAPI;Arquitetura+com+POO%2C+Service+e+Repository;Persist%C3%AAncia+em+JSON+e+PostgreSQL;Testes+automatizados+com+Pytest" alt="Typing SVG">
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.9.0-00B4D8?style=for-the-badge&labelColor=061A2B">
-  <img src="https://img.shields.io/badge/STATUS-%20EST%C3%81VEL-48CAE4?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.11.0-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/STATUS-EM%20EVOLU%C3%87%C3%83O-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PYTHON-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/API-FASTAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white&labelColor=061A2B">
   <img src="https://img.shields.io/badge/INTERFACE-CLI-00C2FF?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/ARQUITETURA-POO%20%2B%20SERVICE%20%2B%20REPOSITORY-90E0EF?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PERSIST%C3%8ANCIA-JSON%20%2B%20POSTGRESQL-CAF0F8?style=for-the-badge&labelColor=061A2B">
@@ -33,9 +34,9 @@
   <a href="#-sobre-o-projeto">Sobre</a> •
   <a href="#-versão-atual">Versão atual</a> •
   <a href="#-funcionalidades">Funcionalidades</a> •
-  <a href="#-arquitetura-da-v090">Arquitetura</a> •
+  <a href="#-api-inicial-v0110">API</a> •
+  <a href="#-arquitetura">Arquitetura</a> •
   <a href="#-persistência-json-e-postgresql">Persistência</a> •
-  <a href="#-fluxogramas">Fluxogramas</a> •
   <a href="#-testes-automatizados">Testes</a> •
   <a href="#-como-executar-o-projeto">Executar</a> •
   <a href="#-roadmap">Roadmap</a>
@@ -58,8 +59,8 @@
       <p>Sequências manuais, por blocos e modelos prontos.</p>
     </td>
     <td width="25%" align="center">
-      <h3>🐘 PostgreSQL</h3>
-      <p>Persistência real em banco relacional na v0.9.0.</p>
+      <h3>⚡ API inicial</h3>
+      <p>Endpoints HTTP com FastAPI na v0.11.0.</p>
     </td>
   </tr>
 </table>
@@ -68,120 +69,129 @@
 
 ## 📌 Sobre o projeto
 
-O **Simulador de Escala de Trabalho** é uma aplicação em Python criada para consultar, simular e gerenciar escalas de trabalho de forma simples, prática e evolutiva.
+O **Simulador de Escala de Trabalho** é uma aplicação criada para consultar, simular e organizar escalas de trabalho de forma simples, prática e evolutiva.
 
-A aplicação começou como um simulador de escala `6x3`, mas evoluiu para uma base mais completa, com suporte a:
+O projeto nasceu a partir de uma dúvida real:
 
-* escalas por dias;
-* escalas por horas;
-* turnos rotativos;
-* montagem de turnos por blocos;
-* modelos predefinidos;
-* escala real de 24 dias;
-* cadastro, edição, exclusão e aplicação de escalas salvas;
-* persistência em arquivo JSON;
-* persistência em PostgreSQL;
-* testes automatizados;
-* arquitetura com Programação Orientada a Objetos;
-* camada de service;
-* camada de repository;
-* configuração técnica de armazenamento por variável de ambiente;
-* demo web interativa para apresentação do projeto.
+> **“Hoje eu trabalho, folgo ou estou em qual turno?”**
 
-O foco do projeto é transformar uma necessidade real de consulta de escala em uma solução técnica organizada, testável e com potencial de evolução para produto.
+A aplicação começou como um simulador de escala `6x3` no terminal, mas evoluiu para uma base mais completa, com suporte a:
+
+- escalas por dias;
+- escalas por horas;
+- turnos rotativos;
+- montagem de turnos por blocos;
+- modelos predefinidos;
+- escala real de 24 dias;
+- cadastro, edição, exclusão e aplicação de escalas salvas;
+- persistência em arquivo JSON;
+- persistência alternativa em PostgreSQL;
+- arquitetura com Programação Orientada a Objetos;
+- camada de service;
+- camada de repository;
+- API inicial com FastAPI;
+- testes automatizados;
+- demo web interativa para apresentação do projeto.
+
+O foco do projeto é transformar uma necessidade comum de consulta de escala em uma solução técnica organizada, testável e com potencial de evolução para produto.
 
 ---
 
 ## 🚀 Versão atual
 
-**Versão:** `v0.9.0`
+**Versão:** `v0.11.0 - API inicial`
 
-A `v0.9.0` marca a entrada oficial do PostgreSQL no projeto.
+A `v0.11.0` adiciona a primeira camada HTTP do projeto usando **FastAPI**.
 
-Antes, o sistema salvava as escalas apenas em arquivo JSON. Agora, a aplicação também consegue salvar, listar, buscar, editar e excluir escalas em banco de dados PostgreSQL, mantendo o JSON como padrão seguro para execução simples e testes.
+Até a versão anterior, o projeto já possuía CLI, demo web, persistência em JSON/PostgreSQL, testes e arquitetura em camadas. Nesta versão, parte das funcionalidades do simulador passou a ser exposta por endpoints HTTP, preparando o caminho para uma futura integração com frontend, usuários, login e painel web.
 
-### Resumo da v0.9.0
+### Resumo da v0.11.0
 
 | Área | Evolução |
 |---|---|
-| Persistência | JSON e PostgreSQL |
-| Banco de dados | Schema PostgreSQL funcional |
-| Repository | Novo `PostgresEscalaRepository` |
-| Configuração | Uso de `ESCALA_REPOSITORY` para alternar tecnicamente entre JSON e PostgreSQL |
-| Segurança | Senha do banco via variável de ambiente |
-| Testes | Testes automatizados para PostgreSQL e seleção de repository |
-| Aplicação real | `main.py` consegue executar usando PostgreSQL |
-| Compatibilidade | JSON continua sendo o padrão quando nada é configurado |
+| API | Estrutura inicial com FastAPI |
+| Health check | Endpoint para verificar se a API está ativa |
+| Modelos | Endpoint para listar modelos disponíveis |
+| Simulação | Endpoint para consultar status de uma escala |
+| Próximos dias | Endpoint para retornar sequência de dias calculados |
+| Documentação | Arquivo `docs/API.md` e exemplos em `docs/api_requests.http` |
+| Testes | Testes automatizados para os endpoints da API |
+| Validação manual | Testes realizados com Thunder Client |
 
 ---
 
-## ✅ Principais entregas da v0.9.0
+## ✅ Principais entregas da v0.11.0
 
-* Adicionado suporte real a PostgreSQL.
-* Criado arquivo de configuração do banco.
-* Criada função de conexão com PostgreSQL.
-* Criado inicializador de schema PostgreSQL.
-* Implementado `PostgresEscalaRepository`.
-* Mantido `JsonEscalaRepository` como opção padrão.
-* Adicionada escolha técnica de armazenamento via variável de ambiente.
-* Atualizado `armazenamento.py` para usar JSON ou PostgreSQL conforme configuração.
-* Atualizado `main.py` para exibir o armazenamento ativo.
-* Criados testes automatizados para o repository PostgreSQL.
-* Criados testes para a seleção de armazenamento.
-* Protegida a senha do banco usando variáveis de ambiente.
-* Mantida compatibilidade com os testes e fluxos anteriores.
+| Categoria | Entrega |
+|---|---|
+| API | Criação da estrutura `api/` |
+| FastAPI | Aplicação configurada em `api/app.py` |
+| Rotas | Separação de rotas em `api/routes/` |
+| Health | `GET /health` |
+| Modelos | `GET /api/v1/modelos` |
+| Status | `POST /api/v1/simulacao/status` |
+| Próximos dias | `POST /api/v1/simulacao/proximos-dias` |
+| Documentação | `docs/API.md` |
+| Requisições manuais | `docs/api_requests.http` |
+| Testes | Testes automatizados com `pytest` |
 
 ---
 
-## 📊 Gráfico de evolução
+## 📊 Linha de evolução
 
-```text
-v0.1.0  ─ Simulador inicial 6x3
-v0.2.0  ─ Cadastro e persistência básica
-v0.3.0  ─ Melhorias de menu e validações
-v0.4.0  ─ Modelos predefinidos
-v0.5.0  ─ Turnos rotativos
-v0.6.0  ─ Demo web
-v0.7.0  ─ Melhorias de interface e documentação
-v0.8.0  ─ POO + Service + Repository
-v0.9.0  ─ PostgreSQL funcional
-v0.10.0 ─ Site profissional e documentação separada
-v1.0.0  ─ Sistema oficial com login, cadastro e perfis
+```mermaid
+timeline
+    title Evolução do Simulador de Escala de Trabalho
+    v0.1 : Simulação inicial 6x3
+         : Consulta simples por data
+    v0.3 : Persistência em JSON
+         : Escalas salvas
+    v0.5 : Escalas por horas
+         : Suporte ao modelo 12x36
+    v0.7 : Turnos rotativos
+         : Escala real de 24 dias
+    v0.8 : Refatoração com POO
+         : Service e Repository
+    v0.9 : PostgreSQL funcional
+         : Repository para banco relacional
+    v0.10 : Demo web profissional
+          : Páginas separadas e documentação visual
+    v0.11 : API inicial
+          : FastAPI e endpoints HTTP
 ```
 
 ---
 
 ## 📌 Problema resolvido
 
-Muitas escalas de trabalho não seguem um padrão simples de segunda a sexta.
+Trabalhadores em escala frequentemente precisam consultar se determinado dia será de trabalho, folga ou qual turno será executado.
 
-Em ambientes reais, é comum encontrar escalas como:
+Esse problema fica mais evidente em escalas como:
 
-* `6x3`;
-* `5x2`;
-* `4x2`;
-* `12x36`;
-* ciclos por turnos;
-* sequências alternadas de manhã, tarde, noite e folga;
-* escalas longas com vários dias de repetição.
+- `6x3`;
+- `5x2`;
+- `4x2`;
+- `12x36`;
+- turnos rotativos;
+- escalas com mudanças entre manhã, tarde, noite e folga.
 
-Controlar isso manualmente pode gerar confusão, principalmente quando a pessoa precisa consultar rapidamente se estará trabalhando ou de folga em uma data específica.
+A consulta manual em papel, planilhas ou memória pode gerar confusão, principalmente quando existem ciclos longos, virada de mês ou troca de turno.
 
 ---
 
 ## ✅ Solução proposta
 
-O projeto permite que o usuário:
+O projeto permite informar uma escala, uma data inicial e uma data de consulta para descobrir automaticamente o status daquele dia.
 
-* escolha uma escala pronta;
-* crie uma escala personalizada;
-* consulte o status em uma data;
-* visualize os próximos dias ou períodos;
-* cadastre escalas;
-* edite escalas salvas;
-* exclua escalas salvas;
-* alterne tecnicamente entre persistência JSON e PostgreSQL;
-* mantenha os dados organizados em uma arquitetura evolutiva.
+A solução foi evoluindo em camadas:
+
+1. **CLI em Python** para uso direto no terminal.
+2. **Modelos predefinidos** para facilitar simulações comuns.
+3. **Persistência em JSON** para salvar escalas.
+4. **Arquitetura com POO, Service e Repository** para organizar o código.
+5. **PostgreSQL funcional** como alternativa de persistência.
+6. **Demo web** para apresentação visual do projeto.
+7. **API inicial com FastAPI** para expor funcionalidades via HTTP.
 
 ---
 
@@ -189,48 +199,47 @@ O projeto permite que o usuário:
 
 ### Consulta de status
 
-Permite informar uma data e descobrir se ela representa:
+Permite consultar se uma pessoa estará trabalhando, folgando ou em determinado turno em uma data informada.
 
-* dia de trabalho;
-* dia de folga;
-* turno específico;
-* período de trabalho;
-* período de descanso.
+Exemplo:
+
+```text
+Data inicial: 01/07/2026
+Data consultada: 07/07/2026
+Escala: 6x3
+Resultado: Folga
+```
 
 ### Visualização de próximos dias ou períodos
 
-Permite gerar uma previsão futura da escala, facilitando planejamento de rotina, trabalho, descanso e compromissos.
+Permite visualizar uma sequência futura da escala, facilitando o planejamento pessoal.
 
 ### Cadastro de escalas
 
-O usuário pode cadastrar:
-
-* escalas por dias;
-* escalas por horas;
-* turnos rotativos.
+Permite cadastrar escalas personalizadas para reutilização posterior.
 
 ### Edição de escalas
 
-Permite alterar nome e configuração de uma escala salva.
+Permite alterar escalas salvas.
 
 ### Exclusão de escalas
 
-Permite remover escalas salvas da persistência ativa.
+Permite remover escalas que não serão mais utilizadas.
 
 ### Modelos predefinidos
 
-O sistema possui modelos prontos para facilitar o uso inicial.
+Inclui modelos prontos para facilitar testes e uso inicial.
 
 ### Persistência
 
-Na v0.9.0, o projeto suporta dois mecanismos:
+O projeto suporta:
 
-* JSON;
-* PostgreSQL.
+- JSON como persistência padrão;
+- PostgreSQL como persistência alternativa configurável.
 
-O JSON continua útil para testes, execução simples e demonstrações locais.
+### API inicial
 
-O PostgreSQL passa a representar o caminho mais profissional para evolução do projeto.
+A partir da `v0.11.0`, o projeto passa a expor funcionalidades por endpoints HTTP usando FastAPI.
 
 ---
 
@@ -238,16 +247,18 @@ O PostgreSQL passa a representar o caminho mais profissional para evolução do 
 
 ### Modelos disponíveis
 
-* Escala 6x3;
-* Escala 5x2;
-* Escala 4x2;
-* Escala 12x36;
-* Turno rotativo;
-* Escala real de 24 dias.
+| Modelo | Tipo | Descrição |
+|---|---|---|
+| `6x3` | ciclo por dias | 6 dias de trabalho e 3 dias de folga |
+| `5x2` | ciclo por dias | 5 dias de trabalho e 2 dias de folga |
+| `4x2` | ciclo por dias | 4 dias de trabalho e 2 dias de folga |
+| `12x36` | ciclo por horas | 12 horas de trabalho e 36 horas de folga |
+| `turno_rotativo_simples` | turno rotativo | sequência rotativa definida manualmente |
+| `escala_real_24_dias` | turno rotativo | modelo de escala real com sequência de 24 dias |
 
 ### Escala real de 24 dias
 
-O projeto também possui uma escala real mais longa, representando uma situação mais próxima do uso prático.
+O projeto também inclui uma escala rotativa baseada em uma sequência real de turnos, usada para validar cenários mais próximos da rotina de trabalho.
 
 ---
 
@@ -255,148 +266,187 @@ O projeto também possui uma escala real mais longa, representando uma situaçã
 
 ### 🔁 Escalas por dias
 
-Exemplo: `6x3`
+A regra considera a diferença entre a data inicial e a data consultada.
 
-```text
-6 dias trabalhando
-3 dias de folga
-Ciclo total: 9 dias
+```python
+ciclo = dias_trabalho + dias_folga
+posicao = dias_passados % ciclo
 ```
 
-O sistema calcula a diferença entre a data inicial e a data consultada, aplica o módulo do ciclo e identifica se a posição pertence ao período de trabalho ou folga.
+Se a posição dentro do ciclo estiver dentro dos dias de trabalho, o status será `Trabalhando`. Caso contrário, será `Folga`.
 
 ### ⏱️ Escalas por horas
 
-Exemplo: `12x36`
+Para escalas como `12x36`, o cálculo considera data e hora.
 
-```text
-12 horas trabalhando
-36 horas de folga
-Ciclo total: 48 horas
+```python
+ciclo = horas_trabalho + horas_folga
+posicao = horas_passadas % ciclo
 ```
 
-Nesse caso, o cálculo considera data e hora, não apenas o dia.
+Se a posição estiver dentro das horas de trabalho, o status será `Trabalhando`. Caso contrário, será `Folga`.
 
 ### 🔄 Turno rotativo
+
+Para turnos rotativos, o sistema percorre uma sequência de turnos.
 
 Exemplo:
 
 ```text
-Manhã -> Manhã -> Tarde -> Tarde -> Noite -> Noite -> Folga -> Folga
+Manhã → Manhã → Tarde → Tarde → Noite → Noite → Folga → Folga
 ```
 
-O sistema usa a posição dentro da sequência para descobrir o turno correspondente à data consultada.
+A posição dentro da sequência define o turno retornado.
 
 ### 🧱 Montagem por blocos
 
-Além de digitar a sequência manualmente, o usuário pode montar blocos como:
-
-```text
-Manhã x2
-Tarde x2
-Noite x2
-Folga x2
-```
-
-Resultado:
-
-```text
-Manhã -> Manhã -> Tarde -> Tarde -> Noite -> Noite -> Folga -> Folga
-```
+O projeto também suporta montagem de turnos por blocos, reduzindo repetição na criação de sequências maiores.
 
 ---
 
 ## 🖥️ Menu principal da CLI
 
-A aplicação roda no terminal e apresenta um menu semelhante a:
+Exemplo da interface principal no terminal:
 
 ```text
-1 - Consultar status em uma data
-2 - Visualizar próximos dias/períodos
-3 - Alterar escala atual
-4 - Usar escala salva
+==== SIMULADOR DE ESCALAS ====
+Escala atual: 6x3 dias
+
+1 - Consultar status
+2 - Ver próximos dias/períodos
+3 - Alterar escala
+4 - Ver escalas salvas
 5 - Cadastrar nova escala
 6 - Editar escala salva
 7 - Excluir escala salva
 8 - Sair
-```
 
-Na v0.9.0, a aplicação também exibe o armazenamento técnico ativo:
-
-```text
-Armazenamento ativo: JSON
-```
-
-ou:
-
-```text
-Armazenamento ativo: PostgreSQL
+Escolha uma opção:
 ```
 
 ---
 
-## 🧱 Arquitetura da v0.9.0
+## ⚡ API inicial v0.11.0
 
-A arquitetura foi organizada para separar responsabilidades.
+A API foi criada com **FastAPI** e permite consumir algumas funcionalidades do simulador por HTTP.
+
+### Endpoints disponíveis
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `GET` | `/health` | Verifica se a API está funcionando |
+| `GET` | `/api/v1/modelos` | Lista modelos de escala disponíveis |
+| `POST` | `/api/v1/simulacao/status` | Consulta o status de uma escala em uma data |
+| `POST` | `/api/v1/simulacao/proximos-dias` | Retorna uma sequência de próximos dias da escala |
+
+### Executar API localmente
+
+```powershell
+uvicorn api.app:app --reload
+```
+
+Acessar documentação automática:
 
 ```text
-main.py
-  │
-  ▼
-interface.py / validacoes.py
-  │
-  ▼
-armazenamento.py
-  │
-  ▼
-EscalaService
-  │
-  ▼
-EscalaRepository
-  │
-  ├── JsonEscalaRepository
-  │
-  └── PostgresEscalaRepository
-  │
-  ▼
-JSON ou PostgreSQL
+http://127.0.0.1:8000/docs
 ```
+
+Também disponível em:
+
+```text
+http://127.0.0.1:8000/redoc
+```
+
+### Exemplo de requisição
+
+```http
+POST /api/v1/simulacao/status
+```
+
+```json
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "07/07/2026"
+}
+```
+
+Resposta esperada:
+
+```json
+{
+  "modelo_id": "6x3",
+  "modelo_nome": "Escala 6x3",
+  "tipo": "ciclo_dias",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "07/07/2026",
+  "status": "Folga"
+}
+```
+
+### Testes manuais da API
+
+Os exemplos de requisições manuais estão em:
+
+```text
+docs/api_requests.http
+```
+
+Esse arquivo pode ser usado como apoio para testes com:
+
+- Thunder Client;
+- Postman;
+- Insomnia;
+- extensões REST Client.
+
+A documentação completa da API está em:
+
+```text
+docs/API.md
+```
+
+---
+
+## 🧱 Arquitetura
+
+O projeto evoluiu para uma estrutura em camadas, separando responsabilidades e facilitando manutenção.
+
+```mermaid
+flowchart TD
+    A[main.py / CLI] --> B[interface.py]
+    B --> C[armazenamento.py]
+    C --> D[EscalaService]
+    D --> E[EscalaRepository]
+    E --> F[JsonEscalaRepository]
+    E --> G[PostgresEscalaRepository]
+
+    H[api/app.py] --> I[api/routes]
+    I --> J[modelos_escala.py]
+    I --> K[escala.py]
+```
+
+### Ideia principal
+
+- A CLI continua funcionando como interface principal de terminal.
+- A API adiciona uma nova forma de consumir parte das funcionalidades.
+- A lógica de escala permanece separada da camada HTTP.
+- A persistência continua desacoplada por repositories.
 
 ---
 
 ## 🧩 Arquitetura em camadas
 
-### Ideia principal
-
-O projeto separa:
-
-* entrada do usuário;
-* validação;
-* regra de negócio;
-* persistência;
-* modelos de domínio;
-* infraestrutura de banco.
-
-Isso evita que a aplicação fique presa a um único formato de armazenamento.
-
----
-
-## 🧠 Responsabilidade das camadas
-
 | Camada | Responsabilidade |
 |---|---|
-| `main.py` | Controla o fluxo principal da CLI |
-| `interface.py` | Exibe menus, listas e resultados |
-| `validacoes.py` | Lê e valida entradas do usuário |
-| `escala.py` | Calcula status e próximos dias/períodos |
-| `armazenamento.py` | Faz a ponte entre a aplicação e o service |
-| `services/escala_service.py` | Regras de cadastro, edição, exclusão e duplicidade |
-| `repositories/escala_repository.py` | Contrato dos repositories |
-| `repositories/json_escala_repository.py` | Persistência em JSON |
-| `repositories/postgres_escala_repository.py` | Persistência em PostgreSQL |
-| `models/` | Classes de domínio das escalas |
-| `database/` | Conexão, schema e inicialização do PostgreSQL |
-| `config/` | Configurações via variáveis de ambiente |
+| CLI | Interação com o usuário pelo terminal |
+| API | Exposição de funcionalidades via HTTP |
+| Models | Representação das escalas como objetos |
+| Service | Regras de negócio relacionadas às escalas salvas |
+| Repository | Contrato para persistência |
+| JSON Repository | Persistência em arquivo JSON |
+| PostgreSQL Repository | Persistência em banco relacional |
+| Database | Conexão e schema PostgreSQL |
+| Tests | Garantia de comportamento esperado |
 
 ---
 
@@ -405,29 +455,47 @@ Isso evita que a aplicação fique presa a um único formato de armazenamento.
 ```mermaid
 classDiagram
     class EscalaBase {
+        +id
         +nome
         +tipo
         +to_dict()
-        +from_dict()
     }
 
     class EscalaCicloDias {
         +dias_trabalho
         +dias_folga
+        +to_dict()
     }
 
     class EscalaCicloHoras {
         +horas_trabalho
         +horas_folga
+        +to_dict()
     }
 
     class EscalaTurnoRotativo {
         +sequencia_turnos
+        +to_dict()
     }
+
+    class EscalaRepository {
+        +listar()
+        +buscar_por_id()
+        +salvar()
+        +editar()
+        +excluir()
+    }
+
+    class JsonEscalaRepository
+    class PostgresEscalaRepository
+    class EscalaService
 
     EscalaBase <|-- EscalaCicloDias
     EscalaBase <|-- EscalaCicloHoras
     EscalaBase <|-- EscalaTurnoRotativo
+    EscalaRepository <|-- JsonEscalaRepository
+    EscalaRepository <|-- PostgresEscalaRepository
+    EscalaService --> EscalaRepository
 ```
 
 ---
@@ -436,6 +504,19 @@ classDiagram
 
 ```text
 simulador-escala-trabalho/
+├── .github/
+│   └── workflows/
+│       └── tests.yml
+│
+├── api/
+│   ├── __init__.py
+│   ├── app.py
+│   └── routes/
+│       ├── __init__.py
+│       ├── health.py
+│       ├── modelos.py
+│       └── simulacao.py
+│
 ├── assets/
 │   └── banner.png
 │
@@ -452,8 +533,14 @@ simulador-escala-trabalho/
 │   └── schema_postgresql.sql
 │
 ├── docs/
+│   ├── API.md
+│   ├── api_requests.http
 │   └── demo/
 │       ├── index.html
+│       ├── simulador.html
+│       ├── documentacao.html
+│       ├── sobre.html
+│       ├── termos.html
 │       ├── script.js
 │       └── style.css
 │
@@ -475,7 +562,10 @@ simulador-escala-trabalho/
 │   └── escala_service_factory.py
 │
 ├── tests/
-│   ├── test_armazenamento_repository.py
+│   ├── test_api_health.py
+│   ├── test_api_modelos.py
+│   ├── test_api_simulacao.py
+│   ├── test_api_proximos_dias.py
 │   ├── test_postgres_escala_repository.py
 │   └── demais testes do projeto
 │
@@ -494,339 +584,159 @@ simulador-escala-trabalho/
 
 ## 💾 Persistência JSON e PostgreSQL
 
-Na v0.9.0, a aplicação pode usar dois tipos de persistência.
+O projeto possui duas formas de persistência:
+
+| Tipo | Status | Uso |
+|---|---|---|
+| JSON | Padrão | Execução simples, testes e fallback |
+| PostgreSQL | Funcional | Persistência relacional configurável |
 
 ### JSON
 
-É o padrão quando nenhuma configuração adicional é definida.
+O JSON continua sendo o padrão do projeto.
 
-```text
-ESCALA_REPOSITORY não configurado
-ou
-ESCALA_REPOSITORY=json
-```
+Isso permite executar o sistema sem precisar configurar banco de dados.
 
-Nesse modo, os dados são salvos em:
-
-```text
-data/escalas.json
+```powershell
+python main.py
 ```
 
 ### PostgreSQL
 
-É ativado por variável de ambiente:
+O PostgreSQL pode ser usado configurando variáveis de ambiente.
 
-```text
-ESCALA_REPOSITORY=postgres
+```powershell
+$env:ESCALA_REPOSITORY="postgres"
 ```
 
-Nesse modo, a aplicação usa o banco PostgreSQL configurado pelas variáveis:
-
-```text
-POSTGRES_HOST
-POSTGRES_PORT
-POSTGRES_DB
-POSTGRES_USER
-POSTGRES_PASSWORD
-```
-
----
-
-## 💾 Schema atual em JSON
-
-### Formato geral
-
-```json
-[
-    {
-        "nome": "Escala 6x3",
-        "tipo": "ciclo_dias",
-        "dias_trabalho": 6,
-        "dias_folga": 3
-    }
-]
-```
-
-### Exemplo de escala por dias
-
-```json
-{
-    "nome": "Escala 6x3",
-    "tipo": "ciclo_dias",
-    "dias_trabalho": 6,
-    "dias_folga": 3
-}
-```
-
-### Exemplo de escala por horas
-
-```json
-{
-    "nome": "Escala 12x36",
-    "tipo": "ciclo_horas",
-    "horas_trabalho": 12,
-    "horas_folga": 36
-}
-```
-
-### Exemplo de turno rotativo
-
-```json
-{
-    "nome": "Turno rotativo padrão",
-    "tipo": "turno_rotativo",
-    "sequencia_turnos": [
-        "Manhã",
-        "Tarde",
-        "Noite",
-        "Folga"
-    ]
-}
-```
+A aplicação utiliza o repository correspondente de acordo com a configuração técnica definida.
 
 ---
 
 ## 🐘 Schema PostgreSQL
 
-Na v0.9.0, o schema PostgreSQL deixou de ser apenas planejado e passou a ser executável pelo projeto.
+O schema atual usa uma tabela principal e tabelas específicas por tipo de escala.
 
 ### Tabelas principais
 
-```text
-escalas
-escalas_ciclo_dias
-escalas_ciclo_horas
-escalas_turnos
-```
+| Tabela | Responsabilidade |
+|---|---|
+| `escalas` | Guarda dados comuns da escala |
+| `escalas_ciclo_dias` | Guarda dados de escalas por dias |
+| `escalas_ciclo_horas` | Guarda dados de escalas por horas |
+| `escalas_turnos` | Guarda a sequência dos turnos rotativos |
 
 ### Visão geral
 
 ```mermaid
 erDiagram
-    ESCALAS ||--o| ESCALAS_CICLO_DIAS : possui
-    ESCALAS ||--o| ESCALAS_CICLO_HORAS : possui
-    ESCALAS ||--o{ ESCALAS_TURNOS : possui
+    escalas ||--o| escalas_ciclo_dias : possui
+    escalas ||--o| escalas_ciclo_horas : possui
+    escalas ||--o{ escalas_turnos : possui
 
-    ESCALAS {
+    escalas {
         int id PK
-        varchar nome
-        varchar tipo
-        timestamp criado_em
-        timestamp atualizado_em
+        string nome
+        string tipo
+        datetime criado_em
+        datetime atualizado_em
     }
 
-    ESCALAS_CICLO_DIAS {
-        int escala_id PK, FK
+    escalas_ciclo_dias {
+        int id PK
+        int escala_id FK
         int dias_trabalho
         int dias_folga
     }
 
-    ESCALAS_CICLO_HORAS {
-        int escala_id PK, FK
+    escalas_ciclo_horas {
+        int id PK
+        int escala_id FK
         int horas_trabalho
         int horas_folga
     }
 
-    ESCALAS_TURNOS {
+    escalas_turnos {
         int id PK
         int escala_id FK
         int ordem
-        varchar turno
+        string turno
     }
-```
-
-### Tabela `escalas`
-
-Armazena os dados principais de toda escala.
-
-```text
-id
-nome
-tipo
-criado_em
-atualizado_em
-```
-
-### Tabela `escalas_ciclo_dias`
-
-Armazena os dados específicos de escalas por dias.
-
-```text
-escala_id
-dias_trabalho
-dias_folga
-```
-
-### Tabela `escalas_ciclo_horas`
-
-Armazena os dados específicos de escalas por horas.
-
-```text
-escala_id
-horas_trabalho
-horas_folga
-```
-
-### Tabela `escalas_turnos`
-
-Armazena a sequência de turnos das escalas rotativas.
-
-```text
-id
-escala_id
-ordem
-turno
-```
-
----
-
-## 🧭 Fluxogramas
-
-### Fluxo de uso da aplicação
-
-```mermaid
-flowchart TD
-    A[Iniciar aplicação] --> B[Carregar escala manual padrão]
-    B --> C[Exibir armazenamento ativo]
-    C --> D[Exibir menu principal]
-
-    D --> E{Opção escolhida}
-
-    E -->|1| F[Consultar status]
-    E -->|2| G[Visualizar próximos dias ou períodos]
-    E -->|3| H[Alterar escala atual]
-    E -->|4| I[Usar escala salva]
-    E -->|5| J[Cadastrar nova escala]
-    E -->|6| K[Editar escala salva]
-    E -->|7| L[Excluir escala salva]
-    E -->|8| M[Sair]
-
-    F --> D
-    G --> D
-    H --> D
-    I --> D
-    J --> D
-    K --> D
-    L --> D
-```
-
-### Fluxo interno de persistência
-
-```mermaid
-flowchart TD
-    A[main.py] --> B[armazenamento.py]
-    B --> C{ESCALA_REPOSITORY}
-
-    C -->|Não configurado| D[JSON padrão]
-    C -->|json| D[JsonEscalaRepository]
-    C -->|postgres| E[PostgresEscalaRepository]
-
-    D --> F[data/escalas.json]
-    E --> G[(PostgreSQL)]
-
-    B --> H[EscalaService]
-    H --> I[Regras de negócio]
-    I --> D
-    I --> E
-```
-
-### Fluxo de cadastro no PostgreSQL
-
-```mermaid
-flowchart TD
-    A[Usuário cadastra escala] --> B[main.py]
-    B --> C[armazenamento.py]
-    C --> D[EscalaService]
-    D --> E{Valida duplicidade}
-
-    E -->|Nome duplicado| F[Retorna nome_duplicado]
-    E -->|Configuração duplicada| G[Retorna configuracao_duplicada]
-    E -->|Válido| H[PostgresEscalaRepository]
-
-    H --> I[INSERT em escalas]
-    I --> J{Tipo da escala}
-
-    J -->|ciclo_dias| K[INSERT em escalas_ciclo_dias]
-    J -->|ciclo_horas| L[INSERT em escalas_ciclo_horas]
-    J -->|turno_rotativo| M[INSERT em escalas_turnos]
-
-    K --> N[Commit]
-    L --> N[Commit]
-    M --> N[Commit]
-    N --> O[Retorna sucesso]
 ```
 
 ---
 
 ## 🌐 Demo interativa
 
-O projeto possui uma demo web em:
-
-```text
-docs/demo/
-```
-
-A demo serve para apresentação visual do projeto no GitHub Pages.
-
-A versão CLI continua sendo a aplicação principal, onde estão as regras mais completas do sistema.
-
-Acesse:
+A demo web está disponível em:
 
 ```text
 https://dinox75.github.io/simulador-escala-trabalho/demo/
 ```
 
+A demo possui páginas separadas para:
+
+- início;
+- simulador;
+- documentação;
+- sobre;
+- termos.
+
+> Observação: a demo web atual é uma apresentação interativa do projeto e ainda não está conectada diretamente à API FastAPI.
+
 ---
 
 ## 🧪 Testes automatizados
 
-O projeto utiliza `pytest`.
+O projeto possui testes automatizados com `pytest` cobrindo:
 
-A v0.9.0 inclui testes para:
-
-* regras de cálculo;
-* validações;
-* armazenamento;
-* modelos;
-* services;
-* repositories;
-* JSON;
-* PostgreSQL;
-* seleção técnica de armazenamento.
+- lógica de escalas;
+- validações;
+- models;
+- factories;
+- repositories;
+- services;
+- armazenamento;
+- PostgreSQL repository;
+- API FastAPI.
 
 ### Rodar todos os testes
 
-```bash
-pytest
+```powershell
+python -m pytest
+```
+
+### Rodar testes da API
+
+```powershell
+python -m pytest tests/test_api_health.py tests/test_api_modelos.py tests/test_api_simulacao.py tests/test_api_proximos_dias.py
 ```
 
 ### Rodar testes do PostgreSQL
 
-```bash
+```powershell
 python -m pytest tests/test_postgres_escala_repository.py
-```
-
-### Rodar testes da seleção de armazenamento
-
-```bash
-python -m pytest tests/test_armazenamento_repository.py
 ```
 
 ### Observação sobre PostgreSQL nos testes
 
-Os testes do PostgreSQL foram preparados para serem seguros.
+Os testes do PostgreSQL podem ser pulados automaticamente quando o ambiente de banco não estiver configurado.
 
-Se o PostgreSQL estiver disponível e configurado, eles rodam.
-
-Se o PostgreSQL não estiver disponível, podem ser ignorados sem quebrar o restante do projeto.
+Isso evita falhas em ambientes onde não existe conexão local com PostgreSQL.
 
 ---
 
 ## ⚙️ GitHub Actions
 
-O projeto pode ser validado automaticamente com GitHub Actions usando os testes do `pytest`.
+O projeto utiliza GitHub Actions para executar a suíte de testes automaticamente.
 
-A execução padrão pode validar o fluxo em JSON, sem exigir PostgreSQL local no ambiente de CI.
+O workflow executa os testes usando JSON como persistência padrão:
+
+```yaml
+ESCALA_REPOSITORY: json
+```
+
+Isso mantém o pipeline mais estável e evita dependência obrigatória de banco PostgreSQL no ambiente de CI.
 
 ---
 
@@ -834,27 +744,33 @@ A execução padrão pode validar o fluxo em JSON, sem exigir PostgreSQL local n
 
 ### 1. Clonar o repositório
 
-```bash
+```powershell
 git clone https://github.com/Dinox75/simulador-escala-trabalho.git
 ```
 
 ### 2. Entrar na pasta
 
-```bash
+```powershell
 cd simulador-escala-trabalho
 ```
 
 ### 3. Criar ambiente virtual
 
-```bash
+```powershell
 python -m venv venv
 ```
 
 ### 4. Ativar ambiente virtual
 
-No Windows:
+No Windows PowerShell:
 
-```bash
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+No Windows CMD:
+
+```cmd
 venv\Scripts\activate
 ```
 
@@ -866,152 +782,69 @@ source venv/bin/activate
 
 ### 5. Instalar dependências
 
-```bash
+```powershell
 pip install -r requirements.txt
 ```
 
-### 6. Executar aplicação com JSON
-
-JSON é o modo padrão.
-
-```bash
-python main.py
-```
-
-Também é possível forçar explicitamente:
-
-No PowerShell:
-
-```powershell
-$env:ESCALA_REPOSITORY="json"
-python main.py
-```
-
-### 7. Executar aplicação com PostgreSQL
-
-Antes, configure as variáveis de ambiente.
-
-No PowerShell:
-
-```powershell
-$env:POSTGRES_USER="postgres"
-$env:POSTGRES_PASSWORD="SUA_SENHA_AQUI"
-$env:POSTGRES_DB="simulador_escala"
-$env:POSTGRES_HOST="127.0.0.1"
-$env:POSTGRES_PORT="5432"
-$env:ESCALA_REPOSITORY="postgres"
-```
-
-Depois execute:
+### 6. Executar aplicação no terminal
 
 ```powershell
 python main.py
 ```
 
-A aplicação deve exibir:
+### 7. Executar API local
+
+```powershell
+uvicorn api.app:app --reload
+```
+
+Depois acesse:
 
 ```text
-Armazenamento ativo: PostgreSQL
+http://127.0.0.1:8000/docs
 ```
 
 ### 8. Executar testes
 
-```bash
-pytest
+```powershell
+python -m pytest
 ```
 
 ---
 
 ## 🐘 Como preparar o PostgreSQL
 
-### 1. Instalar PostgreSQL
+### 1. Criar o banco
 
-Instale o PostgreSQL localmente e garanta que o `psql` esteja disponível no terminal.
-
-### 2. Entrar no PostgreSQL
-
-```powershell
-psql -U postgres -h 127.0.0.1 -p 5432 -d postgres
-```
-
-### 3. Criar o banco
-
-Dentro do `psql`:
+No PostgreSQL, crie o banco:
 
 ```sql
 CREATE DATABASE simulador_escala;
 ```
 
-Sair:
+### 2. Configurar variáveis de ambiente
 
-```sql
-\q
-```
-
-### 4. Configurar variáveis de ambiente
-
-No PowerShell:
+No PowerShell, configure as variáveis conforme seu ambiente local:
 
 ```powershell
+$env:ESCALA_REPOSITORY="postgres"
+$env:POSTGRES_DB="simulador_escala"
 $env:POSTGRES_USER="postgres"
 $env:POSTGRES_PASSWORD="SUA_SENHA_AQUI"
-$env:POSTGRES_DB="simulador_escala"
-$env:POSTGRES_HOST="127.0.0.1"
+$env:POSTGRES_HOST="localhost"
 $env:POSTGRES_PORT="5432"
 ```
 
-### 5. Inicializar as tabelas
+### 3. Inicializar tabelas
 
 ```powershell
 python -m database.inicializar_postgres
 ```
 
-Resultado esperado:
-
-```text
-Banco PostgreSQL inicializado com sucesso.
-```
-
-### 6. Conferir tabelas no banco
+### 4. Executar aplicação usando PostgreSQL
 
 ```powershell
-psql -U postgres -h 127.0.0.1 -p 5432 -d simulador_escala
-```
-
-Dentro do `psql`:
-
-```sql
-\dt
-```
-
-Consultar escalas:
-
-```sql
-SELECT * FROM escalas;
-```
-
-Consultar escalas por dias:
-
-```sql
-SELECT * FROM escalas_ciclo_dias;
-```
-
-Consultar escalas por horas:
-
-```sql
-SELECT * FROM escalas_ciclo_horas;
-```
-
-Consultar turnos rotativos:
-
-```sql
-SELECT * FROM escalas_turnos ORDER BY escala_id, ordem;
-```
-
-Sair:
-
-```sql
-\q
+python main.py
 ```
 
 ---
@@ -1021,270 +854,194 @@ Sair:
 ### JSON
 
 ```json
-[
-    {
-        "nome": "Escala 6x3",
-        "tipo": "ciclo_dias",
-        "dias_trabalho": 6,
-        "dias_folga": 3
-    },
-    {
-        "nome": "Escala 12x36",
-        "tipo": "ciclo_horas",
-        "horas_trabalho": 12,
-        "horas_folga": 36
-    },
-    {
-        "nome": "Turno rotativo padrão",
-        "tipo": "turno_rotativo",
-        "sequencia_turnos": [
-            "Manhã",
-            "Tarde",
-            "Noite",
-            "Folga"
-        ]
-    }
-]
+{
+  "id": 1,
+  "nome": "Escala 6x3",
+  "tipo": "ciclo_dias",
+  "dias_trabalho": 6,
+  "dias_folga": 3
+}
 ```
 
 ### PostgreSQL
 
-Tabela `escalas`:
+Exemplo de consulta:
 
-```text
-id | nome                    | tipo
-1  | Escala 6x3              | ciclo_dias
-2  | Escala 12x36            | ciclo_horas
-3  | Turno rotativo padrão   | turno_rotativo
-```
-
-Tabela `escalas_ciclo_dias`:
-
-```text
-escala_id | dias_trabalho | dias_folga
-1         | 6              | 3
-```
-
-Tabela `escalas_ciclo_horas`:
-
-```text
-escala_id | horas_trabalho | horas_folga
-2         | 12              | 36
-```
-
-Tabela `escalas_turnos`:
-
-```text
-escala_id | ordem | turno
-3         | 1     | Manhã
-3         | 2     | Tarde
-3         | 3     | Noite
-3         | 4     | Folga
+```sql
+SELECT
+    e.id,
+    e.nome,
+    e.tipo,
+    d.dias_trabalho,
+    d.dias_folga,
+    h.horas_trabalho,
+    h.horas_folga
+FROM escalas e
+LEFT JOIN escalas_ciclo_dias d
+    ON e.id = d.escala_id
+LEFT JOIN escalas_ciclo_horas h
+    ON e.id = h.escala_id
+ORDER BY e.id;
 ```
 
 ---
 
 ## 🏢 Visão de produto
 
-A v0.9.0 aproxima o projeto de uma aplicação real.
-
-Com PostgreSQL funcionando, o sistema passa a ter uma base mais preparada para recursos como:
-
-* login;
-* cadastro de usuários;
-* perfis;
-* histórico individual;
-* área de colaborador;
-* área de empresa;
-* escalas vinculadas a pessoas;
-* consultas por período;
-* painel web;
-* API.
+O projeto tem potencial para evoluir para uma solução mais completa de gestão e consulta de escalas.
 
 ### 👤 Área do colaborador
 
-Possíveis recursos futuros:
+Possíveis funcionalidades futuras:
 
-* visualizar escala pessoal;
-* consultar folgas futuras;
-* receber alertas;
-* salvar preferências;
-* acompanhar histórico.
+- consultar escala individual;
+- visualizar próximos turnos;
+- acompanhar folgas;
+- receber notificações;
+- acessar calendário pessoal.
 
 ### 🏭 Área da empresa
 
-Possíveis recursos futuros:
+Possíveis funcionalidades futuras:
 
-* cadastrar colaboradores;
-* cadastrar múltiplas escalas;
-* atribuir escala por funcionário;
-* visualizar equipes;
-* organizar turnos;
-* gerar relatórios.
+- cadastrar colaboradores;
+- vincular colaboradores a escalas;
+- gerenciar escalas por equipe;
+- consultar cobertura de turnos;
+- exportar relatórios.
 
 ---
 
 ## 🗺️ Roadmap
 
-### Próximas versões
+### Versões recentes
 
-```text
-v0.10.0
-- Site profissional
-- Documentação separada
-- Melhor apresentação da demo
-- Melhor organização visual do projeto
+| Versão | Entrega principal |
+|---|---|
+| `v0.9.0` | PostgreSQL funcional |
+| `v0.10.0` | Demo web profissional |
+| `v0.11.0` | API inicial com FastAPI |
 
-v1.0.0
-- Sistema oficial com login
-- Cadastro de usuários
-- Perfis
-- Associação de escalas a usuários
-- Base mais próxima de produto real
-```
+### Próximas versões sugeridas
+
+| Versão | Objetivo |
+|---|---|
+| `v0.12.0` | API com escalas salvas/repository |
+| `v0.13.0` | Integração frontend + API |
+| `v0.14.0` | Usuários e login |
+| `v1.0.0` | Primeira versão completa do sistema |
 
 ### Melhorias técnicas planejadas
 
-* Criar camada de API.
-* Criar interface web com backend.
-* Melhorar tratamento de erros de banco.
-* Adicionar migrations versionadas.
-* Separar presets de escalas dos modelos de domínio.
-* Criar seeds para dados iniciais.
-* Criar testes de integração mais completos.
-* Melhorar suporte a ambiente de produção.
+- Evoluir a API para usar escalas salvas.
+- Integrar frontend com API.
+- Criar schemas de request/response mais detalhados.
+- Separar camada de serviços da API.
+- Criar autenticação em versão futura.
+- Preparar deploy da API.
+- Evoluir testes de integração.
 
 ### Melhorias de produto planejadas
 
-* Cadastro de colaborador.
-* Cadastro de empresa.
-* Login.
-* Painel individual.
-* Painel administrativo.
-* Relatórios.
-* Calendário visual.
-* Exportação de escala.
-* Notificações.
+- Área do colaborador.
+- Área da empresa.
+- Associação de escalas a colaboradores.
+- Calendário mais completo.
+- Relatórios.
+- Exportação de dados.
+- Notificações.
 
 ---
 
 ## 🧭 Linha de evolução técnica
 
-```text
-Funções simples
-   ↓
-Separação em arquivos
-   ↓
-Validações
-   ↓
-Persistência JSON
-   ↓
-Modelos predefinidos
-   ↓
-Turno rotativo
-   ↓
-Demo web
-   ↓
-POO
-   ↓
-Service
-   ↓
-Repository
-   ↓
-PostgreSQL
-   ↓
-Futura API
-   ↓
-Futuro sistema com login
-```
+| Fase | Aprendizado aplicado |
+|---|---|
+| Simulador inicial | Funções, datas e lógica condicional |
+| Persistência JSON | Leitura e escrita de arquivos |
+| Modelos predefinidos | Organização de regras reutilizáveis |
+| POO | Classes e responsabilidades |
+| Service | Separação de regra de negócio |
+| Repository | Desacoplamento da persistência |
+| PostgreSQL | Banco relacional e SQL |
+| Demo web | Apresentação visual e portfólio |
+| API | Endpoints HTTP com FastAPI |
+| Testes | Pytest e validação automatizada |
+| GitHub Actions | Integração contínua |
 
 ---
 
 ## 🧠 Aprendizados aplicados
 
-Este projeto aplica conceitos importantes de desenvolvimento de software:
+Durante a evolução do projeto foram praticados conceitos como:
 
-* funções;
-* estruturas condicionais;
-* loops;
-* listas;
-* dicionários;
-* manipulação de datas;
-* validação de entrada;
-* arquivos JSON;
-* Programação Orientada a Objetos;
-* herança;
-* métodos de conversão;
-* arquitetura em camadas;
-* padrão repository;
-* camada service;
-* banco de dados PostgreSQL;
-* SQL;
-* variáveis de ambiente;
-* testes automatizados;
-* versionamento com Git;
-* documentação técnica.
+- manipulação de datas;
+- modularização;
+- validação de entrada;
+- Programação Orientada a Objetos;
+- camada de service;
+- repository pattern;
+- persistência em JSON;
+- integração com PostgreSQL;
+- criação de API com FastAPI;
+- testes automatizados com Pytest;
+- documentação técnica;
+- versionamento com Git e GitHub;
+- GitHub Actions.
 
 ---
 
 ## 📚 Tecnologias usadas
 
-* Python;
-* Pytest;
-* JSON;
-* PostgreSQL;
-* psycopg2;
-* HTML;
-* CSS;
-* JavaScript;
-* Git;
-* GitHub;
-* GitHub Pages.
-
----
-
-## 📷 Demonstração visual
-
-A demo web está disponível em:
-
-```text
-https://dinox75.github.io/simulador-escala-trabalho/demo/
-```
-
-Ela apresenta visualmente o conceito do simulador e serve como apoio para divulgação do projeto.
+- Python;
+- FastAPI;
+- Uvicorn;
+- Pytest;
+- HTTPX;
+- JSON;
+- PostgreSQL;
+- psycopg2;
+- HTML;
+- CSS;
+- JavaScript;
+- Git;
+- GitHub;
+- GitHub Actions;
+- GitHub Pages.
 
 ---
 
 ## ⚠️ Limitações atuais
 
-Mesmo com PostgreSQL funcional, a aplicação ainda possui algumas limitações:
+Mesmo com a API inicial implementada, o projeto ainda possui limitações importantes:
 
-* ainda é uma aplicação principal de terminal;
-* ainda não possui login;
-* ainda não possui cadastro de usuários;
-* ainda não possui painel web conectado ao banco;
-* ainda não possui API;
-* ainda não possui migrations versionadas;
-* a escolha de JSON/PostgreSQL é técnica, feita por variável de ambiente;
-* a demo web ainda não está conectada ao backend Python;
-* ainda não existe vínculo entre escala e usuário específico.
+- a API ainda é local e não está em deploy;
+- a demo web ainda não consome a API;
+- a API ainda não trabalha diretamente com escalas salvas via repository;
+- ainda não possui login;
+- ainda não possui cadastro de usuários;
+- ainda não existe vínculo entre escala e colaborador;
+- ainda não possui painel web completo;
+- ainda não possui migrations versionadas;
+- a escolha de JSON/PostgreSQL ainda é técnica, feita por variável de ambiente.
 
 ---
 
-## ✅ Status da v0.9.0
+## ✅ Status da v0.11.0
 
-A `v0.9.0` está funcional e estável para o objetivo da versão.
+A `v0.11.0` está funcional para o objetivo da versão.
 
 Entregas confirmadas:
 
-* JSON funcionando como padrão.
-* PostgreSQL funcionando como persistência alternativa.
-* Aplicação real salvando no PostgreSQL.
-* Aplicação real listando dados do PostgreSQL.
-* Aplicação real excluindo dados do PostgreSQL.
-* Testes automatizados passando.
-* Senha do banco mantida fora do código.
-* Arquitetura preparada para evolução.
+- CLI continua funcionando.
+- JSON continua como persistência padrão.
+- PostgreSQL permanece funcional como alternativa.
+- API FastAPI criada.
+- Endpoints principais da API funcionando.
+- Testes automatizados passando.
+- Testes manuais realizados com Thunder Client.
+- Documentação da API criada.
+- Requisições manuais documentadas.
 
 ---
 
@@ -1309,3 +1066,9 @@ LinkedIn:
 ```text
 https://www.linkedin.com/in/vinicius-limajr/
 ```
+
+---
+
+<p align="center">
+  <strong>Projeto em evolução contínua 🚀</strong>
+</p>
