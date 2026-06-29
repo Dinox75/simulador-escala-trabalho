@@ -1,0 +1,119 @@
+### Health Check
+GET http://127.0.0.1:8000/health
+
+
+### Listar modelos
+GET http://127.0.0.1:8000/api/v1/modelos
+
+
+### Simulação 6x3 - Trabalhando
+POST http://127.0.0.1:8000/api/v1/simulacao/status
+Content-Type: application/json
+
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "01/07/2026"
+}
+
+
+### Simulação 6x3 - Folga
+POST http://127.0.0.1:8000/api/v1/simulacao/status
+Content-Type: application/json
+
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "07/07/2026"
+}
+
+
+### Simulação 12x36 - Trabalhando
+POST http://127.0.0.1:8000/api/v1/simulacao/status
+Content-Type: application/json
+
+{
+  "modelo_id": "12x36",
+  "data_inicio": "01/07/2026",
+  "hora_inicio": "07:00",
+  "data_consulta": "01/07/2026",
+  "hora_consulta": "10:00"
+}
+
+
+### Erro - Modelo inexistente
+POST http://127.0.0.1:8000/api/v1/simulacao/status
+Content-Type: application/json
+
+{
+  "modelo_id": "modelo_inexistente",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "01/07/2026"
+}
+
+
+### Erro - Data inválida
+POST http://127.0.0.1:8000/api/v1/simulacao/status
+Content-Type: application/json
+
+{
+  "modelo_id": "6x3",
+  "data_inicio": "2026-07-01",
+  "data_consulta": "01/07/2026"
+}
+
+
+### Erro - 12x36 sem hora
+POST http://127.0.0.1:8000/api/v1/simulacao/status
+Content-Type: application/json
+
+{
+  "modelo_id": "12x36",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "01/07/2026"
+}
+
+### Próximos dias - Escala 6x3
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 10
+}
+
+
+### Próximos dias - Escala 12x36
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "12x36",
+  "data_inicio": "01/07/2026",
+  "hora_inicio": "07:00",
+  "hora_consulta": "10:00",
+  "quantidade_dias": 2
+}
+
+
+### Erro - Próximos dias com modelo inexistente
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "modelo_inexistente",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 10
+}
+
+
+### Erro - Próximos dias com quantidade acima do limite
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 100
+}
