@@ -328,82 +328,73 @@ Escolha uma opção:
 
 ## ⚡ API inicial v0.11.0
 
-A API foi criada com **FastAPI** e permite consumir algumas funcionalidades do simulador por HTTP.
+## Versão atual
 
-### Endpoints disponíveis
+```text
+v0.12.0 - API com CRUD de escalas salvas
+```
 
-| Método | Endpoint | Descrição |
-|---|---|---|
-| `GET` | `/health` | Verifica se a API está funcionando |
-| `GET` | `/api/v1/modelos` | Lista modelos de escala disponíveis |
-| `POST` | `/api/v1/simulacao/status` | Consulta o status de uma escala em uma data |
-| `POST` | `/api/v1/simulacao/proximos-dias` | Retorna uma sequência de próximos dias da escala |
+A versão `v0.12.0` adiciona um CRUD completo de escalas salvas pela API, permitindo listar, criar, buscar, editar e excluir escalas por meio de endpoints HTTP.
 
-### Executar API localmente
+Essa evolução transforma a API em uma camada mais completa do projeto, reaproveitando a lógica existente de serviços e repositories.
+
+---
+
+## API
+
+A API foi desenvolvida com **FastAPI** e permite consumir funcionalidades do simulador por meio de requisições HTTP.
+
+### Executar a API localmente
 
 ```powershell
 uvicorn api.app:app --reload
 ```
 
-Acessar documentação automática:
+Depois acesse:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-Também disponível em:
+### Endpoints principais
 
-```text
-http://127.0.0.1:8000/redoc
-```
+| Método   | Endpoint                          | Descrição                                   |
+| -------- | --------------------------------- | ------------------------------------------- |
+| `GET`    | `/health`                         | Verifica se a API está funcionando          |
+| `GET`    | `/api/v1/modelos`                 | Lista modelos de escala disponíveis         |
+| `POST`   | `/api/v1/simulacao/status`        | Consulta o status de uma escala em uma data |
+| `POST`   | `/api/v1/simulacao/proximos-dias` | Retorna próximos dias da escala             |
+| `GET`    | `/api/v1/escalas`                 | Lista escalas salvas                        |
+| `POST`   | `/api/v1/escalas`                 | Cria uma nova escala salva                  |
+| `GET`    | `/api/v1/escalas/{nome}`          | Busca uma escala salva pelo nome            |
+| `PUT`    | `/api/v1/escalas/{nome}`          | Edita uma escala salva pelo nome            |
+| `DELETE` | `/api/v1/escalas/{nome}`          | Exclui uma escala salva pelo nome           |
 
-### Exemplo de requisição
+---
 
-```http
-POST /api/v1/simulacao/status
-```
+## Evolução recente
 
-```json
-{
-  "modelo_id": "6x3",
-  "data_inicio": "01/07/2026",
-  "data_consulta": "07/07/2026"
-}
-```
+### v0.12.0
 
-Resposta esperada:
+* CRUD completo de escalas salvas pela API.
+* Reaproveitamento da camada de serviço.
+* Reaproveitamento da camada de repository.
+* Testes automatizados para os novos endpoints.
+* Documentação atualizada da API.
+* Exemplos manuais em `docs/api_requests.http`.
 
-```json
-{
-  "modelo_id": "6x3",
-  "modelo_nome": "Escala 6x3",
-  "tipo": "ciclo_dias",
-  "data_inicio": "01/07/2026",
-  "data_consulta": "07/07/2026",
-  "status": "Folga"
-}
-```
+### v0.11.0
 
-### Testes manuais da API
+* API inicial com FastAPI.
+* Endpoints de health check, modelos, status e próximos dias.
 
-Os exemplos de requisições manuais estão em:
+### v0.10.0
 
-```text
-docs/api_requests.http
-```
+* Demo web profissional separada em páginas.
 
-Esse arquivo pode ser usado como apoio para testes com:
+### v0.9.0
 
-- Thunder Client;
-- Postman;
-- Insomnia;
-- extensões REST Client.
-
-A documentação completa da API está em:
-
-```text
-docs/API.md
-```
+* Suporte funcional a PostgreSQL.
 
 ---
 
