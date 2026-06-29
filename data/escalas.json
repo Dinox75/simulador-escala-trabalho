@@ -1,15 +1,15 @@
 [
     {
         "nome": "Escala 6x3",
-        "tipo": "ciclo_dias",
         "dias_trabalho": 6,
-        "dias_folga": 3
+        "dias_folga": 3,
+        "tipo": "ciclo_dias"
     },
     {
         "nome": "Escala Administrativa 5x2",
-        "tipo": "ciclo_dias",
         "dias_trabalho": 5,
-        "dias_folga": 2
+        "dias_folga": 2,
+        "tipo": "ciclo_dias"
     },
     {
         "nome": "Escala 12x36",
@@ -46,39 +46,5 @@
             "Manhã",
             "Folga"
         ]
-    },
-    {
-        "nome": "Escala API Teste Duplicada",
-        "tipo": "ciclo_dias",
-        "dias_trabalho": 9,
-        "dias_folga": 9
-    },
-    {
-        "nome": "Escala API Teste 21x8",
-        "tipo": "ciclo_dias",
-        "dias_trabalho": 21,
-        "dias_folga": 8
-    },
-    {
-        "nome": "Escala API Teste 13x37",
-        "tipo": "ciclo_horas",
-        "horas_trabalho": 13,
-        "horas_folga": 37
-    },
-    {
-        "nome": "Escala API Teste Turno",
-        "tipo": "turno_rotativo",
-        "sequencia_turnos": [
-            "Manhã",
-            "Tarde",
-            "Noite",
-            "Folga"
-        ]
-    },
-    {
-        "nome": "Escala API Editada Manual",
-        "tipo": "ciclo_dias",
-        "dias_trabalho": 23,
-        "dias_folga": 10
     }
 ]

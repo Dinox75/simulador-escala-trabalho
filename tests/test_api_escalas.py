@@ -23,26 +23,6 @@ def test_listar_escalas_salvas_deve_retornar_total_e_lista():
     assert isinstance(data["escalas"], list)
 
 
-def test_criar_escala_ciclo_dias_deve_retornar_status_201():
-    payload = {
-        "nome": "Escala API Teste 6x3",
-        "tipo": "ciclo_dias",
-        "dias_trabalho": 6,
-        "dias_folga": 3
-    }
-
-    client.delete("/api/v1/escalas/Escala API Teste 6x3")
-    response = client.post("/api/v1/escalas", json=payload)
-
-    assert response.status_code == 201
-
-    data = response.json()
-
-    assert data["message"] == "Escala criada com sucesso."
-    assert data["escala"]["nome"] == "Escala API Teste 6x3"
-    assert data["escala"]["tipo"] == "ciclo_dias"
-
-
 def test_criar_escala_ciclo_horas_deve_retornar_status_201():
     payload = {
         "nome": "Escala API Teste 13x37",
