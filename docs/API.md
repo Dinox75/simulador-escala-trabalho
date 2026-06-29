@@ -98,6 +98,86 @@ POST /api/v1/simulacao/status
 
 ---
 
+## Consultar próximos dias da escala
+
+Retorna uma sequência de dias calculados a partir da data inicial da escala.
+
+```http
+POST /api/v1/simulacao/proximos-dias
+Exemplo - Escala 6x3
+Requisição
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 10
+}
+Resposta esperada
+{
+  "modelo_id": "6x3",
+  "modelo_nome": "Escala 6x3",
+  "tipo": "ciclo_dias",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 10,
+  "dias": [
+    {
+      "data": "01/07/2026",
+      "status": "Trabalhando"
+    },
+    {
+      "data": "07/07/2026",
+      "status": "Folga"
+    }
+  ]
+}
+Exemplo - Escala 12x36
+
+Para escalas por horas, é necessário informar hora_inicio.
+O campo hora_consulta é opcional. Se não for informado, a API usa a mesma hora de início.
+
+Requisição
+{
+  "modelo_id": "12x36",
+  "data_inicio": "01/07/2026",
+  "hora_inicio": "07:00",
+  "hora_consulta": "10:00",
+  "quantidade_dias": 2
+}
+Resposta esperada
+{
+  "modelo_id": "12x36",
+  "modelo_nome": "Escala 12x36",
+  "tipo": "ciclo_horas",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 2,
+  "dias": [
+    {
+      "data": "01/07/2026",
+      "hora_consulta": "10:00",
+      "status": "Trabalhando"
+    }
+  ]
+}
+Limite de dias
+
+O campo quantidade_dias aceita valores de:
+
+mínimo: 1
+máximo: 60
+
+Caso o valor fique fora desse intervalo, a API retorna erro de validação.
+
+
+---
+
+## 3. Rodar testes
+
+Depois de atualizar os arquivos:
+
+```powershell
+python -m pytest
+
+---
+
 ## Exemplo - Escala 6x3
 
 ### Requisição

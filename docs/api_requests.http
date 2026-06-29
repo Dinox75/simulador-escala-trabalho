@@ -72,3 +72,48 @@ Content-Type: application/json
   "data_inicio": "01/07/2026",
   "data_consulta": "01/07/2026"
 }
+
+### Próximos dias - Escala 6x3
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 10
+}
+
+
+### Próximos dias - Escala 12x36
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "12x36",
+  "data_inicio": "01/07/2026",
+  "hora_inicio": "07:00",
+  "hora_consulta": "10:00",
+  "quantidade_dias": 2
+}
+
+
+### Erro - Próximos dias com modelo inexistente
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "modelo_inexistente",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 10
+}
+
+
+### Erro - Próximos dias com quantidade acima do limite
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 100
+}
