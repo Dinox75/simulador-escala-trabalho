@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from escala import calcular_status_por_escala
 from modelos_escala import (
@@ -28,6 +28,14 @@ class ConsultaStatusRequest(BaseModel):
     hora_consulta: str | None = None
 
 
+class ProximosDiasRequest(BaseModel):
+    modelo_id: str
+    data_inicio: str
+    quantidade_dias: int = Field(ge=1, le=60)
+    hora_inicio: str | None = None
+    hora_consulta: str | None = None
+
+
 def obter_modelos_disponiveis():
     return {
         "6x3": criar_modelo_6x3,
@@ -37,6 +45,18 @@ def obter_modelos_disponiveis():
         "turno_rotativo_simples": criar_modelo_turno_rotativo_simples,
         "escala_real_24_dias": criar_modelo_escala_real_24_dias,
     }
+
+
+def obter_escala_por_modelo(modelo_id: str):
+    modelos_disponiveis = obter_modelos_disponiveis()
+
+    if modelo_id not in modelos_disponiveis:
+        raise HTTPException(
+            status_code=404,
+            detail="Modelo de escala não encontrado."
+        )
+
+    return modelos_disponiveis[modelo_id]()
 
 
 def converter_data(data_texto: str):
@@ -61,15 +81,7 @@ def converter_data_hora(data_texto: str, hora_texto: str):
 
 @router.post("/status")
 def consultar_status(payload: ConsultaStatusRequest):
-    modelos_disponiveis = obter_modelos_disponiveis()
-
-    if payload.modelo_id not in modelos_disponiveis:
-        raise HTTPException(
-            status_code=404,
-            detail="Modelo de escala não encontrado."
-        )
-
-    escala = modelos_disponiveis[payload.modelo_id]()
+    escala = obter_escala_por_modelo(payload.modelo_id)
 
     if payload.modelo_id == "12x36":
         if not payload.hora_inicio or not payload.hora_consulta:
@@ -98,4 +110,64 @@ def consultar_status(payload: ConsultaStatusRequest):
         "data_inicio": payload.data_inicio,
         "data_consulta": payload.data_consulta,
         "status": status
+    }
+
+
+@router.post("/proximos-dias")
+def consultar_proximos_dias(payload: ProximosDiasRequest):
+    escala = obter_escala_por_modelo(payload.modelo_id)
+
+    dias = []
+
+    if payload.modelo_id == "12x36":
+        if not payload.hora_inicio:
+            raise HTTPException(
+                status_code=400,
+                detail="Para escala 12x36, informe hora_inicio no formato HH:MM."
+            )
+
+        hora_consulta = payload.hora_consulta or payload.hora_inicio
+
+        data_inicio = converter_data_hora(payload.data_inicio, payload.hora_inicio)
+        data_consulta_base = converter_data_hora(payload.data_inicio, hora_consulta)
+
+        for indice in range(payload.quantidade_dias):
+            data_consulta = data_consulta_base + timedelta(days=indice)
+
+            status = calcular_status_por_escala(
+                escala,
+                data_inicio,
+                data_consulta
+            )
+
+            dias.append({
+                "data": data_consulta.strftime("%d/%m/%Y"),
+                "hora_consulta": data_consulta.strftime("%H:%M"),
+                "status": status
+            })
+
+    else:
+        data_inicio = converter_data(payload.data_inicio)
+
+        for indice in range(payload.quantidade_dias):
+            data_consulta = data_inicio + timedelta(days=indice)
+
+            status = calcular_status_por_escala(
+                escala,
+                data_inicio,
+                data_consulta
+            )
+
+            dias.append({
+                "data": data_consulta.strftime("%d/%m/%Y"),
+                "status": status
+            })
+
+    return {
+        "modelo_id": payload.modelo_id,
+        "modelo_nome": escala["nome"],
+        "tipo": escala["tipo"],
+        "data_inicio": payload.data_inicio,
+        "quantidade_dias": payload.quantidade_dias,
+        "dias": dias
     }
