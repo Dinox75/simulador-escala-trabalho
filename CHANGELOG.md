@@ -1,5 +1,99 @@
 
 
+## [0.12.0] - API com CRUD de escalas salvas
+
+### Adicionado
+
+* Adicionado CRUD de escalas salvas pela API.
+* Adicionado endpoint para listar escalas salvas:
+
+```http
+GET /api/v1/escalas
+```
+
+* Adicionado endpoint para criar uma nova escala salva:
+
+```http
+POST /api/v1/escalas
+```
+
+* Adicionado endpoint para buscar uma escala salva pelo nome:
+
+```http
+GET /api/v1/escalas/{nome}
+```
+
+* Adicionado endpoint para editar uma escala salva pelo nome:
+
+```http
+PUT /api/v1/escalas/{nome}
+```
+
+* Adicionado endpoint para excluir uma escala salva pelo nome:
+
+```http
+DELETE /api/v1/escalas/{nome}
+```
+
+* Adicionados testes automatizados para criação, listagem, busca, edição e exclusão de escalas pela API.
+* Adicionados testes para cenários de erro, incluindo:
+
+  * escala inexistente;
+  * nome duplicado;
+  * configuração duplicada;
+  * tipo de escala inválido;
+  * campos obrigatórios ausentes.
+* Adicionado reaproveitamento do `EscalaService` dentro da API.
+* Adicionado reaproveitamento do repository padrão do projeto para persistência das escalas salvas.
+
+### Alterado
+
+* Atualizada a versão da API para `0.12.0`.
+* Atualizado o endpoint `/health` para retornar a versão `0.12.0`.
+* Atualizada a documentação da API com os endpoints de escalas salvas.
+* Atualizado o README para refletir o novo CRUD da API.
+* Atualizado o arquivo `docs/api_requests.http` com exemplos de requisições dos novos endpoints.
+* Mantida a compatibilidade com a interface de linha de comando.
+* Mantido o JSON como persistência padrão do projeto.
+
+### Melhorado
+
+* Melhorada a integração entre a camada de API e a camada de serviço do projeto.
+* Melhorada a organização da API para futuras integrações com frontend.
+* Melhorada a capacidade do projeto de ser consumido por aplicações externas.
+* Melhorada a cobertura de testes da API.
+* Melhorada a documentação técnica do backend.
+
+### Testado
+
+* Testado endpoint de listagem de escalas salvas.
+* Testado endpoint de criação de escalas.
+* Testado endpoint de busca de escala por nome.
+* Testado endpoint de edição de escala.
+* Testado endpoint de exclusão de escala.
+* Testadas validações de duplicidade.
+* Testadas validações de campos obrigatórios.
+* Testados cenários de erro com status HTTP adequados.
+* Testes automatizados executados com `pytest`.
+* Testes manuais realizados com Thunder Client.
+
+### Observações
+
+* Esta versão não implementa login, usuários ou autenticação.
+* Esta versão não conecta a demo web diretamente à API.
+* Esta versão não realiza deploy da API.
+* O foco da `v0.12.0` é consolidar o CRUD de escalas salvas via HTTP.
+
+### Próximos passos planejados
+
+* Integrar a demo web com a API.
+* Preparar ambiente para consumo da API pelo frontend.
+* Avaliar configuração de CORS.
+* Evoluir a API para uso com frontend real.
+* Criar estrutura de usuários em versão futura.
+* Implementar login em versão futura.
+
+
 ## [0.11.0] - API inicial
 
 ### Adicionado
