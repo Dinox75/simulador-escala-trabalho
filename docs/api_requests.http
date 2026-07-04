@@ -41,6 +41,97 @@ Content-Type: application/json
 }
 
 
+### Próximos dias - Escala 6x3
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 10
+}
+
+
+### Próximos dias - Escala 12x36
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "12x36",
+  "data_inicio": "01/07/2026",
+  "hora_inicio": "07:00",
+  "hora_consulta": "10:00",
+  "quantidade_dias": 2
+}
+
+
+### Listar escalas salvas
+GET http://127.0.0.1:8000/api/v1/escalas
+
+
+### Criar escala salva - Ciclo por dias
+POST http://127.0.0.1:8000/api/v1/escalas
+Content-Type: application/json
+
+{
+  "nome": "Escala API Docs 21x8",
+  "tipo": "ciclo_dias",
+  "dias_trabalho": 21,
+  "dias_folga": 8
+}
+
+
+### Criar escala salva - Ciclo por horas
+POST http://127.0.0.1:8000/api/v1/escalas
+Content-Type: application/json
+
+{
+  "nome": "Escala API Docs 13x37",
+  "tipo": "ciclo_horas",
+  "horas_trabalho": 13,
+  "horas_folga": 37
+}
+
+
+### Criar escala salva - Turno rotativo
+POST http://127.0.0.1:8000/api/v1/escalas
+Content-Type: application/json
+
+{
+  "nome": "Escala API Docs Turnos",
+  "tipo": "turno_rotativo",
+  "sequencia_turnos": ["Manhã", "Tarde", "Noite", "Folga"]
+}
+
+
+### Buscar escala salva pelo nome
+GET http://127.0.0.1:8000/api/v1/escalas/Escala%20API%20Docs%2021x8
+
+
+### Editar escala salva pelo nome
+PUT http://127.0.0.1:8000/api/v1/escalas/Escala%20API%20Docs%2021x8
+Content-Type: application/json
+
+{
+  "nome": "Escala API Docs 22x9",
+  "tipo": "ciclo_dias",
+  "dias_trabalho": 22,
+  "dias_folga": 9
+}
+
+
+### Excluir escala salva pelo nome
+DELETE http://127.0.0.1:8000/api/v1/escalas/Escala%20API%20Docs%2022x9
+
+
+### Excluir escala salva - Ciclo por horas
+DELETE http://127.0.0.1:8000/api/v1/escalas/Escala%20API%20Docs%2013x37
+
+
+### Excluir escala salva - Turno rotativo
+DELETE http://127.0.0.1:8000/api/v1/escalas/Escala%20API%20Docs%20Turnos
+
+
 ### Erro - Modelo inexistente
 POST http://127.0.0.1:8000/api/v1/simulacao/status
 Content-Type: application/json
@@ -73,29 +164,6 @@ Content-Type: application/json
   "data_consulta": "01/07/2026"
 }
 
-### Próximos dias - Escala 6x3
-POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
-Content-Type: application/json
-
-{
-  "modelo_id": "6x3",
-  "data_inicio": "01/07/2026",
-  "quantidade_dias": 10
-}
-
-
-### Próximos dias - Escala 12x36
-POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
-Content-Type: application/json
-
-{
-  "modelo_id": "12x36",
-  "data_inicio": "01/07/2026",
-  "hora_inicio": "07:00",
-  "hora_consulta": "10:00",
-  "quantidade_dias": 2
-}
-
 
 ### Erro - Próximos dias com modelo inexistente
 POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
@@ -117,3 +185,31 @@ Content-Type: application/json
   "data_inicio": "01/07/2026",
   "quantidade_dias": 100
 }
+
+
+### Erro - Criar escala com tipo inválido
+POST http://127.0.0.1:8000/api/v1/escalas
+Content-Type: application/json
+
+{
+  "nome": "Escala Tipo Inválido",
+  "tipo": "tipo_invalido"
+}
+
+
+### Erro - Criar ciclo_dias sem campos obrigatórios
+POST http://127.0.0.1:8000/api/v1/escalas
+Content-Type: application/json
+
+{
+  "nome": "Escala Incompleta",
+  "tipo": "ciclo_dias"
+}
+
+
+### Erro - Buscar escala inexistente
+GET http://127.0.0.1:8000/api/v1/escalas/Escala%20Inexistente
+
+
+### Erro - Excluir escala inexistente
+DELETE http://127.0.0.1:8000/api/v1/escalas/Escala%20Inexistente
