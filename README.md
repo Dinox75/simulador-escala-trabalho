@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.11.0-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.12.0-00B4D8?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/STATUS-EM%20EVOLU%C3%87%C3%83O-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PYTHON-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=061A2B">
   <img src="https://img.shields.io/badge/API-FASTAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white&labelColor=061A2B">
@@ -99,9 +99,26 @@ O foco do projeto é transformar uma necessidade comum de consulta de escala em 
 
 ## 🚀 Versão atual
 
-**Versão:** `v0.11.0 - API inicial`
+**Versão:** `v0.12.0 - API com CRUD de escalas salvas`
 
-A `v0.11.0` adiciona a primeira camada HTTP do projeto usando **FastAPI**.
+A `v0.12.0` adiciona um CRUD completo de escalas salvas pela API, permitindo listar, criar, buscar, editar e excluir escalas por meio de endpoints HTTP.
+
+Essa evolução transforma a API em uma camada mais completa do projeto, reaproveitando a lógica existente de services e repositories, mantendo o JSON como persistência padrão.
+
+### Resumo da v0.12.0
+
+| Área | Evolução |
+|---|---|
+| API | CRUD completo de escalas salvas |
+| Listagem | Endpoint para listar escalas cadastradas |
+| Criação | Endpoint para criar novas escalas |
+| Busca | Endpoint para buscar escala pelo nome |
+| Edição | Endpoint para editar escala salva |
+| Exclusão | Endpoint para excluir escala salva |
+| Service | Reaproveitamento do `EscalaService` |
+| Repository | Reaproveitamento da persistência padrão |
+| Testes | Testes automatizados para os novos endpoints |
+| Documentação | README, CHANGELOG, API docs e requests atualizados |
 
 Até a versão anterior, o projeto já possuía CLI, demo web, persistência em JSON/PostgreSQL, testes e arquitetura em camadas. Nesta versão, parte das funcionalidades do simulador passou a ser exposta por endpoints HTTP, preparando o caminho para uma futura integração com frontend, usuários, login e painel web.
 
@@ -120,20 +137,21 @@ Até a versão anterior, o projeto já possuía CLI, demo web, persistência em 
 
 ---
 
-## ✅ Principais entregas da v0.11.0
+## ✅ Principais entregas da v0.12.0
 
 | Categoria | Entrega |
 |---|---|
-| API | Criação da estrutura `api/` |
-| FastAPI | Aplicação configurada em `api/app.py` |
-| Rotas | Separação de rotas em `api/routes/` |
-| Health | `GET /health` |
-| Modelos | `GET /api/v1/modelos` |
-| Status | `POST /api/v1/simulacao/status` |
-| Próximos dias | `POST /api/v1/simulacao/proximos-dias` |
-| Documentação | `docs/API.md` |
-| Requisições manuais | `docs/api_requests.http` |
+| API | CRUD completo de escalas salvas |
+| FastAPI | Novo router `api/routes/escalas.py` |
+| Listagem | `GET /api/v1/escalas` |
+| Criação | `POST /api/v1/escalas` |
+| Busca | `GET /api/v1/escalas/{nome}` |
+| Edição | `PUT /api/v1/escalas/{nome}` |
+| Exclusão | `DELETE /api/v1/escalas/{nome}` |
+| Service | Reaproveitamento do `EscalaService` |
+| Repository | Uso do repository padrão do projeto |
 | Testes | Testes automatizados com `pytest` |
+| Documentação | README, CHANGELOG e documentação da API atualizados |
 
 ---
 
@@ -158,6 +176,8 @@ timeline
           : Páginas separadas e documentação visual
     v0.11 : API inicial
           : FastAPI e endpoints HTTP
+    v0.12 : CRUD de escalas salvas
+          : Listar, criar, buscar, editar e excluir escalas pela API
 ```
 
 ---
@@ -326,7 +346,7 @@ Escolha uma opção:
 
 ---
 
-## ⚡ API inicial v0.11.0
+## ⚡ API v0.12.0
 
 ## Versão atual
 
@@ -912,12 +932,12 @@ Possíveis funcionalidades futuras:
 | `v0.9.0` | PostgreSQL funcional |
 | `v0.10.0` | Demo web profissional |
 | `v0.11.0` | API inicial com FastAPI |
+| `v0.12.0` | API com CRUD de escalas salvas |
 
 ### Próximas versões sugeridas
 
 | Versão | Objetivo |
 |---|---|
-| `v0.12.0` | API com escalas salvas/repository |
 | `v0.13.0` | Integração frontend + API |
 | `v0.14.0` | Usuários e login |
 | `v1.0.0` | Primeira versão completa do sistema |
@@ -1004,11 +1024,10 @@ Durante a evolução do projeto foram praticados conceitos como:
 
 ## ⚠️ Limitações atuais
 
-Mesmo com a API inicial implementada, o projeto ainda possui limitações importantes:
+Mesmo com o CRUD de escalas salvas implementado na API, o projeto ainda possui limitações importantes:
 
 - a API ainda é local e não está em deploy;
 - a demo web ainda não consome a API;
-- a API ainda não trabalha diretamente com escalas salvas via repository;
 - ainda não possui login;
 - ainda não possui cadastro de usuários;
 - ainda não existe vínculo entre escala e colaborador;
@@ -1018,20 +1037,21 @@ Mesmo com a API inicial implementada, o projeto ainda possui limitações import
 
 ---
 
-## ✅ Status da v0.11.0
+## ✅ Status da v0.12.0
 
-A `v0.11.0` está funcional para o objetivo da versão.
+A `v0.12.0` está funcional para o objetivo da versão.
 
 Entregas confirmadas:
 
 - CLI continua funcionando.
 - JSON continua como persistência padrão.
 - PostgreSQL permanece funcional como alternativa.
-- API FastAPI criada.
-- Endpoints principais da API funcionando.
+- API FastAPI continua funcionando.
+- CRUD de escalas salvas implementado pela API.
+- Endpoints de listagem, criação, busca, edição e exclusão funcionando.
 - Testes automatizados passando.
 - Testes manuais realizados com Thunder Client.
-- Documentação da API criada.
+- Documentação da API atualizada.
 - Requisições manuais documentadas.
 
 ---

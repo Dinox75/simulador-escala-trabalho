@@ -1,5 +1,29 @@
 
 
+## [0.12.1] - Ajustes de documentação e limpeza dos testes
+
+### Corrigido
+
+* Atualizado o `README.md` para refletir corretamente a versão `v0.12.0`.
+* Corrigidas informações antigas que ainda citavam a `v0.11.0` como versão atual.
+* Atualizado o roadmap do projeto para considerar a `v0.12.0` como versão já entregue.
+* Corrigida a seção de limitações atuais do projeto.
+* Atualizada a documentação `docs/API.md` com os endpoints de CRUD de escalas salvas.
+* Atualizado o exemplo do `/health` para retornar a versão `0.12.0`.
+* Atualizado o arquivo `docs/api_requests.http` com exemplos manuais dos endpoints de escalas salvas.
+* Ajustados os testes da API para limpar as escalas criadas durante a execução.
+* Evitado que testes deixem dados temporários no arquivo `data/escalas.json`.
+
+### Testado
+
+* Testes automatizados executados com `pytest`.
+* Resultado obtido: `192 passed, 5 skipped, 1 warning`.
+
+### Observações
+
+* Esta versão não adiciona novas funcionalidades de produto.
+* O foco da `v0.12.1` é organizar documentação, exemplos de requisição e estabilidade dos testes antes do início da `v0.13.0`.
+
 ## [0.12.0] - API com CRUD de escalas salvas
 
 ### Adicionado

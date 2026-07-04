@@ -1,9 +1,19 @@
+from urllib.parse import quote
+
 from fastapi.testclient import TestClient
 
 from api.app import app
 
 
 client = TestClient(app)
+
+
+def url_escala(nome):
+    return f"/api/v1/escalas/{quote(nome)}"
+
+
+def excluir_escala_se_existir(nome):
+    client.delete(url_escala(nome))
 
 
 def test_listar_escalas_salvas_deve_retornar_status_200():
@@ -23,41 +33,82 @@ def test_listar_escalas_salvas_deve_retornar_total_e_lista():
     assert isinstance(data["escalas"], list)
 
 
-def test_criar_escala_ciclo_horas_deve_retornar_status_201():
+def test_criar_escala_ciclo_dias_deve_retornar_status_201():
+    nome = "Escala API Teste 21x8"
+
     payload = {
-        "nome": "Escala API Teste 13x37",
+        "nome": nome,
+        "tipo": "ciclo_dias",
+        "dias_trabalho": 21,
+        "dias_folga": 8
+    }
+
+    excluir_escala_se_existir(nome)
+
+    try:
+        response = client.post("/api/v1/escalas", json=payload)
+
+        assert response.status_code == 201
+
+        data = response.json()
+
+        assert data["message"] == "Escala criada com sucesso."
+        assert data["escala"]["nome"] == nome
+        assert data["escala"]["tipo"] == "ciclo_dias"
+
+    finally:
+        excluir_escala_se_existir(nome)
+
+
+def test_criar_escala_ciclo_horas_deve_retornar_status_201():
+    nome = "Escala API Teste 13x37"
+
+    payload = {
+        "nome": nome,
         "tipo": "ciclo_horas",
         "horas_trabalho": 13,
         "horas_folga": 37
     }
 
-    client.delete("/api/v1/escalas/Escala API Teste 13x37")
-    response = client.post("/api/v1/escalas", json=payload)
+    excluir_escala_se_existir(nome)
 
-    assert response.status_code == 201
+    try:
+        response = client.post("/api/v1/escalas", json=payload)
 
-    data = response.json()
+        assert response.status_code == 201
 
-    assert data["escala"]["nome"] == "Escala API Teste 13x37"
-    assert data["escala"]["tipo"] == "ciclo_horas"
+        data = response.json()
+
+        assert data["escala"]["nome"] == nome
+        assert data["escala"]["tipo"] == "ciclo_horas"
+
+    finally:
+        excluir_escala_se_existir(nome)
 
 
 def test_criar_escala_turno_rotativo_deve_retornar_status_201():
+    nome = "Escala API Teste Turno"
+
     payload = {
-        "nome": "Escala API Teste Turno",
+        "nome": nome,
         "tipo": "turno_rotativo",
         "sequencia_turnos": ["Manhã", "Tarde", "Noite", "Folga"]
     }
 
-    client.delete("/api/v1/escalas/Escala API Teste Turno")
-    response = client.post("/api/v1/escalas", json=payload)
+    excluir_escala_se_existir(nome)
 
-    assert response.status_code == 201
+    try:
+        response = client.post("/api/v1/escalas", json=payload)
 
-    data = response.json()
+        assert response.status_code == 201
 
-    assert data["escala"]["nome"] == "Escala API Teste Turno"
-    assert data["escala"]["tipo"] == "turno_rotativo"
+        data = response.json()
+
+        assert data["escala"]["nome"] == nome
+        assert data["escala"]["tipo"] == "turno_rotativo"
+
+    finally:
+        excluir_escala_se_existir(nome)
 
 
 def test_criar_escala_deve_retornar_400_para_tipo_invalido():
@@ -82,50 +133,36 @@ def test_criar_escala_ciclo_dias_deve_exigir_campos_obrigatorios():
     assert response.status_code == 400
 
 
-def test_criar_escala_ciclo_dias_deve_retornar_status_201():
-    payload = {
-        "nome": "Escala API Teste 21x8",
-        "tipo": "ciclo_dias",
-        "dias_trabalho": 21,
-        "dias_folga": 8
-    }
-
-    client.delete("/api/v1/escalas/Escala API Teste 21x8")
-    response = client.post("/api/v1/escalas", json=payload)
-
-    assert response.status_code == 201
-
-    data = response.json()
-
-    assert data["message"] == "Escala criada com sucesso."
-    assert data["escala"]["nome"] == "Escala API Teste 21x8"
-    assert data["escala"]["tipo"] == "ciclo_dias"
-
 def test_buscar_escala_por_nome_deve_retornar_status_200():
+    nome = "Escala API Busca 14x5"
+
     payload = {
-        "nome": "Escala API Busca 14x5",
+        "nome": nome,
         "tipo": "ciclo_dias",
         "dias_trabalho": 14,
         "dias_folga": 5
     }
 
-    client.delete("/api/v1/escalas/Escala API Busca 14x5")
-    client.post("/api/v1/escalas", json=payload)
+    excluir_escala_se_existir(nome)
 
-    response = client.get("/api/v1/escalas/Escala API Busca 14x5")
+    try:
+        client.post("/api/v1/escalas", json=payload)
 
-    assert response.status_code == 200
+        response = client.get(url_escala(nome))
 
-    data = response.json()
+        assert response.status_code == 200
 
-    assert data["escala"]["nome"] == "Escala API Busca 14x5"
-    assert data["escala"]["tipo"] == "ciclo_dias"
+        data = response.json()
 
-    client.delete("/api/v1/escalas/Escala API Busca 14x5")
+        assert data["escala"]["nome"] == nome
+        assert data["escala"]["tipo"] == "ciclo_dias"
+
+    finally:
+        excluir_escala_se_existir(nome)
 
 
 def test_buscar_escala_por_nome_inexistente_deve_retornar_404():
-    response = client.get("/api/v1/escalas/Escala Inexistente API")
+    response = client.get(url_escala("Escala Inexistente API"))
 
     assert response.status_code == 404
 
@@ -133,41 +170,48 @@ def test_buscar_escala_por_nome_inexistente_deve_retornar_404():
 
     assert data["detail"] == "Escala não encontrada."
 
+
 def test_editar_escala_deve_retornar_status_200():
+    nome_original = "Escala API Editar Original"
+    nome_editado = "Escala API Editada"
+
     payload_original = {
-        "nome": "Escala API Editar Original",
+        "nome": nome_original,
         "tipo": "ciclo_dias",
         "dias_trabalho": 31,
         "dias_folga": 11
     }
 
     payload_editado = {
-        "nome": "Escala API Editada",
+        "nome": nome_editado,
         "tipo": "ciclo_dias",
         "dias_trabalho": 32,
         "dias_folga": 12
     }
 
-    client.delete("/api/v1/escalas/Escala API Editar Original")
-    client.delete("/api/v1/escalas/Escala API Editada")
+    excluir_escala_se_existir(nome_original)
+    excluir_escala_se_existir(nome_editado)
 
-    client.post("/api/v1/escalas", json=payload_original)
+    try:
+        client.post("/api/v1/escalas", json=payload_original)
 
-    response = client.put(
-        "/api/v1/escalas/Escala API Editar Original",
-        json=payload_editado
-    )
+        response = client.put(
+            url_escala(nome_original),
+            json=payload_editado
+        )
 
-    assert response.status_code == 200
+        assert response.status_code == 200
 
-    data = response.json()
+        data = response.json()
 
-    assert data["message"] == "Escala editada com sucesso."
-    assert data["escala"]["nome"] == "Escala API Editada"
-    assert data["escala"]["dias_trabalho"] == 32
-    assert data["escala"]["dias_folga"] == 12
+        assert data["message"] == "Escala editada com sucesso."
+        assert data["escala"]["nome"] == nome_editado
+        assert data["escala"]["dias_trabalho"] == 32
+        assert data["escala"]["dias_folga"] == 12
 
-    client.delete("/api/v1/escalas/Escala API Editada")
+    finally:
+        excluir_escala_se_existir(nome_original)
+        excluir_escala_se_existir(nome_editado)
 
 
 def test_editar_escala_inexistente_deve_retornar_404():
@@ -179,7 +223,7 @@ def test_editar_escala_inexistente_deve_retornar_404():
     }
 
     response = client.put(
-        "/api/v1/escalas/Escala Inexistente Para Editar",
+        url_escala("Escala Inexistente Para Editar"),
         json=payload
     )
 
@@ -191,88 +235,135 @@ def test_editar_escala_inexistente_deve_retornar_404():
 
 
 def test_editar_escala_deve_retornar_409_para_nome_duplicado():
+    nome_a = "Escala API Editar A"
+    nome_b = "Escala API Editar B"
+
     payload_a = {
-        "nome": "Escala API Editar A",
+        "nome": nome_a,
         "tipo": "ciclo_dias",
         "dias_trabalho": 42,
         "dias_folga": 14
     }
 
     payload_b = {
-        "nome": "Escala API Editar B",
+        "nome": nome_b,
         "tipo": "ciclo_dias",
         "dias_trabalho": 43,
         "dias_folga": 15
     }
 
     payload_editado = {
-        "nome": "Escala API Editar B",
+        "nome": nome_b,
         "tipo": "ciclo_dias",
         "dias_trabalho": 44,
         "dias_folga": 16
     }
 
-    client.delete("/api/v1/escalas/Escala API Editar A")
-    client.delete("/api/v1/escalas/Escala API Editar B")
+    excluir_escala_se_existir(nome_a)
+    excluir_escala_se_existir(nome_b)
 
-    client.post("/api/v1/escalas", json=payload_a)
-    client.post("/api/v1/escalas", json=payload_b)
+    try:
+        client.post("/api/v1/escalas", json=payload_a)
+        client.post("/api/v1/escalas", json=payload_b)
 
-    response = client.put(
-        "/api/v1/escalas/Escala API Editar A",
-        json=payload_editado
-    )
+        response = client.put(
+            url_escala(nome_a),
+            json=payload_editado
+        )
 
-    assert response.status_code == 409
+        assert response.status_code == 409
 
-    data = response.json()
+        data = response.json()
 
-    assert data["detail"] == "Já existe uma escala salva com esse nome."
+        assert data["detail"] == "Já existe uma escala salva com esse nome."
 
-    client.delete("/api/v1/escalas/Escala API Editar A")
-    client.delete("/api/v1/escalas/Escala API Editar B")
+    finally:
+        excluir_escala_se_existir(nome_a)
+        excluir_escala_se_existir(nome_b)
 
 
 def test_editar_escala_deve_retornar_409_para_configuracao_duplicada():
+    nome_a = "Escala API Config A"
+    nome_b = "Escala API Config B"
+    nome_editado = "Escala API Config A Editada"
+
     payload_a = {
-        "nome": "Escala API Config A",
+        "nome": nome_a,
         "tipo": "ciclo_dias",
         "dias_trabalho": 45,
         "dias_folga": 17
     }
 
     payload_b = {
-        "nome": "Escala API Config B",
+        "nome": nome_b,
         "tipo": "ciclo_dias",
         "dias_trabalho": 46,
         "dias_folga": 18
     }
 
     payload_editado = {
-        "nome": "Escala API Config A Editada",
+        "nome": nome_editado,
         "tipo": "ciclo_dias",
         "dias_trabalho": 46,
         "dias_folga": 18
     }
 
-    client.delete("/api/v1/escalas/Escala API Config A")
-    client.delete("/api/v1/escalas/Escala API Config B")
-    client.delete("/api/v1/escalas/Escala API Config A Editada")
+    excluir_escala_se_existir(nome_a)
+    excluir_escala_se_existir(nome_b)
+    excluir_escala_se_existir(nome_editado)
 
-    client.post("/api/v1/escalas", json=payload_a)
-    client.post("/api/v1/escalas", json=payload_b)
+    try:
+        client.post("/api/v1/escalas", json=payload_a)
+        client.post("/api/v1/escalas", json=payload_b)
 
-    response = client.put(
-        "/api/v1/escalas/Escala API Config A",
-        json=payload_editado
-    )
+        response = client.put(
+            url_escala(nome_a),
+            json=payload_editado
+        )
 
-    assert response.status_code == 409
+        assert response.status_code == 409
+
+        data = response.json()
+
+        assert data["detail"] == "Já existe uma escala salva com essa configuração."
+
+    finally:
+        excluir_escala_se_existir(nome_a)
+        excluir_escala_se_existir(nome_b)
+        excluir_escala_se_existir(nome_editado)
+
+
+def test_excluir_escala_deve_retornar_status_200():
+    nome = "Escala API Excluir 27x6"
+
+    payload = {
+        "nome": nome,
+        "tipo": "ciclo_dias",
+        "dias_trabalho": 27,
+        "dias_folga": 6
+    }
+
+    excluir_escala_se_existir(nome)
+
+    client.post("/api/v1/escalas", json=payload)
+
+    response = client.delete(url_escala(nome))
+
+    assert response.status_code == 200
 
     data = response.json()
 
-    assert data["detail"] == "Já existe uma escala salva com essa configuração."
+    assert data["message"] == "Escala excluída com sucesso."
+    assert data["nome"] == nome
 
-    client.delete("/api/v1/escalas/Escala API Config A")
-    client.delete("/api/v1/escalas/Escala API Config B")
-    client.delete("/api/v1/escalas/Escala API Config A Editada")
+    excluir_escala_se_existir(nome)
+
+
+def test_excluir_escala_inexistente_deve_retornar_404():
+    response = client.delete(url_escala("Escala Inexistente Para Excluir"))
+
+    assert response.status_code == 404
+
+    data = response.json()
+
+    assert data["detail"] == "Escala não encontrada."
