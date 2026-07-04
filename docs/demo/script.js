@@ -1,6 +1,7 @@
 const TIPO_CICLO_DIAS = "ciclo_dias";
 const TIPO_CICLO_HORAS = "ciclo_horas";
 const TIPO_TURNO_ROTATIVO = "turno_rotativo";
+const API_BASE_URL = "http://127.0.0.1:8000";
 
 const STORAGE_KEY = "simulador_escala_demo_v09";
 const THEME_KEY = "simulador_escala_theme";
@@ -18,35 +19,41 @@ const ESCALA_REAL_24_DIAS = [
 
 const PREDEFINED_MODELS = [
     {
+        id: "6x3",
         nome: "Escala 6x3",
         tipo: TIPO_CICLO_DIAS,
         dias_trabalho: 6,
         dias_folga: 3
     },
     {
+        id: "5x2",
         nome: "Escala 5x2",
         tipo: TIPO_CICLO_DIAS,
         dias_trabalho: 5,
         dias_folga: 2
     },
     {
+        id: "4x2",
         nome: "Escala 4x2",
         tipo: TIPO_CICLO_DIAS,
         dias_trabalho: 4,
         dias_folga: 2
     },
     {
+        id: "12x36",
         nome: "Escala 12x36",
         tipo: TIPO_CICLO_HORAS,
         horas_trabalho: 12,
         horas_folga: 36
     },
     {
+        id: "turno_rotativo_simples",
         nome: "Turno rotativo simples",
         tipo: TIPO_TURNO_ROTATIVO,
         sequencia_turnos: ["Manhã", "Manhã", "Tarde", "Tarde", "Noite", "Noite", "Folga", "Folga"]
     },
     {
+        id: "escala_real_24_dias",
         nome: "Minha escala real 24 dias",
         tipo: TIPO_TURNO_ROTATIVO,
         sequencia_turnos: ESCALA_REAL_24_DIAS
@@ -66,7 +73,7 @@ const HERO_FRAMES = [
     {
         line: "ESCALA_REPOSITORY=postgres",
         output: "Aplicação alternando de JSON para PostgreSQL",
-        status: "v0.9.0",
+        status: "v0.13.0",
         meta: "Configuração técnica por ambiente",
         progress: "68%"
     },
@@ -99,6 +106,7 @@ const state = {
     selectedType: TIPO_CICLO_DIAS,
     resultItems: [],
     savedScales: [],
+    availableModels: [],
     simulatorTurns: ["Manhã", "Tarde", "Noite", "Folga"],
     savedTurns: ["Manhã", "Tarde", "Noite", "Folga"],
     heroIndex: 0,
@@ -137,7 +145,11 @@ const elements = {
     heroStatusText: $("#heroStatusText"),
     heroProgressBar: $("#heroProgressBar"),
     heroStatusMeta: $("#heroStatusMeta"),
-    processResultText: $("#processResultText")
+    processResultText: $("#processResultText"),
+    apiStatusCard: $("#apiStatusCard"),
+    apiStatusText: $("#apiStatusText"),
+    apiStatusDescription: $("#apiStatusDescription"),
+    apiRefreshButton: $("#apiRefreshButton")
 };
 
 function cloneScale(scale) {
@@ -221,7 +233,9 @@ function renderModelButtons() {
         return;
     }
 
-    elements.modelButtons.innerHTML = PREDEFINED_MODELS
+    const models = state.availableModels.length ? state.availableModels : PREDEFINED_MODELS;
+
+    elements.modelButtons.innerHTML = models
         .map((model, index) => `
             <button class="model-button" type="button" data-model-index="${index}">
                 <span class="model-icon"><i data-lucide="${getModelIcon(model.tipo)}"></i></span>
@@ -484,7 +498,7 @@ function renderDynamicFields() {
                     <input id="offHours" type="number" min="1" value="36" required>
                 </label>
                 <label>
-                    Períodos para visualizar
+                    Dias para visualizar
                     <input id="quantityPeriods" type="number" min="1" max="30" value="6" required>
                 </label>
             </div>
@@ -668,66 +682,192 @@ function showResult(title, description, items) {
     });
 }
 
-function handleSimulatorSubmit(event) {
+function formatTime(date) {
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+
+    return `${hours}:${minutes}`;
+}
+
+function turnSequencesAreEqual(firstSequence, secondSequence) {
+    const first = normalizeTurns(firstSequence);
+    const second = normalizeTurns(secondSequence);
+
+    if (first.length !== second.length) {
+        return false;
+    }
+
+    return first.every((turn, index) => turn === second[index]);
+}
+
+function getSelectedModelForApi() {
+    const models = state.availableModels.length ? state.availableModels : PREDEFINED_MODELS;
+
+    if (state.selectedType === TIPO_CICLO_HORAS) {
+        const workHoursInput = $("#workHours");
+        const offHoursInput = $("#offHours");
+
+        if (!workHoursInput || !offHoursInput) {
+            return null;
+        }
+
+        const workHours = Number(workHoursInput.value);
+        const offHours = Number(offHoursInput.value);
+
+        return models.find((model) =>
+            model.tipo === TIPO_CICLO_HORAS
+            && Number(model.horas_trabalho) === workHours
+            && Number(model.horas_folga) === offHours
+        ) || null;
+    }
+
+    if (state.selectedType === TIPO_TURNO_ROTATIVO) {
+        const currentTurns = normalizeTurns(state.simulatorTurns);
+
+        return models.find((model) =>
+            model.tipo === TIPO_TURNO_ROTATIVO
+            && turnSequencesAreEqual(model.sequencia_turnos, currentTurns)
+        ) || null;
+    }
+
+    const workDaysInput = $("#workDays");
+    const offDaysInput = $("#offDays");
+
+    if (!workDaysInput || !offDaysInput) {
+        return null;
+    }
+
+    const workDays = Number(workDaysInput.value);
+    const offDays = Number(offDaysInput.value);
+
+    return models.find((model) =>
+        model.tipo === TIPO_CICLO_DIAS
+        && Number(model.dias_trabalho) === workDays
+        && Number(model.dias_folga) === offDays
+    ) || null;
+}
+
+async function handleSimulatorSubmit(event) {
     event.preventDefault();
 
     try {
+        const selectedModel = getSelectedModelForApi();
+
+        if (!selectedModel || !selectedModel.id) {
+            throw new Error(
+                "A simulação pela API está disponível apenas para modelos prontos carregados da API. " +
+                "Selecione um modelo como 6x3, 5x2, 4x2, 12x36 ou escala real 24 dias."
+            );
+        }
+
         if (state.selectedType === TIPO_CICLO_HORAS) {
-            const start = parseDateTimeInput($("#startDateTime").value);
-            const query = parseDateTimeInput($("#queryDateTime").value);
-            const workHours = Number($("#workHours").value);
-            const offHours = Number($("#offHours").value);
+            const startDateTime = parseDateTimeInput($("#startDateTime").value);
+            const queryDateTime = parseDateTimeInput($("#queryDateTime").value);
             const quantity = Number($("#quantityPeriods").value);
-            const status = calculateCycleHoursStatus(start, query, workHours, offHours);
-            const items = generateCycleHoursItems(start, quantity, workHours, offHours);
+
+            const statusPayload = {
+                modelo_id: selectedModel.id,
+                data_inicio: formatDate(startDateTime),
+                hora_inicio: formatTime(startDateTime),
+                data_consulta: formatDate(queryDateTime),
+                hora_consulta: formatTime(queryDateTime)
+            };
+
+            const nextDaysPayload = {
+                modelo_id: selectedModel.id,
+                data_inicio: formatDate(startDateTime),
+                hora_inicio: formatTime(startDateTime),
+                hora_consulta: formatTime(queryDateTime),
+                quantidade_dias: quantity
+            };
+
+            const statusData = await apiRequest("/api/v1/simulacao/status", {
+                method: "POST",
+                body: JSON.stringify(statusPayload)
+            });
+
+            const nextDaysData = await apiRequest("/api/v1/simulacao/proximos-dias", {
+                method: "POST",
+                body: JSON.stringify(nextDaysPayload)
+            });
+
+            const items = nextDaysData.dias.map((dia) => createTimelineItem(
+                dia.data,
+                dia.status,
+                dia.hora_consulta ? `Consulta às ${dia.hora_consulta}` : ""
+            ));
 
             showResult(
-                `Status: ${status}`,
-                `Na data ${formatDateTime(query)}, a escala ${workHours}x${offHours} indica: ${status}.`,
+                `Status: ${statusData.status}`,
+                `Resultado calculado pela API para ${statusData.modelo_nome}.`,
                 items
             );
+
+            console.info("Simulação 12x36 calculada pela API:", {
+                statusData,
+                nextDaysData
+            });
+
             return;
         }
 
-        const start = parseDateInput($("#startDate").value);
-        const query = parseDateInput($("#queryDate").value);
+        const startDate = parseDateInput($("#startDate").value);
+        const queryDate = parseDateInput($("#queryDate").value);
         const quantity = Number($("#quantityDays").value);
 
-        if (state.selectedType === TIPO_TURNO_ROTATIVO) {
-            const turns = normalizeTurns(state.simulatorTurns);
-            const status = calculateRotativeStatus(start, query, turns);
-            const items = generateRotativeItems(start, quantity, turns);
+        const statusPayload = {
+            modelo_id: selectedModel.id,
+            data_inicio: formatDate(startDate),
+            data_consulta: formatDate(queryDate)
+        };
 
-            showResult(
-                `Turno: ${status}`,
-                `Na data ${formatDate(query)}, a sequência indica: ${status}.`,
-                items
-            );
-            return;
-        }
+        const nextDaysPayload = {
+            modelo_id: selectedModel.id,
+            data_inicio: formatDate(startDate),
+            quantidade_dias: quantity
+        };
 
-        const workDays = Number($("#workDays").value);
-        const offDays = Number($("#offDays").value);
-        const status = calculateCycleDaysStatus(start, query, workDays, offDays);
-        const items = generateCycleDaysItems(start, quantity, workDays, offDays);
+        const statusData = await apiRequest("/api/v1/simulacao/status", {
+            method: "POST",
+            body: JSON.stringify(statusPayload)
+        });
+
+        const nextDaysData = await apiRequest("/api/v1/simulacao/proximos-dias", {
+            method: "POST",
+            body: JSON.stringify(nextDaysPayload)
+        });
+
+        const items = nextDaysData.dias.map((dia, index) => createTimelineItem(
+            dia.data,
+            dia.status,
+            `Dia ${index + 1} do período visualizado`
+        ));
 
         showResult(
-            `Status: ${status}`,
-            `Na data ${formatDate(query)}, a escala ${workDays}x${offDays} indica: ${status}.`,
+            state.selectedType === TIPO_TURNO_ROTATIVO
+                ? `Turno: ${statusData.status}`
+                : `Status: ${statusData.status}`,
+            `Resultado calculado pela API para ${statusData.modelo_nome}.`,
             items
         );
+
+        console.info("Simulação calculada pela API:", {
+            statusData,
+            nextDaysData
+        });
     } catch (error) {
-        showResult("Não foi possível simular", error.message, []);
+        showResult("Não foi possível simular pela API", error.message, []);
     }
 }
 
 function renderSavedScales() {
     if (!elements.savedScalesList) {
+        console.warn("Elemento #savedScalesList não encontrado para renderização.");
         return;
     }
 
-    if (!state.savedScales.length) {
-        elements.savedScalesList.innerHTML = `<p class="turn-empty">Nenhuma escala salva.</p>`;
+    if (!Array.isArray(state.savedScales) || state.savedScales.length === 0) {
+        elements.savedScalesList.innerHTML = `<p class="turn-empty">Nenhuma escala salva encontrada na API.</p>`;
         return;
     }
 
@@ -745,9 +885,11 @@ function renderSavedScales() {
             </div>
         `)
         .join("");
+
+    createLucideIcons();
 }
 
-function handleSavedScaleSubmit(event) {
+async function handleSavedScaleSubmit(event) {
     event.preventDefault();
 
     const name = elements.savedName.value.trim();
@@ -788,12 +930,28 @@ function handleSavedScaleSubmit(event) {
         };
     }
 
-    state.savedScales.push(scale);
-    saveScales();
-    renderSavedScales();
-    elements.savedScaleForm.reset();
-    state.savedTurns = ["Manhã", "Tarde", "Noite", "Folga"];
-    renderSavedDynamicFields();
+    try {
+        const data = await apiRequest("/api/v1/escalas", {
+            method: "POST",
+            body: JSON.stringify(scale)
+        });
+
+        console.info("Escala criada pela API:", data);
+
+        await loadSavedScalesFromApi();
+
+        elements.savedScaleForm.reset();
+        state.savedTurns = ["Manhã", "Tarde", "Noite", "Folga"];
+        renderSavedDynamicFields();
+
+        showResult(
+            "Escala salva pela API",
+            `A escala "${scale.nome}" foi cadastrada com sucesso no backend.`,
+            state.resultItems
+        );
+    } catch (error) {
+        alert(`Não foi possível salvar a escala pela API: ${error.message}`);
+    }
 }
 
 function applySavedScale(index) {
@@ -825,16 +983,38 @@ function applySavedScale(index) {
     }
 }
 
-function deleteSavedScale(index) {
-    state.savedScales.splice(index, 1);
-    saveScales();
-    renderSavedScales();
+async function deleteSavedScale(index) {
+    const scale = state.savedScales[index];
+
+    if (!scale) {
+        return;
+    }
+
+    const confirmed = window.confirm(`Deseja excluir a escala "${scale.nome}" da API?`);
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        await apiRequest(`/api/v1/escalas/${encodeURIComponent(scale.nome)}`, {
+            method: "DELETE"
+        });
+
+        await loadSavedScalesFromApi();
+
+        showResult(
+            "Escala excluída pela API",
+            `A escala "${scale.nome}" foi removida do backend.`,
+            state.resultItems
+        );
+    } catch (error) {
+        alert(`Não foi possível excluir a escala pela API: ${error.message}`);
+    }
 }
 
-function resetSavedScales() {
-    state.savedScales = DEFAULT_SCALES.map(cloneScale);
-    saveScales();
-    renderSavedScales();
+async function resetSavedScales() {
+    await loadSavedScalesFromApi();
 }
 
 function updateScaleButtons() {
@@ -1089,6 +1269,122 @@ function configureMobileMenu() {
     });
 }
 
+async function apiRequest(endpoint, options = {}) {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+        },
+        ...options
+    });
+
+    const responseText = await response.text();
+    const data = responseText ? JSON.parse(responseText) : {};
+
+    if (!response.ok) {
+        throw new Error(data.detail || "Erro ao consumir a API.");
+    }
+
+    return data;
+}
+
+
+function setApiStatus(title, description, statusClass = "") {
+    if (!elements.apiStatusText || !elements.apiStatusDescription || !elements.apiStatusCard) {
+        return;
+    }
+
+    elements.apiStatusText.textContent = title;
+    elements.apiStatusDescription.textContent = description;
+
+    elements.apiStatusCard.classList.remove("api-online", "api-offline");
+
+    if (statusClass) {
+        elements.apiStatusCard.classList.add(statusClass);
+    }
+}
+
+
+async function checkApiHealth() {
+    if (!elements.apiStatusText) {
+        return;
+    }
+
+    setApiStatus(
+        "Verificando conexão...",
+        `Tentando conectar em ${API_BASE_URL}/health`
+    );
+
+    try {
+        const data = await apiRequest("/health");
+
+        setApiStatus(
+            "API conectada com sucesso",
+            `Backend online. Versão retornada: ${data.version}.`,
+            "api-online"
+        );
+    } catch (error) {
+        setApiStatus(
+            "API local não conectada",
+            `Inicie o backend com: uvicorn api.app:app --reload. Detalhe: ${error.message}`,
+            "api-offline"
+        );
+    }
+}
+
+async function loadModelsFromApi() {
+    if (!elements.modelButtons) {
+        return;
+    }
+
+    try {
+        const data = await apiRequest("/api/v1/modelos");
+
+        if (!Array.isArray(data.modelos) || data.modelos.length === 0) {
+            throw new Error("A API não retornou modelos.");
+        }
+
+        state.availableModels = data.modelos.map(cloneScale);
+        renderModelButtons();
+
+        console.info("Modelos carregados da API:", state.availableModels);
+    } catch (error) {
+        console.warn("Não foi possível carregar modelos da API. Usando modelos locais.", error);
+
+        state.availableModels = PREDEFINED_MODELS.map(cloneScale);
+        renderModelButtons();
+    }
+}
+
+async function loadSavedScalesFromApi() {
+    if (!elements.savedScalesList) {
+        console.warn("Elemento #savedScalesList não encontrado.");
+        return;
+    }
+
+    elements.savedScalesList.innerHTML = `<p class="turn-empty">Carregando escalas da API...</p>`;
+
+    try {
+        const data = await apiRequest("/api/v1/escalas");
+
+        console.info("Resposta completa de escalas da API:", data);
+
+        if (!Array.isArray(data.escalas)) {
+            throw new Error("A API não retornou uma lista de escalas.");
+        }
+
+        state.savedScales = data.escalas.map(cloneScale);
+        renderSavedScales();
+
+        console.info("Escalas salvas renderizadas:", state.savedScales);
+    } catch (error) {
+        console.warn("Não foi possível carregar escalas salvas da API. Usando localStorage.", error);
+
+        state.savedScales = loadSavedScales();
+        renderSavedScales();
+    }
+}
+
 function configureEvents() {
     if (elements.scaleTypeButtons) {
         elements.scaleTypeButtons.addEventListener("click", (event) => {
@@ -1113,7 +1409,9 @@ function configureEvents() {
                 return;
             }
 
-            const model = PREDEFINED_MODELS[Number(button.dataset.modelIndex)];
+            const models = state.availableModels.length ? state.availableModels : PREDEFINED_MODELS;
+            const model = models[Number(button.dataset.modelIndex)];
+
             applyModelToSimulator(cloneScale(model));
 
             const simulator = document.querySelector("#simulador");
@@ -1158,6 +1456,10 @@ function configureEvents() {
     if (elements.resetScalesButton) {
         elements.resetScalesButton.addEventListener("click", resetSavedScales);
     }
+
+    if (elements.apiRefreshButton) {
+        elements.apiRefreshButton.addEventListener("click", checkApiHealth);
+    }
 }
 
 function bootInitialSimulation() {
@@ -1170,7 +1472,7 @@ function bootInitialSimulation() {
 
     showResult(
         "Exemplo: Trabalhando",
-        "Este é um exemplo automático usando o modelo 6x3 da v0.9.0.",
+        "Este é um exemplo automático usando o modelo 6x3. Ao clicar em Simular agora, o cálculo será feito pela API.",
         items
     );
 }
@@ -1187,6 +1489,7 @@ function initSimulatorPage() {
     }
 
     state.savedScales = loadSavedScales();
+    state.availableModels = PREDEFINED_MODELS.map(cloneScale);
 
     renderDynamicFields();
     renderModelButtons();
@@ -1205,6 +1508,9 @@ function init() {
     configureMobileMenu();
     configureEvents();
     initSimulatorPage();
+    checkApiHealth();
+    loadModelsFromApi();
+    loadSavedScalesFromApi();
     createLucideIcons();
 }
 

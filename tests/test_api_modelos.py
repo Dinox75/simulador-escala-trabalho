@@ -50,3 +50,44 @@ def test_modelos_devem_ter_campos_esperados():
     assert "nome" in primeiro_modelo
     assert "tipo" in primeiro_modelo
     assert "descricao" in primeiro_modelo
+
+def buscar_modelo_por_id(modelos, modelo_id):
+    for modelo in modelos:
+        if modelo["id"] == modelo_id:
+            return modelo
+
+    return None
+
+
+def test_modelo_6x3_deve_retornar_configuracao_completa():
+    response = client.get("/api/v1/modelos")
+
+    data = response.json()
+    modelo = buscar_modelo_por_id(data["modelos"], "6x3")
+
+    assert modelo is not None
+    assert modelo["dias_trabalho"] == 6
+    assert modelo["dias_folga"] == 3
+
+
+def test_modelo_12x36_deve_retornar_configuracao_completa():
+    response = client.get("/api/v1/modelos")
+
+    data = response.json()
+    modelo = buscar_modelo_por_id(data["modelos"], "12x36")
+
+    assert modelo is not None
+    assert modelo["horas_trabalho"] == 12
+    assert modelo["horas_folga"] == 36
+
+
+def test_modelo_escala_real_24_dias_deve_retornar_sequencia():
+    response = client.get("/api/v1/modelos")
+
+    data = response.json()
+    modelo = buscar_modelo_por_id(data["modelos"], "escala_real_24_dias")
+
+    assert modelo is not None
+    assert "sequencia_turnos" in modelo
+    assert isinstance(modelo["sequencia_turnos"], list)
+    assert len(modelo["sequencia_turnos"]) == 24

@@ -2,8 +2,12 @@
 GET http://127.0.0.1:8000/health
 
 
-### Listar modelos
+### Listar modelos disponíveis
 GET http://127.0.0.1:8000/api/v1/modelos
+
+
+### Listar escalas salvas
+GET http://127.0.0.1:8000/api/v1/escalas
 
 
 ### Simulação 6x3 - Trabalhando
@@ -28,6 +32,28 @@ Content-Type: application/json
 }
 
 
+### Simulação 5x2 - Trabalhando
+POST http://127.0.0.1:8000/api/v1/simulacao/status
+Content-Type: application/json
+
+{
+  "modelo_id": "5x2",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "03/07/2026"
+}
+
+
+### Simulação 4x2 - Folga
+POST http://127.0.0.1:8000/api/v1/simulacao/status
+Content-Type: application/json
+
+{
+  "modelo_id": "4x2",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "05/07/2026"
+}
+
+
 ### Simulação 12x36 - Trabalhando
 POST http://127.0.0.1:8000/api/v1/simulacao/status
 Content-Type: application/json
@@ -38,6 +64,41 @@ Content-Type: application/json
   "hora_inicio": "07:00",
   "data_consulta": "01/07/2026",
   "hora_consulta": "10:00"
+}
+
+
+### Simulação 12x36 - Folga
+POST http://127.0.0.1:8000/api/v1/simulacao/status
+Content-Type: application/json
+
+{
+  "modelo_id": "12x36",
+  "data_inicio": "01/07/2026",
+  "hora_inicio": "07:00",
+  "data_consulta": "02/07/2026",
+  "hora_consulta": "10:00"
+}
+
+
+### Simulação turno rotativo simples
+POST http://127.0.0.1:8000/api/v1/simulacao/status
+Content-Type: application/json
+
+{
+  "modelo_id": "turno_rotativo_simples",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "04/07/2026"
+}
+
+
+### Simulação escala real 24 dias
+POST http://127.0.0.1:8000/api/v1/simulacao/status
+Content-Type: application/json
+
+{
+  "modelo_id": "escala_real_24_dias",
+  "data_inicio": "01/07/2026",
+  "data_consulta": "18/07/2026"
 }
 
 
@@ -52,6 +113,28 @@ Content-Type: application/json
 }
 
 
+### Próximos dias - Escala 5x2
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "5x2",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 10
+}
+
+
+### Próximos dias - Escala 4x2
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "4x2",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 10
+}
+
+
 ### Próximos dias - Escala 12x36
 POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
 Content-Type: application/json
@@ -61,12 +144,30 @@ Content-Type: application/json
   "data_inicio": "01/07/2026",
   "hora_inicio": "07:00",
   "hora_consulta": "10:00",
-  "quantidade_dias": 2
+  "quantidade_dias": 5
 }
 
 
-### Listar escalas salvas
-GET http://127.0.0.1:8000/api/v1/escalas
+### Próximos dias - Turno rotativo simples
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "turno_rotativo_simples",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 12
+}
+
+
+### Próximos dias - Escala real 24 dias
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "escala_real_24_dias",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 24
+}
 
 
 ### Criar escala salva - Ciclo por dias
@@ -120,7 +221,11 @@ Content-Type: application/json
 }
 
 
-### Excluir escala salva pelo nome
+### Buscar escala salva editada pelo nome
+GET http://127.0.0.1:8000/api/v1/escalas/Escala%20API%20Docs%2022x9
+
+
+### Excluir escala salva editada
 DELETE http://127.0.0.1:8000/api/v1/escalas/Escala%20API%20Docs%2022x9
 
 
@@ -176,6 +281,17 @@ Content-Type: application/json
 }
 
 
+### Erro - Próximos dias com quantidade abaixo do limite
+POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "modelo_id": "6x3",
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 0
+}
+
+
 ### Erro - Próximos dias com quantidade acima do limite
 POST http://127.0.0.1:8000/api/v1/simulacao/proximos-dias
 Content-Type: application/json
@@ -204,6 +320,18 @@ Content-Type: application/json
 {
   "nome": "Escala Incompleta",
   "tipo": "ciclo_dias"
+}
+
+
+### Erro - Criar escala com nome duplicado
+POST http://127.0.0.1:8000/api/v1/escalas
+Content-Type: application/json
+
+{
+  "nome": "Escala 6x3",
+  "tipo": "ciclo_dias",
+  "dias_trabalho": 6,
+  "dias_folga": 3
 }
 
 

@@ -1,5 +1,55 @@
 
 
+## [v0.13.0] - Demo web consumindo API local
+
+### Adicionado
+
+- Configuração de CORS para permitir a integração entre a demo web e a API local.
+- Card de status da API na página `simulador.html`.
+- Consumo do endpoint `GET /health` pela demo para verificar se o backend está online.
+- Consumo do endpoint `GET /api/v1/modelos` pela demo para carregar modelos prontos.
+- Consumo do endpoint `GET /api/v1/escalas` pela demo para listar escalas salvas.
+- Cadastro de escalas salvas pela demo usando `POST /api/v1/escalas`.
+- Exclusão de escalas salvas pela demo usando `DELETE /api/v1/escalas/{nome}`.
+- Simulação de modelos prontos pela demo usando `POST /api/v1/simulacao/status`.
+- Exibição de próximos dias pela demo usando `POST /api/v1/simulacao/proximos-dias`.
+- Arquivo `docs/api_requests.http` atualizado com exemplos manuais da API v0.13.0.
+
+### Alterado
+
+- Endpoint `GET /api/v1/modelos` passou a retornar também a configuração completa dos modelos.
+- Health check atualizado para retornar versão `0.13.0`.
+- Página `docs/demo/simulador.html` atualizada para comunicar a integração com API local.
+- Script da demo atualizado para priorizar dados vindos do backend.
+- Textos da demo ajustados para deixar claro que a simulação via API funciona com modelos prontos.
+
+### Corrigido
+
+- Correção na renderização de escalas salvas vindas da API.
+- Correção no botão de recarregar escalas da API, evitando sobrescrever a lista com dados locais.
+- Ajuste no tratamento de respostas vazias da API em requisições como `DELETE`.
+
+### Limitações conhecidas
+
+- A simulação pela API ainda usa `modelo_id` dos modelos prontos.
+- Escalas personalizadas salvas podem ser cadastradas, listadas, aplicadas visualmente e excluídas pela demo, mas ainda não são simuladas por nome pela API.
+- A API ainda não possui autenticação, login, usuários ou vínculo entre escala e colaborador.
+
+### Testes
+
+- Testes automatizados executados com `python -m pytest`.
+- Testes manuais realizados com Thunder Client.
+- Fluxos principais validados na demo web:
+  - conexão com API;
+  - listagem de modelos;
+  - listagem de escalas salvas;
+  - cadastro de escala;
+  - exclusão de escala;
+  - simulação 6x3;
+  - simulação 12x36;
+  - simulação da escala real de 24 dias.
+
+
 ## [0.12.1] - Ajustes de documentação e limpeza dos testes
 
 ### Corrigido

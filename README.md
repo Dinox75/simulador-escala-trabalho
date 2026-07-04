@@ -5,15 +5,15 @@
 <h1 align="center">⏰ Simulador de Escala de Trabalho</h1>
 
 <p align="center">
-  <strong>Aplicação em Python para consultar, simular, cadastrar, editar e excluir escalas de trabalho por dias, por horas e por turnos rotativos, com CLI, API inicial em FastAPI, persistência em JSON/PostgreSQL, testes automatizados e arquitetura em camadas.</strong>
+  <strong>Aplicação em Python para consultar, simular, cadastrar, editar e excluir escalas de trabalho por dias, por horas e por turnos rotativos, com CLI, API em FastAPI integrada à demo, persistência em JSON/PostgreSQL, testes automatizados e arquitetura em camadas.</strong>
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=1000&lines=Simule+escalas+de+trabalho+com+Python;API+inicial+com+FastAPI;Arquitetura+com+POO%2C+Service+e+Repository;Persist%C3%AAncia+em+JSON+e+PostgreSQL;Testes+automatizados+com+Pytest" alt="Typing SVG">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=2800&pause=900&color=00B4D8&center=true&vCenter=true&width=1000&lines=Simule+escalas+de+trabalho+com+Python;API+FastAPI+integrada+%C3%A0+demo;Arquitetura+com+POO%2C+Service+e+Repository;Persist%C3%AAncia+em+JSON+e+PostgreSQL;Testes+automatizados+com+Pytest" alt="Typing SVG">
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.12.0-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.13.0-00B4D8?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/STATUS-EM%20EVOLU%C3%87%C3%83O-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PYTHON-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=061A2B">
   <img src="https://img.shields.io/badge/API-FASTAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white&labelColor=061A2B">
@@ -34,7 +34,7 @@
   <a href="#-sobre-o-projeto">Sobre</a> •
   <a href="#-versão-atual">Versão atual</a> •
   <a href="#-funcionalidades">Funcionalidades</a> •
-  <a href="#-api-inicial-v0110">API</a> •
+  <a href="#-api-v0130">API</a> •
   <a href="#-arquitetura">Arquitetura</a> •
   <a href="#-persistência-json-e-postgresql">Persistência</a> •
   <a href="#-testes-automatizados">Testes</a> •
@@ -59,8 +59,8 @@
       <p>Sequências manuais, por blocos e modelos prontos.</p>
     </td>
     <td width="25%" align="center">
-      <h3>⚡ API inicial</h3>
-      <p>Endpoints HTTP com FastAPI na v0.11.0.</p>
+      <h3>⚡ API integrada</h3>
+      <p>Demo web consumindo FastAPI local na v0.13.0.</p>
     </td>
   </tr>
 </table>
@@ -89,7 +89,7 @@ A aplicação começou como um simulador de escala `6x3` no terminal, mas evolui
 - arquitetura com Programação Orientada a Objetos;
 - camada de service;
 - camada de repository;
-- API inicial com FastAPI;
+- API integrada com FastAPI;
 - testes automatizados;
 - demo web interativa para apresentação do projeto.
 
@@ -99,11 +99,28 @@ O foco do projeto é transformar uma necessidade comum de consulta de escala em 
 
 ## 🚀 Versão atual
 
-**Versão:** `v0.12.0 - API com CRUD de escalas salvas`
+**Versão:** `v0.13.0 - Demo web consumindo API local`
 
-A `v0.12.0` adiciona um CRUD completo de escalas salvas pela API, permitindo listar, criar, buscar, editar e excluir escalas por meio de endpoints HTTP.
+A `v0.13.0` conecta a demo web com a API FastAPI local. A interface agora consegue verificar conexão, carregar modelos prontos, listar escalas salvas, criar novas escalas, excluir escalas e executar simulações de modelos prontos por HTTP.
 
-Essa evolução transforma a API em uma camada mais completa do projeto, reaproveitando a lógica existente de services e repositories, mantendo o JSON como persistência padrão.
+Essa evolução aproxima o projeto de um sistema web real: o frontend deixa de depender apenas de dados locais e passa a consumir o backend criado nas versões anteriores.
+
+### Resumo da v0.13.0
+
+| Área | Evolução |
+|---|---|
+| Demo web | Integração com API FastAPI local |
+| CORS | Configuração para permitir consumo da API pela demo |
+| Health | Card visual verificando conexão com o backend |
+| Modelos | Demo carregando modelos via `GET /api/v1/modelos` |
+| Escalas salvas | Demo listando escalas via `GET /api/v1/escalas` |
+| Cadastro | Demo criando escalas via `POST /api/v1/escalas` |
+| Exclusão | Demo excluindo escalas via `DELETE /api/v1/escalas/{nome}` |
+| Simulação | Demo simulando modelos prontos via endpoints de simulação |
+| Documentação | API docs, requests manuais, README e CHANGELOG atualizados |
+| Testes | Testes automatizados preservados |
+
+Até a versão anterior, a API já possuía CRUD completo de escalas salvas. Nesta versão, a demo web passa a consumir essa API local, validando a comunicação entre frontend e backend.
 
 ### Resumo da v0.12.0
 
@@ -120,8 +137,6 @@ Essa evolução transforma a API em uma camada mais completa do projeto, reaprov
 | Testes | Testes automatizados para os novos endpoints |
 | Documentação | README, CHANGELOG, API docs e requests atualizados |
 
-Até a versão anterior, o projeto já possuía CLI, demo web, persistência em JSON/PostgreSQL, testes e arquitetura em camadas. Nesta versão, parte das funcionalidades do simulador passou a ser exposta por endpoints HTTP, preparando o caminho para uma futura integração com frontend, usuários, login e painel web.
-
 ### Resumo da v0.11.0
 
 | Área | Evolução |
@@ -135,25 +150,22 @@ Até a versão anterior, o projeto já possuía CLI, demo web, persistência em 
 | Testes | Testes automatizados para os endpoints da API |
 | Validação manual | Testes realizados com Thunder Client |
 
----
-
-## ✅ Principais entregas da v0.12.0
+## ✅ Principais entregas da v0.13.0
 
 | Categoria | Entrega |
 |---|---|
-| API | CRUD completo de escalas salvas |
-| FastAPI | Novo router `api/routes/escalas.py` |
-| Listagem | `GET /api/v1/escalas` |
-| Criação | `POST /api/v1/escalas` |
-| Busca | `GET /api/v1/escalas/{nome}` |
-| Edição | `PUT /api/v1/escalas/{nome}` |
-| Exclusão | `DELETE /api/v1/escalas/{nome}` |
-| Service | Reaproveitamento do `EscalaService` |
-| Repository | Uso do repository padrão do projeto |
-| Testes | Testes automatizados com `pytest` |
-| Documentação | README, CHANGELOG e documentação da API atualizados |
-
----
+| Frontend | Demo web consumindo a API local |
+| API | CORS configurado para desenvolvimento local e GitHub Pages |
+| Health | Card de status da API na demo |
+| Modelos | Modelos carregados diretamente da rota `/api/v1/modelos` |
+| Escalas salvas | Listagem de escalas salvas consumindo `/api/v1/escalas` |
+| Cadastro | Cadastro de escalas pela interface usando `POST /api/v1/escalas` |
+| Exclusão | Exclusão de escalas pela interface usando `DELETE /api/v1/escalas/{nome}` |
+| Simulação | Simulação de modelos prontos usando `/api/v1/simulacao/status` |
+| Próximos dias | Linha do tempo e calendário usando `/api/v1/simulacao/proximos-dias` |
+| Documentação | API.md e requests manuais atualizados |
+| Estabilidade | Correções na renderização das escalas salvas na demo |
+| Limitação conhecida | Escalas personalizadas salvas ainda não são simuladas por nome pela API |
 
 ## 📊 Linha de evolução
 
@@ -174,7 +186,7 @@ timeline
          : Repository para banco relacional
     v0.10 : Demo web profissional
           : Páginas separadas e documentação visual
-    v0.11 : API inicial
+    v0.11 : API integrada
           : FastAPI e endpoints HTTP
     v0.12 : CRUD de escalas salvas
           : Listar, criar, buscar, editar e excluir escalas pela API
@@ -211,7 +223,7 @@ A solução foi evoluindo em camadas:
 4. **Arquitetura com POO, Service e Repository** para organizar o código.
 5. **PostgreSQL funcional** como alternativa de persistência.
 6. **Demo web** para apresentação visual do projeto.
-7. **API inicial com FastAPI** para expor funcionalidades via HTTP.
+7. **API integrada com FastAPI** para expor funcionalidades via HTTP.
 
 ---
 
@@ -257,7 +269,7 @@ O projeto suporta:
 - JSON como persistência padrão;
 - PostgreSQL como persistência alternativa configurável.
 
-### API inicial
+### API integrada
 
 A partir da `v0.11.0`, o projeto passa a expor funcionalidades por endpoints HTTP usando FastAPI.
 
@@ -346,17 +358,25 @@ Escolha uma opção:
 
 ---
 
-## ⚡ API v0.12.0
+## ⚡ API v0.13.0
 
 ## Versão atual
 
 ```text
-v0.12.0 - API com CRUD de escalas salvas
+v0.13.0 - Demo web consumindo API local
 ```
 
-A versão `v0.12.0` adiciona um CRUD completo de escalas salvas pela API, permitindo listar, criar, buscar, editar e excluir escalas por meio de endpoints HTTP.
+A versão `v0.13.0` mantém o CRUD de escalas salvas criado na `v0.12.0` e adiciona integração prática entre a demo web e a API FastAPI local.
 
-Essa evolução transforma a API em uma camada mais completa do projeto, reaproveitando a lógica existente de serviços e repositories.
+A demo agora consome a API para:
+
+- verificar se o backend está online;
+- carregar modelos prontos;
+- listar escalas salvas;
+- criar novas escalas salvas;
+- excluir escalas salvas;
+- simular modelos prontos;
+- exibir próximos dias em linha do tempo e calendário.
 
 ---
 
@@ -390,9 +410,40 @@ http://127.0.0.1:8000/docs
 | `PUT`    | `/api/v1/escalas/{nome}`          | Edita uma escala salva pelo nome            |
 | `DELETE` | `/api/v1/escalas/{nome}`          | Exclui uma escala salva pelo nome           |
 
+### Integração com a demo web
+
+A demo web em `docs/demo/` usa a API local em:
+
+```text
+http://127.0.0.1:8000
+```
+
+Para testar corretamente:
+
+1. execute a API com `uvicorn api.app:app --reload`;
+2. abra a demo por um servidor local;
+3. confira o card de status da API;
+4. use os modelos prontos para simular;
+5. teste criar, recarregar e excluir escalas salvas.
+
+> Observação: a simulação pela API ainda trabalha com `modelo_id` dos modelos prontos. Escalas personalizadas salvas podem ser cadastradas e excluídas pela demo, mas a simulação personalizada por nome fica para uma evolução futura.
+
 ---
 
 ## Evolução recente
+
+### v0.13.0
+
+* Demo web consumindo a API local.
+* Configuração de CORS para permitir integração entre frontend e backend.
+* Card de status da API na página do simulador.
+* Modelos carregados pela rota `/api/v1/modelos`.
+* Escalas salvas carregadas pela rota `/api/v1/escalas`.
+* Cadastro de escalas salvas via interface web.
+* Exclusão de escalas salvas via interface web.
+* Simulação de modelos prontos via API.
+* Requisições manuais atualizadas em `docs/api_requests.http`.
+* Documentação da API atualizada.
 
 ### v0.12.0
 
@@ -405,18 +456,25 @@ http://127.0.0.1:8000/docs
 
 ### v0.11.0
 
-* API inicial com FastAPI.
-* Endpoints de health check, modelos, status e próximos dias.
+* Estrutura inicial da API com FastAPI.
+* Endpoint `/health`.
+* Endpoint `/api/v1/modelos`.
+* Endpoint `/api/v1/simulacao/status`.
+* Endpoint `/api/v1/simulacao/proximos-dias`.
+* Testes automatizados para a API.
 
 ### v0.10.0
 
-* Demo web profissional separada em páginas.
+* Demo web profissional.
+* Páginas de apresentação, documentação, sobre e termos.
+* Interface visual para portfólio.
 
 ### v0.9.0
 
-* Suporte funcional a PostgreSQL.
-
----
+* PostgreSQL funcional.
+* Repository pattern aplicado.
+* JSON preservado como persistência padrão.
+* Testes automatizados protegendo a evolução.
 
 ## 🧱 Arquitetura
 
@@ -693,9 +751,19 @@ A demo possui páginas separadas para:
 - sobre;
 - termos.
 
-> Observação: a demo web atual é uma apresentação interativa do projeto e ainda não está conectada diretamente à API FastAPI.
+Na `v0.13.0`, a página do simulador passa a consumir a API FastAPI local durante o desenvolvimento.
 
----
+Recursos integrados à API:
+
+- verificação de conexão com o backend;
+- carregamento de modelos prontos;
+- listagem de escalas salvas;
+- cadastro de escalas salvas;
+- exclusão de escalas salvas;
+- simulação de modelos prontos;
+- renderização dos próximos dias em linha do tempo e calendário.
+
+> Observação: para a integração funcionar localmente, a API deve estar rodando em `http://127.0.0.1:8000`.
 
 ## 🧪 Testes automatizados
 
@@ -931,26 +999,27 @@ Possíveis funcionalidades futuras:
 |---|---|
 | `v0.9.0` | PostgreSQL funcional |
 | `v0.10.0` | Demo web profissional |
-| `v0.11.0` | API inicial com FastAPI |
+| `v0.11.0` | API integrada com FastAPI |
 | `v0.12.0` | API com CRUD de escalas salvas |
+| `v0.13.0` | Demo web consumindo API local |
 
 ### Próximas versões sugeridas
 
 | Versão | Objetivo |
 |---|---|
-| `v0.13.0` | Integração frontend + API |
-| `v0.14.0` | Usuários e login |
+| `v0.14.0` | Simular escalas personalizadas salvas pela API |
+| `v0.15.0` | Usuários e login |
 | `v1.0.0` | Primeira versão completa do sistema |
 
 ### Melhorias técnicas planejadas
 
-- Evoluir a API para usar escalas salvas.
-- Integrar frontend com API.
+- Permitir simular escalas salvas personalizadas por nome ou ID.
 - Criar schemas de request/response mais detalhados.
-- Separar camada de serviços da API.
+- Separar camada de serviços da API de forma mais explícita.
 - Criar autenticação em versão futura.
 - Preparar deploy da API.
 - Evoluir testes de integração.
+- Consumir uma API publicada em produção, não apenas API local.
 
 ### Melhorias de produto planejadas
 
@@ -961,8 +1030,6 @@ Possíveis funcionalidades futuras:
 - Relatórios.
 - Exportação de dados.
 - Notificações.
-
----
 
 ## 🧭 Linha de evolução técnica
 
@@ -1037,9 +1104,9 @@ Mesmo com o CRUD de escalas salvas implementado na API, o projeto ainda possui l
 
 ---
 
-## ✅ Status da v0.12.0
+## ✅ Status da v0.13.0
 
-A `v0.12.0` está funcional para o objetivo da versão.
+A `v0.13.0` está funcional para o objetivo da versão.
 
 Entregas confirmadas:
 
@@ -1047,14 +1114,22 @@ Entregas confirmadas:
 - JSON continua como persistência padrão.
 - PostgreSQL permanece funcional como alternativa.
 - API FastAPI continua funcionando.
-- CRUD de escalas salvas implementado pela API.
-- Endpoints de listagem, criação, busca, edição e exclusão funcionando.
+- CRUD de escalas salvas preservado.
+- CORS configurado para integração local.
+- Demo web verifica conexão com a API.
+- Demo web carrega modelos pela API.
+- Demo web lista escalas salvas pela API.
+- Demo web cria escalas salvas pela API.
+- Demo web exclui escalas salvas pela API.
+- Demo web simula modelos prontos pela API.
 - Testes automatizados passando.
 - Testes manuais realizados com Thunder Client.
 - Documentação da API atualizada.
 - Requisições manuais documentadas.
 
----
+Limitação conhecida:
+
+- Escalas personalizadas salvas ainda não são simuladas por nome pela API.
 
 ## 📄 Licença
 
