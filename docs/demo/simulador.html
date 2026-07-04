@@ -58,12 +58,27 @@
         <main id="topo">
     <section class="section page-hero">
         <div class="section-heading reveal">
-            <span class="eyebrow"><i data-lucide="play-circle"></i> Demonstração interativa v0.9.0</span>
-            <h1>Escolha o tipo de escala e veja o projeto rodando.</h1>
+            <span class="eyebrow"><i data-lucide="plug-zap"></i> Integração com API v0.13.0</span>
+            <h1>Escolha o tipo de escala e veja a demo consumindo a API.</h1>
             <p>
-                Esta página concentra a demo interativa. Ela usa localStorage no navegador para simular escalas salvas,
-                enquanto o projeto Python real suporta JSON e PostgreSQL.
+                Esta página agora inicia a integração com a API FastAPI local do projeto.
+                A primeira validação é verificar se o backend está online em <strong>http://127.0.0.1:8000</strong>.
             </p>
+        </div>
+    </section>
+
+    <section class="section api-status-section">
+        <div class="glass-card reveal" id="apiStatusCard">
+            <span class="eyebrow"><i data-lucide="server"></i> Status da API</span>
+            <h3 id="apiStatusText">Verificando conexão...</h3>
+            <p id="apiStatusDescription">
+                A demo tentará se conectar à API local do projeto.
+            </p>
+
+            <button class="button secondary" id="apiRefreshButton" type="button">
+                Testar conexão novamente
+                <i data-lucide="refresh-cw"></i>
+            </button>
         </div>
     </section>
 
@@ -191,7 +206,7 @@
 
 
         <footer class="site-footer">
-            <p>Simulador de Escala de Trabalho · Demo web v0.9.0 · Python, PostgreSQL, JSON e arquitetura em camadas</p>
+            <p>Simulador de Escala de Trabalho · Demo web v0.13.0 · Python, FastAPI, PostgreSQL, JSON e arquitetura em camadas</p>
             <a href="#topo">Voltar ao topo</a>
         </footer>
     </body>

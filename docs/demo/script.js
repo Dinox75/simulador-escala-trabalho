@@ -1,6 +1,7 @@
 const TIPO_CICLO_DIAS = "ciclo_dias";
 const TIPO_CICLO_HORAS = "ciclo_horas";
 const TIPO_TURNO_ROTATIVO = "turno_rotativo";
+const API_BASE_URL = "http://127.0.0.1:8000";
 
 const STORAGE_KEY = "simulador_escala_demo_v09";
 const THEME_KEY = "simulador_escala_theme";
@@ -137,7 +138,11 @@ const elements = {
     heroStatusText: $("#heroStatusText"),
     heroProgressBar: $("#heroProgressBar"),
     heroStatusMeta: $("#heroStatusMeta"),
-    processResultText: $("#processResultText")
+    processResultText: $("#processResultText"),
+    apiStatusCard: $("#apiStatusCard"),
+    apiStatusText: $("#apiStatusText"),
+    apiStatusDescription: $("#apiStatusDescription"),
+    apiRefreshButton: $("#apiRefreshButton")
 };
 
 function cloneScale(scale) {
@@ -1089,6 +1094,68 @@ function configureMobileMenu() {
     });
 }
 
+async function apiRequest(endpoint, options = {}) {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+        },
+        ...options
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.detail || "Erro ao consumir a API.");
+    }
+
+    return data;
+}
+
+
+function setApiStatus(title, description, statusClass = "") {
+    if (!elements.apiStatusText || !elements.apiStatusDescription || !elements.apiStatusCard) {
+        return;
+    }
+
+    elements.apiStatusText.textContent = title;
+    elements.apiStatusDescription.textContent = description;
+
+    elements.apiStatusCard.classList.remove("api-online", "api-offline");
+
+    if (statusClass) {
+        elements.apiStatusCard.classList.add(statusClass);
+    }
+}
+
+
+async function checkApiHealth() {
+    if (!elements.apiStatusText) {
+        return;
+    }
+
+    setApiStatus(
+        "Verificando conexão...",
+        `Tentando conectar em ${API_BASE_URL}/health`
+    );
+
+    try {
+        const data = await apiRequest("/health");
+
+        setApiStatus(
+            "API conectada com sucesso",
+            `Backend online. Versão retornada: ${data.version}.`,
+            "api-online"
+        );
+    } catch (error) {
+        setApiStatus(
+            "API local não conectada",
+            `Inicie o backend com: uvicorn api.app:app --reload. Detalhe: ${error.message}`,
+            "api-offline"
+        );
+    }
+}
+
 function configureEvents() {
     if (elements.scaleTypeButtons) {
         elements.scaleTypeButtons.addEventListener("click", (event) => {
@@ -1158,6 +1225,10 @@ function configureEvents() {
     if (elements.resetScalesButton) {
         elements.resetScalesButton.addEventListener("click", resetSavedScales);
     }
+
+    if (elements.apiRefreshButton) {
+    elements.apiRefreshButton.addEventListener("click", checkApiHealth);
+    }
 }
 
 function bootInitialSimulation() {
@@ -1205,6 +1276,7 @@ function init() {
     configureMobileMenu();
     configureEvents();
     initSimulatorPage();
+    checkApiHealth();
     createLucideIcons();
 }
 
