@@ -19,35 +19,41 @@ const ESCALA_REAL_24_DIAS = [
 
 const PREDEFINED_MODELS = [
     {
+        id: "6x3",
         nome: "Escala 6x3",
         tipo: TIPO_CICLO_DIAS,
         dias_trabalho: 6,
         dias_folga: 3
     },
     {
+        id: "5x2",
         nome: "Escala 5x2",
         tipo: TIPO_CICLO_DIAS,
         dias_trabalho: 5,
         dias_folga: 2
     },
     {
+        id: "4x2",
         nome: "Escala 4x2",
         tipo: TIPO_CICLO_DIAS,
         dias_trabalho: 4,
         dias_folga: 2
     },
     {
+        id: "12x36",
         nome: "Escala 12x36",
         tipo: TIPO_CICLO_HORAS,
         horas_trabalho: 12,
         horas_folga: 36
     },
     {
+        id: "turno_rotativo_simples",
         nome: "Turno rotativo simples",
         tipo: TIPO_TURNO_ROTATIVO,
         sequencia_turnos: ["Manhã", "Manhã", "Tarde", "Tarde", "Noite", "Noite", "Folga", "Folga"]
     },
     {
+        id: "escala_real_24_dias",
         nome: "Minha escala real 24 dias",
         tipo: TIPO_TURNO_ROTATIVO,
         sequencia_turnos: ESCALA_REAL_24_DIAS
@@ -100,6 +106,7 @@ const state = {
     selectedType: TIPO_CICLO_DIAS,
     resultItems: [],
     savedScales: [],
+    availableModels: [],
     simulatorTurns: ["Manhã", "Tarde", "Noite", "Folga"],
     savedTurns: ["Manhã", "Tarde", "Noite", "Folga"],
     heroIndex: 0,
@@ -226,7 +233,9 @@ function renderModelButtons() {
         return;
     }
 
-    elements.modelButtons.innerHTML = PREDEFINED_MODELS
+    const models = state.availableModels.length ? state.availableModels : PREDEFINED_MODELS;
+
+    elements.modelButtons.innerHTML = models
         .map((model, index) => `
             <button class="model-button" type="button" data-model-index="${index}">
                 <span class="model-icon"><i data-lucide="${getModelIcon(model.tipo)}"></i></span>
@@ -1156,6 +1165,30 @@ async function checkApiHealth() {
     }
 }
 
+async function loadModelsFromApi() {
+    if (!elements.modelButtons) {
+        return;
+    }
+
+    try {
+        const data = await apiRequest("/api/v1/modelos");
+
+        if (!Array.isArray(data.modelos) || data.modelos.length === 0) {
+            throw new Error("A API não retornou modelos.");
+        }
+
+        state.availableModels = data.modelos;
+        renderModelButtons();
+
+        console.info("Modelos carregados da API:", data.modelos);
+    } catch (error) {
+        console.warn("Não foi possível carregar modelos da API. Usando modelos locais.", error);
+
+        state.availableModels = PREDEFINED_MODELS.map(cloneScale);
+        renderModelButtons();
+    }
+}
+
 function configureEvents() {
     if (elements.scaleTypeButtons) {
         elements.scaleTypeButtons.addEventListener("click", (event) => {
@@ -1180,7 +1213,9 @@ function configureEvents() {
                 return;
             }
 
-            const model = PREDEFINED_MODELS[Number(button.dataset.modelIndex)];
+            const models = state.availableModels.length ? state.availableModels : PREDEFINED_MODELS;
+            const model = models[Number(button.dataset.modelIndex)];
+
             applyModelToSimulator(cloneScale(model));
 
             const simulator = document.querySelector("#simulador");
@@ -1258,6 +1293,7 @@ function initSimulatorPage() {
     }
 
     state.savedScales = loadSavedScales();
+    state.availableModels = PREDEFINED_MODELS.map(cloneScale);
 
     renderDynamicFields();
     renderModelButtons();
@@ -1277,6 +1313,7 @@ function init() {
     configureEvents();
     initSimulatorPage();
     checkApiHealth();
+    loadModelsFromApi();
     createLucideIcons();
 }
 
