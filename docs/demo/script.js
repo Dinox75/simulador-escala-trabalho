@@ -498,7 +498,7 @@ function renderDynamicFields() {
                     <input id="offHours" type="number" min="1" value="36" required>
                 </label>
                 <label>
-                    Períodos para visualizar
+                    Dias para visualizar
                     <input id="quantityPeriods" type="number" min="1" max="30" value="6" required>
                 </label>
             </div>
@@ -682,56 +682,181 @@ function showResult(title, description, items) {
     });
 }
 
-function handleSimulatorSubmit(event) {
+function formatTime(date) {
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+
+    return `${hours}:${minutes}`;
+}
+
+function turnSequencesAreEqual(firstSequence, secondSequence) {
+    const first = normalizeTurns(firstSequence);
+    const second = normalizeTurns(secondSequence);
+
+    if (first.length !== second.length) {
+        return false;
+    }
+
+    return first.every((turn, index) => turn === second[index]);
+}
+
+function getSelectedModelForApi() {
+    const models = state.availableModels.length ? state.availableModels : PREDEFINED_MODELS;
+
+    if (state.selectedType === TIPO_CICLO_HORAS) {
+        const workHoursInput = $("#workHours");
+        const offHoursInput = $("#offHours");
+
+        if (!workHoursInput || !offHoursInput) {
+            return null;
+        }
+
+        const workHours = Number(workHoursInput.value);
+        const offHours = Number(offHoursInput.value);
+
+        return models.find((model) =>
+            model.tipo === TIPO_CICLO_HORAS
+            && Number(model.horas_trabalho) === workHours
+            && Number(model.horas_folga) === offHours
+        ) || null;
+    }
+
+    if (state.selectedType === TIPO_TURNO_ROTATIVO) {
+        const currentTurns = normalizeTurns(state.simulatorTurns);
+
+        return models.find((model) =>
+            model.tipo === TIPO_TURNO_ROTATIVO
+            && turnSequencesAreEqual(model.sequencia_turnos, currentTurns)
+        ) || null;
+    }
+
+    const workDaysInput = $("#workDays");
+    const offDaysInput = $("#offDays");
+
+    if (!workDaysInput || !offDaysInput) {
+        return null;
+    }
+
+    const workDays = Number(workDaysInput.value);
+    const offDays = Number(offDaysInput.value);
+
+    return models.find((model) =>
+        model.tipo === TIPO_CICLO_DIAS
+        && Number(model.dias_trabalho) === workDays
+        && Number(model.dias_folga) === offDays
+    ) || null;
+}
+
+async function handleSimulatorSubmit(event) {
     event.preventDefault();
 
     try {
+        const selectedModel = getSelectedModelForApi();
+
+        if (!selectedModel || !selectedModel.id) {
+            throw new Error(
+                "A simulação pela API está disponível apenas para modelos prontos carregados da API. " +
+                "Selecione um modelo como 6x3, 5x2, 4x2, 12x36 ou escala real 24 dias."
+            );
+        }
+
         if (state.selectedType === TIPO_CICLO_HORAS) {
-            const start = parseDateTimeInput($("#startDateTime").value);
-            const query = parseDateTimeInput($("#queryDateTime").value);
-            const workHours = Number($("#workHours").value);
-            const offHours = Number($("#offHours").value);
+            const startDateTime = parseDateTimeInput($("#startDateTime").value);
+            const queryDateTime = parseDateTimeInput($("#queryDateTime").value);
             const quantity = Number($("#quantityPeriods").value);
-            const status = calculateCycleHoursStatus(start, query, workHours, offHours);
-            const items = generateCycleHoursItems(start, quantity, workHours, offHours);
+
+            const statusPayload = {
+                modelo_id: selectedModel.id,
+                data_inicio: formatDate(startDateTime),
+                hora_inicio: formatTime(startDateTime),
+                data_consulta: formatDate(queryDateTime),
+                hora_consulta: formatTime(queryDateTime)
+            };
+
+            const nextDaysPayload = {
+                modelo_id: selectedModel.id,
+                data_inicio: formatDate(startDateTime),
+                hora_inicio: formatTime(startDateTime),
+                hora_consulta: formatTime(queryDateTime),
+                quantidade_dias: quantity
+            };
+
+            const statusData = await apiRequest("/api/v1/simulacao/status", {
+                method: "POST",
+                body: JSON.stringify(statusPayload)
+            });
+
+            const nextDaysData = await apiRequest("/api/v1/simulacao/proximos-dias", {
+                method: "POST",
+                body: JSON.stringify(nextDaysPayload)
+            });
+
+            const items = nextDaysData.dias.map((dia) => createTimelineItem(
+                dia.data,
+                dia.status,
+                dia.hora_consulta ? `Consulta às ${dia.hora_consulta}` : ""
+            ));
 
             showResult(
-                `Status: ${status}`,
-                `Na data ${formatDateTime(query)}, a escala ${workHours}x${offHours} indica: ${status}.`,
+                `Status: ${statusData.status}`,
+                `Resultado calculado pela API para ${statusData.modelo_nome}.`,
                 items
             );
+
+            console.info("Simulação 12x36 calculada pela API:", {
+                statusData,
+                nextDaysData
+            });
+
             return;
         }
 
-        const start = parseDateInput($("#startDate").value);
-        const query = parseDateInput($("#queryDate").value);
+        const startDate = parseDateInput($("#startDate").value);
+        const queryDate = parseDateInput($("#queryDate").value);
         const quantity = Number($("#quantityDays").value);
 
-        if (state.selectedType === TIPO_TURNO_ROTATIVO) {
-            const turns = normalizeTurns(state.simulatorTurns);
-            const status = calculateRotativeStatus(start, query, turns);
-            const items = generateRotativeItems(start, quantity, turns);
+        const statusPayload = {
+            modelo_id: selectedModel.id,
+            data_inicio: formatDate(startDate),
+            data_consulta: formatDate(queryDate)
+        };
 
-            showResult(
-                `Turno: ${status}`,
-                `Na data ${formatDate(query)}, a sequência indica: ${status}.`,
-                items
-            );
-            return;
-        }
+        const nextDaysPayload = {
+            modelo_id: selectedModel.id,
+            data_inicio: formatDate(startDate),
+            quantidade_dias: quantity
+        };
 
-        const workDays = Number($("#workDays").value);
-        const offDays = Number($("#offDays").value);
-        const status = calculateCycleDaysStatus(start, query, workDays, offDays);
-        const items = generateCycleDaysItems(start, quantity, workDays, offDays);
+        const statusData = await apiRequest("/api/v1/simulacao/status", {
+            method: "POST",
+            body: JSON.stringify(statusPayload)
+        });
+
+        const nextDaysData = await apiRequest("/api/v1/simulacao/proximos-dias", {
+            method: "POST",
+            body: JSON.stringify(nextDaysPayload)
+        });
+
+        const items = nextDaysData.dias.map((dia, index) => createTimelineItem(
+            dia.data,
+            dia.status,
+            `Dia ${index + 1} do período visualizado`
+        ));
 
         showResult(
-            `Status: ${status}`,
-            `Na data ${formatDate(query)}, a escala ${workDays}x${offDays} indica: ${status}.`,
+            state.selectedType === TIPO_TURNO_ROTATIVO
+                ? `Turno: ${statusData.status}`
+                : `Status: ${statusData.status}`,
+            `Resultado calculado pela API para ${statusData.modelo_nome}.`,
             items
         );
+
+        console.info("Simulação calculada pela API:", {
+            statusData,
+            nextDaysData
+        });
     } catch (error) {
-        showResult("Não foi possível simular", error.message, []);
+        showResult("Não foi possível simular pela API", error.message, []);
     }
 }
 
@@ -1347,7 +1472,7 @@ function bootInitialSimulation() {
 
     showResult(
         "Exemplo: Trabalhando",
-        "Este é um exemplo automático usando o modelo 6x3 da v0.13.0.",
+        "Este é um exemplo automático usando o modelo 6x3. Ao clicar em Simular agora, o cálculo será feito pela API.",
         items
     );
 }
