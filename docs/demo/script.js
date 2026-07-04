@@ -73,7 +73,7 @@ const HERO_FRAMES = [
     {
         line: "ESCALA_REPOSITORY=postgres",
         output: "Aplicação alternando de JSON para PostgreSQL",
-        status: "v0.9.0",
+        status: "v0.13.0",
         meta: "Configuração técnica por ambiente",
         progress: "68%"
     },
@@ -737,11 +737,12 @@ function handleSimulatorSubmit(event) {
 
 function renderSavedScales() {
     if (!elements.savedScalesList) {
+        console.warn("Elemento #savedScalesList não encontrado para renderização.");
         return;
     }
 
-    if (!state.savedScales.length) {
-        elements.savedScalesList.innerHTML = `<p class="turn-empty">Nenhuma escala salva.</p>`;
+    if (!Array.isArray(state.savedScales) || state.savedScales.length === 0) {
+        elements.savedScalesList.innerHTML = `<p class="turn-empty">Nenhuma escala salva encontrada na API.</p>`;
         return;
     }
 
@@ -759,9 +760,11 @@ function renderSavedScales() {
             </div>
         `)
         .join("");
+
+    createLucideIcons();
 }
 
-function handleSavedScaleSubmit(event) {
+async function handleSavedScaleSubmit(event) {
     event.preventDefault();
 
     const name = elements.savedName.value.trim();
@@ -802,12 +805,28 @@ function handleSavedScaleSubmit(event) {
         };
     }
 
-    state.savedScales.push(scale);
-    saveScales();
-    renderSavedScales();
-    elements.savedScaleForm.reset();
-    state.savedTurns = ["Manhã", "Tarde", "Noite", "Folga"];
-    renderSavedDynamicFields();
+    try {
+        const data = await apiRequest("/api/v1/escalas", {
+            method: "POST",
+            body: JSON.stringify(scale)
+        });
+
+        console.info("Escala criada pela API:", data);
+
+        await loadSavedScalesFromApi();
+
+        elements.savedScaleForm.reset();
+        state.savedTurns = ["Manhã", "Tarde", "Noite", "Folga"];
+        renderSavedDynamicFields();
+
+        showResult(
+            "Escala salva pela API",
+            `A escala "${scale.nome}" foi cadastrada com sucesso no backend.`,
+            state.resultItems
+        );
+    } catch (error) {
+        alert(`Não foi possível salvar a escala pela API: ${error.message}`);
+    }
 }
 
 function applySavedScale(index) {
@@ -839,16 +858,38 @@ function applySavedScale(index) {
     }
 }
 
-function deleteSavedScale(index) {
-    state.savedScales.splice(index, 1);
-    saveScales();
-    renderSavedScales();
+async function deleteSavedScale(index) {
+    const scale = state.savedScales[index];
+
+    if (!scale) {
+        return;
+    }
+
+    const confirmed = window.confirm(`Deseja excluir a escala "${scale.nome}" da API?`);
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        await apiRequest(`/api/v1/escalas/${encodeURIComponent(scale.nome)}`, {
+            method: "DELETE"
+        });
+
+        await loadSavedScalesFromApi();
+
+        showResult(
+            "Escala excluída pela API",
+            `A escala "${scale.nome}" foi removida do backend.`,
+            state.resultItems
+        );
+    } catch (error) {
+        alert(`Não foi possível excluir a escala pela API: ${error.message}`);
+    }
 }
 
-function resetSavedScales() {
-    state.savedScales = DEFAULT_SCALES.map(cloneScale);
-    saveScales();
-    renderSavedScales();
+async function resetSavedScales() {
+    await loadSavedScalesFromApi();
 }
 
 function updateScaleButtons() {
@@ -1112,7 +1153,8 @@ async function apiRequest(endpoint, options = {}) {
         ...options
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    const data = responseText ? JSON.parse(responseText) : {};
 
     if (!response.ok) {
         throw new Error(data.detail || "Erro ao consumir a API.");
@@ -1177,10 +1219,10 @@ async function loadModelsFromApi() {
             throw new Error("A API não retornou modelos.");
         }
 
-        state.availableModels = data.modelos;
+        state.availableModels = data.modelos.map(cloneScale);
         renderModelButtons();
 
-        console.info("Modelos carregados da API:", data.modelos);
+        console.info("Modelos carregados da API:", state.availableModels);
     } catch (error) {
         console.warn("Não foi possível carregar modelos da API. Usando modelos locais.", error);
 
@@ -1191,20 +1233,25 @@ async function loadModelsFromApi() {
 
 async function loadSavedScalesFromApi() {
     if (!elements.savedScalesList) {
+        console.warn("Elemento #savedScalesList não encontrado.");
         return;
     }
 
+    elements.savedScalesList.innerHTML = `<p class="turn-empty">Carregando escalas da API...</p>`;
+
     try {
         const data = await apiRequest("/api/v1/escalas");
+
+        console.info("Resposta completa de escalas da API:", data);
 
         if (!Array.isArray(data.escalas)) {
             throw new Error("A API não retornou uma lista de escalas.");
         }
 
-        state.savedScales = data.escalas;
+        state.savedScales = data.escalas.map(cloneScale);
         renderSavedScales();
 
-        console.info("Escalas salvas carregadas da API:", data.escalas);
+        console.info("Escalas salvas renderizadas:", state.savedScales);
     } catch (error) {
         console.warn("Não foi possível carregar escalas salvas da API. Usando localStorage.", error);
 
@@ -1286,7 +1333,7 @@ function configureEvents() {
     }
 
     if (elements.apiRefreshButton) {
-    elements.apiRefreshButton.addEventListener("click", checkApiHealth);
+        elements.apiRefreshButton.addEventListener("click", checkApiHealth);
     }
 }
 
@@ -1300,7 +1347,7 @@ function bootInitialSimulation() {
 
     showResult(
         "Exemplo: Trabalhando",
-        "Este é um exemplo automático usando o modelo 6x3 da v0.9.0.",
+        "Este é um exemplo automático usando o modelo 6x3 da v0.13.0.",
         items
     );
 }
