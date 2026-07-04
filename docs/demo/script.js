@@ -1189,6 +1189,30 @@ async function loadModelsFromApi() {
     }
 }
 
+async function loadSavedScalesFromApi() {
+    if (!elements.savedScalesList) {
+        return;
+    }
+
+    try {
+        const data = await apiRequest("/api/v1/escalas");
+
+        if (!Array.isArray(data.escalas)) {
+            throw new Error("A API não retornou uma lista de escalas.");
+        }
+
+        state.savedScales = data.escalas;
+        renderSavedScales();
+
+        console.info("Escalas salvas carregadas da API:", data.escalas);
+    } catch (error) {
+        console.warn("Não foi possível carregar escalas salvas da API. Usando localStorage.", error);
+
+        state.savedScales = loadSavedScales();
+        renderSavedScales();
+    }
+}
+
 function configureEvents() {
     if (elements.scaleTypeButtons) {
         elements.scaleTypeButtons.addEventListener("click", (event) => {
@@ -1314,6 +1338,7 @@ function init() {
     initSimulatorPage();
     checkApiHealth();
     loadModelsFromApi();
+    loadSavedScalesFromApi();
     createLucideIcons();
 }
 
