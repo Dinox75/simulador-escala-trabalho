@@ -815,19 +815,90 @@ function getSelectedModelForApi() {
     ) || null;
 }
 
+
+function generateCycleHoursDailyItems(start, quantity, workHours, offHours, queryReference) {
+    const items = [];
+
+    for (let index = 0; index < quantity; index += 1) {
+        const current = addDays(queryReference, index);
+        const status = calculateCycleHoursStatus(start, current, workHours, offHours);
+
+        items.push(createTimelineItem(
+            formatDate(current),
+            status,
+            `Consulta às ${formatTime(current)}`
+        ));
+    }
+
+    return items;
+}
+
+function simulateLocally(reason = "") {
+    if (state.selectedType === TIPO_CICLO_HORAS) {
+        const startDateTime = parseDateTimeInput($("#startDateTime").value);
+        const queryDateTime = parseDateTimeInput($("#queryDateTime").value);
+        const workHours = Number($("#workHours").value);
+        const offHours = Number($("#offHours").value);
+        const quantity = Number($("#quantityPeriods").value);
+
+        const status = calculateCycleHoursStatus(startDateTime, queryDateTime, workHours, offHours);
+        const items = generateCycleHoursDailyItems(startDateTime, quantity, workHours, offHours, queryDateTime);
+
+        showResult(
+            `Status: ${status}`,
+            reason || "Resultado calculado localmente pela demo para uma escala personalizada ou sem conexão com a API.",
+            items
+        );
+
+        return;
+    }
+
+    const startDate = parseDateInput($("#startDate").value);
+    const queryDate = parseDateInput($("#queryDate").value);
+    const quantity = Number($("#quantityDays").value);
+
+    if (state.selectedType === TIPO_TURNO_ROTATIVO) {
+        const turns = normalizeTurns(state.simulatorTurns);
+        const status = calculateRotativeStatus(startDate, queryDate, turns);
+        const items = generateRotativeItems(startDate, quantity, turns);
+
+        showResult(
+            `Turno: ${status}`,
+            reason || "Resultado calculado localmente pela demo para uma sequência de turnos personalizada.",
+            items
+        );
+
+        return;
+    }
+
+    const workDays = Number($("#workDays").value);
+    const offDays = Number($("#offDays").value);
+    const status = calculateCycleDaysStatus(startDate, queryDate, workDays, offDays);
+    const items = generateCycleDaysItems(startDate, quantity, workDays, offDays);
+
+    showResult(
+        `Status: ${status}`,
+        reason || "Resultado calculado localmente pela demo para uma escala personalizada ou sem conexão com a API.",
+        items
+    );
+}
+
+
 async function handleSimulatorSubmit(event) {
     event.preventDefault();
 
+    const selectedModel = getSelectedModelForApi();
+
+    if (!selectedModel || !selectedModel.id) {
+        simulateLocally(
+            "Essa escala não existe como modelo pronto da API nesta versão. " +
+            "Mesmo assim, a demo calculou o resultado localmente para você visualizar a escala."
+        );
+
+        return;
+    }
+
     try {
-        const selectedModel = getSelectedModelForApi();
-
-        if (!selectedModel || !selectedModel.id) {
-            throw new Error(
-                "A simulação pela API está disponível apenas para modelos prontos carregados da API. " +
-                "Selecione um modelo como 6x3, 5x2, 4x2, 12x36 ou escala real 24 dias."
-            );
-        }
-
         if (state.selectedType === TIPO_CICLO_HORAS) {
             const startDateTime = parseDateTimeInput($("#startDateTime").value);
             const queryDateTime = parseDateTimeInput($("#queryDateTime").value);
@@ -924,9 +995,15 @@ async function handleSimulatorSubmit(event) {
             nextDaysData
         });
     } catch (error) {
-        showResult("Não foi possível simular pela API", error.message, []);
+        console.warn("Não foi possível simular pela API. Usando cálculo local.", error);
+
+        simulateLocally(
+            `A API local não respondeu corretamente (${error.message}). ` +
+            "Para não travar a experiência, a demo calculou o resultado localmente."
+        );
     }
 }
+
 
 function renderSavedScales() {
     if (!elements.savedScalesList) {
