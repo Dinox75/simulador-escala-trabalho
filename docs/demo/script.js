@@ -3,7 +3,8 @@ const TIPO_CICLO_HORAS = "ciclo_horas";
 const TIPO_TURNO_ROTATIVO = "turno_rotativo";
 const API_BASE_URL = "http://127.0.0.1:8000";
 
-const STORAGE_KEY = "simulador_escala_demo_v09";
+const LEGACY_STORAGE_KEY = "simulador_escala_demo_v09";
+const STORAGE_KEY = "simulador_escala_demo_v013";
 const THEME_KEY = "simulador_escala_theme";
 
 const ESCALA_REAL_24_DIAS = [
@@ -64,33 +65,33 @@ const DEFAULT_SCALES = PREDEFINED_MODELS;
 
 const HERO_FRAMES = [
     {
-        line: "Repository conectado",
-        output: "Escala 6x3 salva no banco com sucesso",
-        status: "PostgreSQL",
-        meta: "Persistência relacional funcionando",
-        progress: "82%"
+        line: "GET /health",
+        output: "API conectada com sucesso · versão 0.13.0",
+        status: "API v0.13.0",
+        meta: "Backend local respondendo",
+        progress: "96%"
     },
     {
-        line: "ESCALA_REPOSITORY=postgres",
-        output: "Aplicação alternando de JSON para PostgreSQL",
-        status: "v0.13.0",
-        meta: "Configuração técnica por ambiente",
-        progress: "68%"
+        line: "GET /api/v1/modelos",
+        output: "Modelos 6x3, 5x2, 4x2, 12x36 e turnos carregados",
+        status: "Modelos",
+        meta: "Frontend consumindo dados reais",
+        progress: "88%"
     },
     {
-        line: "pytest",
-        output: "Testes de repository e armazenamento passando",
-        status: "Testado",
-        meta: "JSON preservado como padrão seguro",
-        progress: "94%"
+        line: "POST /api/v1/simulacao/status",
+        output: "Status calculado pela API e exibido no calendário",
+        status: "Simulação",
+        meta: "Linha do tempo e calendário atualizados",
+        progress: "92%"
     }
 ];
 
 const PROCESS_RESULTS = [
     "Modelo selecionado",
-    "Datas informadas",
-    "Ciclo calculado",
-    "Resultado exibido no calendário"
+    "API consultada",
+    "Status calculado",
+    "Calendário atualizado"
 ];
 
 const TURN_CLASSES = {
@@ -162,7 +163,7 @@ function hasSimulator() {
 
 function loadSavedScales() {
     try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY));
 
         if (Array.isArray(saved) && saved.length > 0) {
             return saved;
@@ -247,6 +248,13 @@ function renderModelButtons() {
         `)
         .join("");
 
+    configureActiveNavigation();
+    configureCursorGlow();
+    configureTiltCards();
+    configureCountUps();
+    configureCodeCopyButtons();
+    configureModelExplorer();
+    configureRoadmapFilters();
     createLucideIcons();
 }
 
@@ -619,23 +627,47 @@ function renderTimeline(items) {
 }
 
 function parseDateFromLabel(label) {
-    const [day, month, year] = label.split("/").map(Number);
+    const dateOnly = String(label).split(",")[0].trim().split(" ")[0];
+    const [day, month, year] = dateOnly.split("/").map(Number);
+
     return new Date(year, month - 1, day);
 }
 
-function renderCalendar(items) {
-    if (!elements.calendarGrid || !elements.calendarMonth) {
-        return;
-    }
+function getMonthKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
 
+    return `${year}-${month}`;
+}
+
+function groupItemsByMonth(items) {
+    const groups = new Map();
+
+    items.forEach((item) => {
+        const date = parseDateFromLabel(item.dateLabel);
+        const key = getMonthKey(date);
+
+        if (!groups.has(key)) {
+            groups.set(key, {
+                key,
+                monthBase: new Date(date.getFullYear(), date.getMonth(), 1),
+                items: []
+            });
+        }
+
+        groups.get(key).items.push(item);
+    });
+
+    return Array.from(groups.values())
+        .sort((first, second) => first.monthBase - second.monthBase);
+}
+
+function renderCalendarMonth(monthGroup) {
     const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-    const today = new Date();
-    const monthBase = items.length ? parseDateFromLabel(items[0].dateLabel) : today;
+    const monthBase = monthGroup.monthBase;
     const firstDay = new Date(monthBase.getFullYear(), monthBase.getMonth(), 1);
     const lastDay = new Date(monthBase.getFullYear(), monthBase.getMonth() + 1, 0);
-    const statusByDate = new Map(items.map((item) => [item.dateLabel, item.status]));
-
-    elements.calendarMonth.textContent = formatMonth(monthBase);
+    const statusByDate = new Map(monthGroup.items.map((item) => [item.dateLabel, item.status]));
 
     const cells = [];
 
@@ -661,8 +693,44 @@ function renderCalendar(items) {
         `);
     }
 
-    elements.calendarGrid.innerHTML = cells.join("");
+    return `
+        <section class="calendar-month-block">
+            <div class="calendar-heading">
+                <strong>${formatMonth(monthBase)}</strong>
+                <small>${monthGroup.items.length} dia(s) do período visualizado</small>
+            </div>
+
+            <div class="calendar-grid-month">
+                ${cells.join("")}
+            </div>
+        </section>
+    `;
 }
+
+function renderCalendar(items) {
+    if (!elements.calendarGrid || !elements.calendarMonth) {
+        return;
+    }
+
+    if (!items.length) {
+        elements.calendarMonth.textContent = "Calendário";
+        elements.calendarGrid.innerHTML = `<p class="turn-empty">O calendário aparecerá aqui depois da simulação.</p>`;
+        return;
+    }
+
+    const monthGroups = groupItemsByMonth(items);
+    const firstMonth = monthGroups[0].monthBase;
+    const lastMonth = monthGroups[monthGroups.length - 1].monthBase;
+
+    elements.calendarMonth.textContent = monthGroups.length === 1
+        ? formatMonth(firstMonth)
+        : `${formatMonth(firstMonth)} até ${formatMonth(lastMonth)}`;
+
+    elements.calendarGrid.innerHTML = monthGroups
+        .map(renderCalendarMonth)
+        .join("");
+}
+
 
 function showResult(title, description, items) {
     if (!elements.resultTitle || !elements.resultDescription || !elements.resultCard) {
@@ -886,6 +954,13 @@ function renderSavedScales() {
         `)
         .join("");
 
+    configureActiveNavigation();
+    configureCursorGlow();
+    configureTiltCards();
+    configureCountUps();
+    configureCodeCopyButtons();
+    configureModelExplorer();
+    configureRoadmapFilters();
     createLucideIcons();
 }
 
@@ -1152,6 +1227,13 @@ function updateThemeIcon(theme) {
     const iconName = theme === "dark" ? "moon" : "sun";
     elements.themeToggle.innerHTML = `<i data-lucide="${iconName}"></i>`;
 
+    configureActiveNavigation();
+    configureCursorGlow();
+    configureTiltCards();
+    configureCountUps();
+    configureCodeCopyButtons();
+    configureModelExplorer();
+    configureRoadmapFilters();
     createLucideIcons();
 }
 
@@ -1498,6 +1580,245 @@ function initSimulatorPage() {
     bootInitialSimulation();
 }
 
+
+
+/* =========================================================
+   Super interações - v0.13.1
+   ========================================================= */
+
+const MODEL_DETAILS = {
+    "6x3": {
+        title: "Escala 6x3",
+        description: "Ciclo por dias com seis dias de trabalho e três dias de folga. É um bom modelo para demonstrar ciclos longos e viradas de mês.",
+        type: "Ciclo por dias",
+        config: "6 trabalho · 3 folga",
+        test: "Simule 45 ou 60 dias"
+    },
+    "5x2": {
+        title: "Escala 5x2",
+        description: "Ciclo por dias com cinco dias de trabalho e dois dias de folga. É simples para explicar a lógica de ciclo e comparar com rotinas administrativas.",
+        type: "Ciclo por dias",
+        config: "5 trabalho · 2 folga",
+        test: "Compare semanas completas"
+    },
+    "4x2": {
+        title: "Escala 4x2",
+        description: "Ciclo por dias com quatro dias de trabalho e dois dias de folga. Ajuda a testar ciclos menores e repetitivos.",
+        type: "Ciclo por dias",
+        config: "4 trabalho · 2 folga",
+        test: "Veja a repetição mensal"
+    },
+    "12x36": {
+        title: "Escala 12x36",
+        description: "Ciclo por horas com doze horas de trabalho e trinta e seis horas de folga. Usa data e hora no cálculo.",
+        type: "Ciclo por horas",
+        config: "12h trabalho · 36h folga",
+        test: "Teste horários diferentes"
+    },
+    "turno": {
+        title: "Turno rotativo simples",
+        description: "Sequência de turnos em que cada posição representa um dia do ciclo. Útil para demonstrar alternância entre manhã, tarde, noite e folga.",
+        type: "Turno rotativo",
+        config: "Manhã · Tarde · Noite · Folga",
+        test: "Monte uma sequência manual"
+    },
+    "real24": {
+        title: "Escala real 24 dias",
+        description: "Modelo maior com 24 posições, útil para testar uma rotina com tarde, noite, manhã e folgas em um ciclo mais realista.",
+        type: "Turno rotativo",
+        config: "Sequência de 24 dias",
+        test: "Simule 24 ou 48 dias"
+    }
+};
+
+function configureActiveNavigation() {
+    const currentPage = window.location.pathname.split("/").pop() || "index.html";
+
+    $$(".nav-links a").forEach((link) => {
+        const linkPage = link.getAttribute("href");
+        link.classList.toggle("active", linkPage === currentPage);
+    });
+}
+
+function configureCursorGlow() {
+    const cursorGlow = $("#cursorGlow");
+
+    if (!cursorGlow || window.matchMedia("(pointer: coarse)").matches) {
+        return;
+    }
+
+    window.addEventListener("pointermove", (event) => {
+        cursorGlow.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`;
+    }, { passive: true });
+}
+
+function configureTiltCards() {
+    if (window.matchMedia("(pointer: coarse)").matches) {
+        return;
+    }
+
+    $$(".tilt-card").forEach((card) => {
+        card.addEventListener("pointermove", (event) => {
+            const rect = card.getBoundingClientRect();
+            const x = ((event.clientX - rect.left) / rect.width - 0.5) * 10;
+            const y = ((event.clientY - rect.top) / rect.height - 0.5) * -10;
+
+            card.style.transform = `perspective(900px) rotateX(${y}deg) rotateY(${x}deg) translateY(-4px)`;
+        });
+
+        card.addEventListener("pointerleave", () => {
+            card.style.transform = "";
+        });
+    });
+}
+
+function configureCountUps() {
+    const counters = $$("[data-count-up]");
+
+    if (!counters.length) {
+        return;
+    }
+
+    const animateCounter = (counter) => {
+        const target = Number(counter.dataset.countUp);
+        const duration = 900;
+        const startTime = performance.now();
+
+        const update = (currentTime) => {
+            const progress = Math.min((currentTime - startTime) / duration, 1);
+            const value = Math.round(progress * target);
+
+            counter.textContent = `${value}+`;
+
+            if (progress < 1) {
+                window.requestAnimationFrame(update);
+            }
+        };
+
+        window.requestAnimationFrame(update);
+    };
+
+    if (!("IntersectionObserver" in window)) {
+        counters.forEach(animateCounter);
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) {
+                return;
+            }
+
+            animateCounter(entry.target);
+            observer.unobserve(entry.target);
+        });
+    }, { threshold: 0.45 });
+
+    counters.forEach((counter) => observer.observe(counter));
+}
+
+function configureCodeCopyButtons() {
+    $$("pre").forEach((block) => {
+        if (block.dataset.copyReady === "true") {
+            return;
+        }
+
+        block.dataset.copyReady = "true";
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "copy-code-button";
+        button.textContent = "Copiar";
+
+        button.addEventListener("click", async () => {
+            const text = block.innerText.replace("Copiar", "").trim();
+
+            try {
+                await navigator.clipboard.writeText(text);
+                button.textContent = "Copiado";
+                window.setTimeout(() => {
+                    button.textContent = "Copiar";
+                }, 1400);
+            } catch (error) {
+                button.textContent = "Falhou";
+                window.setTimeout(() => {
+                    button.textContent = "Copiar";
+                }, 1400);
+            }
+        });
+
+        block.prepend(button);
+    });
+}
+
+function configureModelExplorer() {
+    const cards = $$("[data-model-demo]");
+    const title = $("#modelDetailTitle");
+    const description = $("#modelDetailDescription");
+    const type = $("#modelDetailType");
+    const config = $("#modelDetailConfig");
+    const test = $("#modelDetailTest");
+
+    if (!cards.length || !title || !description || !type || !config || !test) {
+        return;
+    }
+
+    const showModel = (key) => {
+        const model = MODEL_DETAILS[key];
+
+        if (!model) {
+            return;
+        }
+
+        title.textContent = model.title;
+        description.textContent = model.description;
+        type.textContent = model.type;
+        config.textContent = model.config;
+        test.textContent = model.test;
+
+        cards.forEach((card) => {
+            card.classList.toggle("active", card.dataset.modelDemo === key);
+        });
+
+        if (window.gsap) {
+            window.gsap.fromTo(
+                "#modelDetailCard",
+                { y: 12, opacity: 0.82 },
+                { y: 0, opacity: 1, duration: 0.35, ease: "power2.out" }
+            );
+        }
+    };
+
+    cards.forEach((card) => {
+        card.addEventListener("click", () => showModel(card.dataset.modelDemo));
+    });
+
+    showModel("6x3");
+}
+
+function configureRoadmapFilters() {
+    const buttons = $$("[data-roadmap-filter]");
+    const items = $$("[data-roadmap-status]");
+
+    if (!buttons.length || !items.length) {
+        return;
+    }
+
+    buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+            const filter = button.dataset.roadmapFilter;
+
+            buttons.forEach((item) => item.classList.remove("active"));
+            button.classList.add("active");
+
+            items.forEach((item) => {
+                const visible = filter === "all" || item.dataset.roadmapStatus === filter;
+                item.classList.toggle("is-hidden", !visible);
+            });
+        });
+    });
+}
+
 function init() {
     configureTheme();
     configureTabs();
@@ -1511,6 +1832,13 @@ function init() {
     checkApiHealth();
     loadModelsFromApi();
     loadSavedScalesFromApi();
+    configureActiveNavigation();
+    configureCursorGlow();
+    configureTiltCards();
+    configureCountUps();
+    configureCodeCopyButtons();
+    configureModelExplorer();
+    configureRoadmapFilters();
     createLucideIcons();
 }
 

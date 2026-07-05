@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Roadmap visual do projeto Simulador de Escala de Trabalho, com versões entregues, próximas etapas e evolução planejada.">
+    <title>Roadmap | Simulador de Escala v0.13.1</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap"
+        rel="stylesheet"
+    >
+    <link rel="stylesheet" href="style.css">
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+    <div class="theme-flash" id="themeFlash" aria-hidden="true"></div>
+    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+    <div class="background-scene" aria-hidden="true">
+        <span class="orb orb-a"></span>
+        <span class="orb orb-b"></span>
+        <span class="orb orb-c"></span>
+        <span class="grid-overlay"></span>
+        <span class="grain-overlay"></span>
+    </div>
+
+    <header class="site-header" id="siteHeader">
+        <a class="brand" href="index.html" aria-label="Ir para a página inicial">
+            <span class="brand-mark">SE</span>
+            <span>
+                <strong>Simulador de Escala</strong>
+                <small>Planejamento de turnos</small>
+            </span>
+        </a>
+
+        <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
+            <a href="index.html">Início</a>
+            <a href="simulador.html">Simulador</a>
+            <a href="modelos.html">Modelos</a>
+            <a href="roadmap.html">Roadmap</a>
+            <a href="documentacao.html">Documentação</a>
+            <a href="sobre.html">Sobre</a>
+            <a href="termos.html">Termos</a>
+        </nav>
+
+        <div class="header-actions">
+            <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro ou escuro">
+                <i data-lucide="moon"></i>
+            </button>
+
+            <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </header>
+
+    <main id="topo">
+        <section class="section page-hero">
+            <div class="section-heading reveal">
+                <span class="eyebrow">
+                    <i data-lucide="map"></i>
+                    Roadmap do projeto
+                </span>
+
+                <h1>O caminho de um script simples para um produto web.</h1>
+
+                <p>
+                    O Simulador de Escala evolui por etapas: primeiro a regra, depois arquitetura, persistência,
+                    API, interface e, futuramente, usuários, deploy e simulação personalizada por escala salva.
+                </p>
+            </div>
+        </section>
+
+        <section class="section roadmap-control-section">
+            <div class="roadmap-controls glass-card reveal">
+                <span class="eyebrow">
+                    <i data-lucide="filter"></i>
+                    Filtro rápido
+                </span>
+
+                <div class="roadmap-filter-row">
+                    <button class="tab-button active" type="button" data-roadmap-filter="all">Tudo</button>
+                    <button class="tab-button" type="button" data-roadmap-filter="done">Entregue</button>
+                    <button class="tab-button" type="button" data-roadmap-filter="next">Próximo</button>
+                    <button class="tab-button" type="button" data-roadmap-filter="future">Futuro</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="section roadmap-section">
+            <div class="roadmap-timeline">
+                <article class="roadmap-phase reveal" data-roadmap-status="done">
+                    <span class="roadmap-version">v0.1 → v0.4</span>
+                    <div>
+                        <h3>Base do simulador</h3>
+                        <p>Cálculo por dias, menu, validações, cadastro e persistência inicial.</p>
+                    </div>
+                    <strong>Entregue</strong>
+                </article>
+
+                <article class="roadmap-phase reveal" data-roadmap-status="done">
+                    <span class="roadmap-version">v0.5 → v0.7</span>
+                    <div>
+                        <h3>Turnos e demo inicial</h3>
+                        <p>Ciclo por horas, turnos rotativos, modelos prontos e primeira demo visual.</p>
+                    </div>
+                    <strong>Entregue</strong>
+                </article>
+
+                <article class="roadmap-phase reveal" data-roadmap-status="done">
+                    <span class="roadmap-version">v0.8 → v0.10</span>
+                    <div>
+                        <h3>Arquitetura e apresentação</h3>
+                        <p>POO, Service, Repository, PostgreSQL e site com páginas separadas.</p>
+                    </div>
+                    <strong>Entregue</strong>
+                </article>
+
+                <article class="roadmap-phase reveal" data-roadmap-status="done">
+                    <span class="roadmap-version">v0.11 → v0.13</span>
+                    <div>
+                        <h3>API e integração</h3>
+                        <p>FastAPI, endpoints HTTP, CRUD de escalas e demo consumindo API local.</p>
+                    </div>
+                    <strong>Entregue</strong>
+                </article>
+
+                <article class="roadmap-phase reveal roadmap-next" data-roadmap-status="next">
+                    <span class="roadmap-version">v0.14</span>
+                    <div>
+                        <h3>Simular escalas personalizadas</h3>
+                        <p>Permitir que escalas cadastradas pelo usuário sejam simuladas diretamente pela API.</p>
+                    </div>
+                    <strong>Próximo</strong>
+                </article>
+
+                <article class="roadmap-phase reveal" data-roadmap-status="future">
+                    <span class="roadmap-version">v0.15</span>
+                    <div>
+                        <h3>Usuários e login</h3>
+                        <p>Separar dados por usuário e preparar base para área do colaborador.</p>
+                    </div>
+                    <strong>Futuro</strong>
+                </article>
+
+                <article class="roadmap-phase reveal" data-roadmap-status="future">
+                    <span class="roadmap-version">v1.0</span>
+                    <div>
+                        <h3>Primeira versão completa</h3>
+                        <p>API publicada, painel web, colaboradores, escalas vinculadas e experiência mais próxima de produto.</p>
+                    </div>
+                    <strong>Futuro</strong>
+                </article>
+            </div>
+        </section>
+
+        <section class="section cta-section">
+            <div class="glass-card cta-card reveal">
+                <span class="eyebrow">
+                    <i data-lucide="flag"></i>
+                    Próxima decisão técnica
+                </span>
+
+                <h2>O próximo passo deve ser pequeno, testável e bem documentado.</h2>
+
+                <p>
+                    A melhor evolução depois da v0.13.1 é criar uma rota capaz de simular escalas salvas personalizadas,
+                    porque isso completa a ponte entre cadastro, persistência e simulação.
+                </p>
+
+                <div class="hero-actions">
+                    <a class="button primary" href="modelos.html">
+                        Ver modelos
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+                    <a class="button ghost" href="documentacao.html">
+                        Rever arquitetura
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>
+            Simulador de Escala de Trabalho · Demo web v0.13.1 · Python, FastAPI,
+            PostgreSQL, JSON e arquitetura em camadas
+        </p>
+        <a href="#topo">Voltar ao topo</a>
+    </footer>
+</body>
+</html>

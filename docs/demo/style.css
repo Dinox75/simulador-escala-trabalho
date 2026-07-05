@@ -2022,3 +2022,456 @@ select:focus {
         min-height: auto;
     }
 }
+
+
+/* =========================================================
+   Super atualização visual - v0.13.1
+   ========================================================= */
+
+.cursor-glow {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    width: 360px;
+    height: 360px;
+    border-radius: 999px;
+    pointer-events: none;
+    opacity: 0.22;
+    background: radial-gradient(circle, rgba(94, 234, 212, 0.28), transparent 62%);
+    transform: translate3d(-50%, -50%, 0);
+    transition: opacity 260ms ease;
+}
+
+.nav-links a.active {
+    color: var(--text);
+}
+
+.nav-links a.active::after {
+    width: 100%;
+}
+
+.hero-upgraded {
+    position: relative;
+}
+
+.hero-upgraded::before {
+    content: "";
+    position: absolute;
+    inset: 8% auto auto 4%;
+    width: 160px;
+    height: 160px;
+    border: 1px solid rgba(94, 234, 212, 0.2);
+    border-radius: 40px;
+    transform: rotate(18deg);
+    opacity: 0.35;
+    animation: orbitPulse 6s ease-in-out infinite;
+}
+
+.landing-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.landing-badge-row span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.44);
+    backdrop-filter: blur(12px);
+    font-size: 0.88rem;
+    transition: transform var(--transition), border-color var(--transition), background var(--transition);
+}
+
+.landing-badge-row span:hover {
+    transform: translateY(-3px);
+    border-color: rgba(94, 234, 212, 0.42);
+    background: rgba(94, 234, 212, 0.1);
+}
+
+.hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.hero-metric {
+    padding: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 1.2rem;
+    background:
+        radial-gradient(circle at top left, rgba(94, 234, 212, 0.15), transparent 42%),
+        rgba(15, 23, 42, 0.5);
+}
+
+.hero-metric strong {
+    display: block;
+    font-family: "Sora", sans-serif;
+    font-size: 1.55rem;
+    line-height: 1;
+}
+
+.hero-metric small {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--muted);
+}
+
+.api-flow-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.api-flow-card::before {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(94, 234, 212, 0.22), transparent 28%),
+        radial-gradient(circle at 80% 30%, rgba(56, 189, 248, 0.18), transparent 32%),
+        radial-gradient(circle at 50% 90%, rgba(139, 92, 246, 0.12), transparent 32%);
+    animation: apiGlow 8s linear infinite;
+    pointer-events: none;
+}
+
+.api-flow-inner {
+    position: relative;
+    z-index: 1;
+}
+
+.api-flow-line {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 0.75rem;
+    align-items: center;
+    margin: 1.25rem;
+}
+
+.api-flow-node {
+    padding: 0.9rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    background: rgba(2, 6, 23, 0.5);
+    text-align: center;
+}
+
+.api-flow-node strong {
+    display: block;
+}
+
+.api-flow-node small {
+    color: var(--muted);
+}
+
+.api-arrow {
+    opacity: 0.75;
+}
+
+.quick-guide {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.quick-guide span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0.95rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.045);
+    color: var(--muted);
+    font-weight: 800;
+}
+
+.api-status-card-pro {
+    position: relative;
+    overflow: hidden;
+}
+
+.api-status-card-pro::after {
+    content: "";
+    position: absolute;
+    inset: auto -10% -45% 45%;
+    height: 160px;
+    border-radius: 50%;
+    background: rgba(94, 234, 212, 0.18);
+    filter: blur(42px);
+}
+
+.api-online {
+    border-color: rgba(34, 197, 94, 0.42);
+}
+
+.api-offline {
+    border-color: rgba(251, 113, 133, 0.42);
+}
+
+.highlight-card {
+    border-color: rgba(94, 234, 212, 0.38);
+    background:
+        radial-gradient(circle at top right, rgba(94, 234, 212, 0.14), transparent 36%),
+        var(--surface);
+}
+
+.tilt-card {
+    transform-style: preserve-3d;
+}
+
+.tilt-card > * {
+    transform: translateZ(10px);
+}
+
+.calendar-grid {
+    display: block;
+}
+
+.calendar-month-block {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.calendar-grid-month {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(34px, 1fr));
+    gap: 0.5rem;
+}
+
+.copy-code-button {
+    float: right;
+    margin: 0 0 0.75rem 0.75rem;
+    min-height: 32px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(94, 234, 212, 0.1);
+    color: var(--primary);
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.model-showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.model-showcase-card {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    gap: 0.85rem;
+    min-height: 280px;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background:
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.11), transparent 40%),
+        var(--surface);
+    cursor: pointer;
+    transition: transform var(--transition), border-color var(--transition), background var(--transition);
+}
+
+.model-showcase-card:hover {
+    transform: translateY(-7px);
+    border-color: rgba(94, 234, 212, 0.44);
+}
+
+.model-showcase-card i,
+.model-showcase-card svg {
+    width: 38px;
+    height: 38px;
+    color: var(--primary);
+}
+
+.model-showcase-card span {
+    width: fit-content;
+    padding: 0.4rem 0.65rem;
+    border: 1px solid rgba(94, 234, 212, 0.22);
+    border-radius: 999px;
+    color: var(--primary);
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.model-showcase-card p {
+    color: var(--muted);
+}
+
+.model-detail-card {
+    padding: 32px;
+}
+
+.model-detail-card h2 {
+    margin-top: 1rem;
+}
+
+.model-detail-card p {
+    color: var(--muted);
+}
+
+.model-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 1.5rem;
+}
+
+.model-detail-grid div {
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.model-detail-grid small,
+.model-detail-grid strong {
+    display: block;
+}
+
+.model-detail-grid small {
+    color: var(--muted);
+}
+
+.model-detail-grid strong {
+    margin-top: 0.35rem;
+    font-family: Sora, Inter, sans-serif;
+}
+
+.roadmap-controls {
+    padding: 24px;
+}
+
+.roadmap-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.roadmap-timeline {
+    position: relative;
+    display: grid;
+    gap: 16px;
+}
+
+.roadmap-timeline::before {
+    content: "";
+    position: absolute;
+    left: 88px;
+    top: 12px;
+    bottom: 12px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary), var(--accent), var(--secondary));
+    opacity: 0.35;
+}
+
+.roadmap-phase {
+    position: relative;
+    display: grid;
+    grid-template-columns: 160px 1fr auto;
+    gap: 18px;
+    align-items: center;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    transition: opacity var(--transition), transform var(--transition), border-color var(--transition);
+}
+
+.roadmap-phase:hover {
+    transform: translateX(6px);
+    border-color: rgba(94, 234, 212, 0.36);
+}
+
+.roadmap-phase.is-hidden {
+    display: none;
+}
+
+.roadmap-phase strong {
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(94, 234, 212, 0.1);
+    color: var(--primary);
+    white-space: nowrap;
+}
+
+.roadmap-version {
+    display: inline-flex;
+    justify-content: center;
+    padding: 10px 12px;
+    border: 1px solid rgba(94, 234, 212, 0.28);
+    border-radius: 999px;
+    background: rgba(94, 234, 212, 0.1);
+    color: var(--primary);
+    font-weight: 900;
+}
+
+.roadmap-next {
+    border-color: rgba(251, 191, 36, 0.46);
+}
+
+.roadmap-next strong {
+    color: var(--warning);
+    background: rgba(251, 191, 36, 0.12);
+}
+
+@keyframes apiGlow {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 980px) {
+    .hero-metrics,
+    .api-flow-line,
+    .model-showcase-grid,
+    .model-detail-grid,
+    .roadmap-phase {
+        grid-template-columns: 1fr;
+    }
+
+    .api-arrow {
+        transform: rotate(90deg);
+        justify-self: center;
+    }
+
+    .roadmap-timeline::before {
+        display: none;
+    }
+}
+
+@media (max-width: 620px) {
+    .cursor-glow {
+        display: none;
+    }
+
+    .calendar-month-block {
+        padding: 0.7rem;
+    }
+
+    .calendar-grid-month {
+        gap: 4px;
+    }
+
+    .model-detail-card {
+        padding: 22px;
+    }
+}

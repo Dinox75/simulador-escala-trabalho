@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta
-        name="description"
-        content="Simulador interativo de escalas consumindo API FastAPI local para modelos, escalas salvas e simulação."
-    >
-    <title>Simulador | Demo API v0.13.0</title>
+    <meta name="description" content="Simulador interativo de escalas consumindo API FastAPI local para modelos, escalas salvas e simulação com calendário multi-mês.">
+    <title>Simulador | Demo API v0.13.1</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +13,7 @@
         rel="stylesheet"
     >
     <link rel="stylesheet" href="style.css">
-
+    
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
     <script defer src="script.js"></script>
@@ -24,6 +21,7 @@
 <body>
     <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
     <div class="theme-flash" id="themeFlash" aria-hidden="true"></div>
+    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
     <div class="background-scene" aria-hidden="true">
         <span class="orb orb-a"></span>
@@ -45,52 +43,50 @@
         <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
             <a href="index.html">Início</a>
             <a href="simulador.html">Simulador</a>
+            <a href="modelos.html">Modelos</a>
+            <a href="roadmap.html">Roadmap</a>
             <a href="documentacao.html">Documentação</a>
             <a href="sobre.html">Sobre</a>
             <a href="termos.html">Termos</a>
         </nav>
 
         <div class="header-actions">
-            <button
-                class="icon-button"
-                id="themeToggle"
-                type="button"
-                aria-label="Alternar tema claro ou escuro"
-            >
+            <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro ou escuro">
                 <i data-lucide="moon"></i>
             </button>
 
-            <button
-                class="icon-button mobile-only"
-                id="mobileMenuButton"
-                type="button"
-                aria-label="Abrir menu"
-            >
+            <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu">
                 <i data-lucide="menu"></i>
             </button>
         </div>
     </header>
 
     <main id="topo">
-        <section class="section page-hero">
+        <section class="section page-hero simulator-hero">
             <div class="section-heading reveal">
                 <span class="eyebrow">
                     <i data-lucide="plug-zap"></i>
-                    Integração com API v0.13.0
+                    Integração com API v0.13.1
                 </span>
 
-                <h1>Escolha o tipo de escala e veja a demo consumindo a API.</h1>
+                <h1>Escolha uma escala, simule datas e visualize o calendário.</h1>
 
                 <p>
                     Esta página consome a API FastAPI local do projeto para verificar conexão,
                     carregar modelos, listar escalas salvas, cadastrar escalas, excluir escalas
                     e simular modelos prontos.
                 </p>
+
+                <div class="quick-guide">
+                    <span><i data-lucide="server"></i> 1. Rode a API local</span>
+                    <span><i data-lucide="mouse-pointer-click"></i> 2. Escolha um modelo</span>
+                    <span><i data-lucide="calendar-days"></i> 3. Veja linha do tempo e calendário</span>
+                </div>
             </div>
         </section>
 
         <section class="section api-status-section">
-            <div class="glass-card reveal" id="apiStatusCard">
+            <div class="glass-card reveal api-status-card-pro" id="apiStatusCard">
                 <span class="eyebrow">
                     <i data-lucide="server"></i>
                     Status da API
@@ -150,7 +146,7 @@
                         <div class="model-panel-header">
                             <span class="eyebrow">
                                 <i data-lucide="layers-3"></i>
-                                Modelos da API v0.13.0
+                                Modelos da API
                             </span>
 
                             <p>
@@ -209,7 +205,7 @@
                             <div class="calendar-shell">
                                 <div class="calendar-heading">
                                     <strong id="calendarMonth">Calendário</strong>
-                                    <small>Domingo a sábado</small>
+                                    <small>Domingo a sábado · agora com múltiplos meses</small>
                                 </div>
 
                                 <div class="calendar-grid" id="calendarGrid"></div>
@@ -229,7 +225,7 @@
                     <h3>Cadastre, aplique e teste escalas salvas na demo.</h3>
 
                     <p>
-                        Na versão v0.13.0, a demo consome as escalas salvas diretamente
+                        Na versão v0.13.1, a demo consome as escalas salvas diretamente
                         da API FastAPI local. O backend pode usar JSON ou PostgreSQL como
                         camada de persistência.
                     </p>
@@ -269,7 +265,7 @@
 
     <footer class="site-footer">
         <p>
-            Simulador de Escala de Trabalho · Demo web v0.13.0 · Python, FastAPI,
+            Simulador de Escala de Trabalho · Demo web v0.13.1 · Python, FastAPI,
             PostgreSQL, JSON e arquitetura em camadas
         </p>
         <a href="#topo">Voltar ao topo</a>

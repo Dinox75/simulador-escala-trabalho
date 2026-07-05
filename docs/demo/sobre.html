@@ -1,149 +1,235 @@
-    <!DOCTYPE html>
-    <html lang="pt-BR" data-theme="dark">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="História, evolução e objetivo do projeto Simulador de Escala de Trabalho.">
-        <title>Sobre | Simulador de Escala</title>
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="História, evolução e objetivo do projeto Simulador de Escala de Trabalho v0.13.1 com Python, FastAPI, JSON, PostgreSQL e demo web.">
+    <title>Sobre | Simulador de Escala v0.13.1</title>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="style.css">
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap"
+        rel="stylesheet"
+    >
+    <link rel="stylesheet" href="style.css">
+    
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
     <script defer src="script.js"></script>
+</head>
+<body>
+    <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+    <div class="theme-flash" id="themeFlash" aria-hidden="true"></div>
+    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
-    </head>
-    <body>
-        <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
-        <div class="theme-flash" id="themeFlash" aria-hidden="true"></div>
+    <div class="background-scene" aria-hidden="true">
+        <span class="orb orb-a"></span>
+        <span class="orb orb-b"></span>
+        <span class="orb orb-c"></span>
+        <span class="grid-overlay"></span>
+        <span class="grain-overlay"></span>
+    </div>
 
-        <div class="background-scene" aria-hidden="true">
-            <span class="orb orb-a"></span>
-            <span class="orb orb-b"></span>
-            <span class="orb orb-c"></span>
-            <span class="grid-overlay"></span>
-            <span class="grain-overlay"></span>
+    <header class="site-header" id="siteHeader">
+        <a class="brand" href="index.html" aria-label="Ir para a página inicial">
+            <span class="brand-mark">SE</span>
+            <span>
+                <strong>Simulador de Escala</strong>
+                <small>Planejamento de turnos</small>
+            </span>
+        </a>
+
+        <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
+            <a href="index.html">Início</a>
+            <a href="simulador.html">Simulador</a>
+            <a href="modelos.html">Modelos</a>
+            <a href="roadmap.html">Roadmap</a>
+            <a href="documentacao.html">Documentação</a>
+            <a href="sobre.html">Sobre</a>
+            <a href="termos.html">Termos</a>
+        </nav>
+
+        <div class="header-actions">
+            <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro ou escuro">
+                <i data-lucide="moon"></i>
+            </button>
+
+            <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu">
+                <i data-lucide="menu"></i>
+            </button>
         </div>
+    </header>
 
-        <header class="site-header" id="siteHeader">
-            <a class="brand" href="index.html" aria-label="Ir para a página inicial">
-                <span class="brand-mark">SE</span>
-                <span>
-                    <strong>Simulador de Escala</strong>
-                    <small>Planejamento de turnos</small>
-                </span>
-            </a>
+    <main id="topo">
+        <section class="section page-hero">
+            <div class="about-layout">
+                <div class="about-copy reveal">
+                    <span class="eyebrow">
+                        <i data-lucide="info"></i>
+                        Sobre o projeto
+                    </span>
 
-            <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
-                <a href="index.html">Início</a>
-                <a href="simulador.html">Simulador</a>
-                <a href="documentacao.html">Documentação</a>
-                <a href="sobre.html">Sobre</a>
-                <a href="termos.html">Termos</a>
-            </nav>
+                    <h1>Um projeto de portfólio com problema real, evolução incremental e foco em usabilidade.</h1>
 
-            <div class="header-actions">
-                <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro ou escuro">
-                    <i data-lucide="moon"></i>
-                </button>
-                <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu">
-                    <i data-lucide="menu"></i>
-                </button>
-            </div>
-        </header>
+                    <p>
+                        O Simulador de Escala de Trabalho nasceu como um projeto Python de linha de comando
+                        para praticar fundamentos importantes: datas, funções, validações, JSON, testes e
+                        organização de código.
+                    </p>
 
-        <main id="topo">
-    <section class="section page-hero">
-        <div class="about-layout">
-            <div class="about-copy reveal">
-                <span class="eyebrow"><i data-lucide="info"></i> Sobre o projeto</span>
-                <h1>Um projeto de portfólio com problema real, evolução incremental e foco em usabilidade.</h1>
-                <p>
-                    O Simulador de Escala de Trabalho nasceu como um projeto Python de linha de comando para praticar
-                    fundamentos importantes: datas, funções, validações, JSON, testes e organização de código.
-                </p>
-                <p>
-                    A evolução natural foi transformar a lógica em uma demo web e, depois, preparar a base para um sistema
-                    mais profissional com POO, Service, Repository e PostgreSQL.
-                </p>
-            </div>
+                    <p>
+                        A evolução transformou a lógica em uma demo web, depois em uma base com POO,
+                        Service, Repository, PostgreSQL e, agora, uma API FastAPI consumida pela interface.
+                    </p>
 
-            <div class="about-animation glass-card reveal" aria-label="Demonstração visual do projeto">
-                <div class="video-frame">
-                    <div class="video-topbar">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        <strong>demo_interativa.mp4</strong>
+                    <div class="hero-actions">
+                        <a class="button primary" href="simulador.html">
+                            Testar simulador
+                            <i data-lucide="arrow-right"></i>
+                        </a>
+                        <a class="button ghost" href="roadmap.html">
+                            Ver roadmap
+                        </a>
                     </div>
-                    <div class="video-stage">
-                        <div class="video-calendar">
-                            <span class="video-day active">Seg</span>
-                            <span class="video-day active">Ter</span>
-                            <span class="video-day">Qua</span>
-                            <span class="video-day folga">Qui</span>
-                            <span class="video-day folga">Sex</span>
-                            <span class="video-day active">Sáb</span>
-                            <span class="video-day">Dom</span>
+                </div>
+
+                <div class="about-animation glass-card reveal tilt-card" aria-label="Demonstração visual do projeto">
+                    <div class="video-frame">
+                        <div class="video-topbar">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <strong>demo_api_v013.mp4</strong>
                         </div>
-                        <div class="video-status-card">
-                            <small>Consulta</small>
-                            <strong id="aboutVideoStatus">Próxima folga encontrada</strong>
-                            <span class="video-loader"><em></em></span>
+
+                        <div class="video-stage">
+                            <div class="video-calendar">
+                                <span class="video-day active">API</span>
+                                <span class="video-day active">6x3</span>
+                                <span class="video-day">12x36</span>
+                                <span class="video-day folga">Folga</span>
+                                <span class="video-day folga">JSON</span>
+                                <span class="video-day active">SQL</span>
+                                <span class="video-day">Tests</span>
+                            </div>
+
+                            <div class="video-status-card">
+                                <small>v0.13.1</small>
+                                <strong id="aboutVideoStatus">Demo conectada à API local</strong>
+                                <span class="video-loader"><em></em></span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="section">
-        <div class="section-heading reveal">
-            <span class="eyebrow"><i data-lucide="history"></i> Evolução</span>
-            <h2>O projeto cresceu por versões, sem pular etapas.</h2>
-        </div>
+        <section class="section">
+            <div class="section-heading reveal">
+                <span class="eyebrow">
+                    <i data-lucide="target"></i>
+                    Objetivo
+                </span>
 
-        <div class="roadmap-list">
-            <article class="roadmap-item reveal">
-                <span>v0.1 → v0.4</span>
-                <h3>Base do simulador</h3>
-                <p>Cálculo por dias, menu, validações, cadastro e persistência inicial.</p>
-            </article>
+                <h2>Transformar uma dúvida recorrente em uma solução clara.</h2>
 
-            <article class="roadmap-item reveal">
-                <span>v0.5 → v0.7</span>
-                <h3>Turnos, modelos e demo</h3>
-                <p>Turno rotativo, modelos predefinidos, escala real de 24 dias e interface web demonstrativa.</p>
-            </article>
+                <p>
+                    A pergunta central é simples: <strong>hoje eu trabalho, folgo ou estou em qual turno?</strong>
+                    O projeto responde isso usando regras de ciclo, datas, turnos rotativos e uma interface visual.
+                </p>
+            </div>
 
-            <article class="roadmap-item reveal">
-                <span>v0.8</span>
-                <h3>POO e arquitetura</h3>
-                <p>Modelos de domínio, Service, Repository e melhor separação de responsabilidades.</p>
-            </article>
+            <div class="future-grid">
+                <article class="future-card reveal tilt-card">
+                    <i data-lucide="user-round-check"></i>
+                    <h3>Para o colaborador</h3>
+                    <p>Facilita a visualização de trabalho, folga e turno em datas específicas.</p>
+                    <ul>
+                        <li>Consulta rápida por data.</li>
+                        <li>Próximos dias em linha do tempo.</li>
+                        <li>Calendário visual.</li>
+                    </ul>
+                </article>
 
-            <article class="roadmap-item reveal">
-                <span>v0.9</span>
-                <h3>PostgreSQL funcional</h3>
-                <p>Banco relacional, repository PostgreSQL, variáveis de ambiente e testes automatizados.</p>
-            </article>
+                <article class="future-card reveal tilt-card">
+                    <i data-lucide="building-2"></i>
+                    <h3>Para a empresa</h3>
+                    <p>Serve como base para reduzir dúvidas operacionais e organizar modelos de escala.</p>
+                    <ul>
+                        <li>Modelos reutilizáveis.</li>
+                        <li>Menos retrabalho de conferência.</li>
+                        <li>Base para painel futuro.</li>
+                    </ul>
+                </article>
 
-            <article class="roadmap-item reveal">
-                <span>v0.10+</span>
-                <h3>Apresentação profissional</h3>
-                <p>Site separado por páginas, documentação mais clara e preparação para API, login e perfis.</p>
-            </article>
-        </div>
-    </section>
-</main>
+                <article class="future-card reveal tilt-card">
+                    <i data-lucide="code-2"></i>
+                    <h3>Para portfólio</h3>
+                    <p>Demonstra evolução real de projeto, arquitetura, testes, API e documentação.</p>
+                    <ul>
+                        <li>Python e FastAPI.</li>
+                        <li>POO, Service e Repository.</li>
+                        <li>JSON, PostgreSQL e Pytest.</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
 
+        <section class="section">
+            <div class="section-heading reveal">
+                <span class="eyebrow">
+                    <i data-lucide="history"></i>
+                    Evolução
+                </span>
 
-        <footer class="site-footer">
-            <p>Simulador de Escala de Trabalho · Demo web v0.9.0 · Python, PostgreSQL, JSON e arquitetura em camadas</p>
-            <a href="#topo">Voltar ao topo</a>
-        </footer>
-    </body>
-    </html>
+                <h2>O projeto cresceu por versões, sem pular etapas.</h2>
+
+                <p>
+                    Cada versão adicionou uma camada nova sem abandonar a base anterior.
+                </p>
+            </div>
+
+            <div class="roadmap-list">
+                <article class="roadmap-item reveal">
+                    <span>v0.1 → v0.4</span>
+                    <h3>Base do simulador</h3>
+                    <p>Cálculo por dias, menu, validações, cadastro e persistência inicial.</p>
+                </article>
+
+                <article class="roadmap-item reveal">
+                    <span>v0.5 → v0.7</span>
+                    <h3>Turnos, modelos e demo inicial</h3>
+                    <p>Turno rotativo, modelos predefinidos, escala real de 24 dias e interface web demonstrativa.</p>
+                </article>
+
+                <article class="roadmap-item reveal">
+                    <span>v0.8 → v0.10</span>
+                    <h3>Arquitetura e apresentação</h3>
+                    <p>POO, Service, Repository, PostgreSQL e site com páginas separadas.</p>
+                </article>
+
+                <article class="roadmap-item reveal">
+                    <span>v0.11 → v0.13</span>
+                    <h3>API e integração</h3>
+                    <p>FastAPI, endpoints HTTP, CRUD de escalas e demo consumindo API local.</p>
+                </article>
+
+                <article class="roadmap-item reveal">
+                    <span>v0.14+</span>
+                    <h3>Produto em evolução</h3>
+                    <p>Simulação de escalas personalizadas, usuários, login e deploy da API.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>
+            Simulador de Escala de Trabalho · Demo web v0.13.1 · Python, FastAPI,
+            PostgreSQL, JSON e arquitetura em camadas
+        </p>
+        <a href="#topo">Voltar ao topo</a>
+    </footer>
+</body>
+</html>

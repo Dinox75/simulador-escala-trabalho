@@ -117,6 +117,7 @@ Essa evolução aproxima o projeto de um sistema web real: o frontend deixa de d
 | Cadastro | Demo criando escalas via `POST /api/v1/escalas` |
 | Exclusão | Demo excluindo escalas via `DELETE /api/v1/escalas/{nome}` |
 | Simulação | Demo simulando modelos prontos via endpoints de simulação |
+| Calendário | Exibição melhorada para períodos com mais de um mês |
 | Documentação | API docs, requests manuais, README e CHANGELOG atualizados |
 | Testes | Testes automatizados preservados |
 
@@ -190,6 +191,8 @@ timeline
           : FastAPI e endpoints HTTP
     v0.12 : CRUD de escalas salvas
           : Listar, criar, buscar, editar e excluir escalas pela API
+    v0.13 : Demo consumindo API local
+          : Frontend integrado com FastAPI em ambiente de desenvolvimento
 ```
 
 ---
@@ -584,7 +587,8 @@ simulador-escala-trabalho/
 │       ├── __init__.py
 │       ├── health.py
 │       ├── modelos.py
-│       └── simulacao.py
+│       ├── simulacao.py
+│       └── escalas.py
 │
 ├── assets/
 │   └── banner.png
@@ -761,9 +765,12 @@ Recursos integrados à API:
 - cadastro de escalas salvas;
 - exclusão de escalas salvas;
 - simulação de modelos prontos;
-- renderização dos próximos dias em linha do tempo e calendário.
+- renderização dos próximos dias em linha do tempo e calendário;
+- exibição de múltiplos meses no calendário quando o período visualizado cruza a virada do mês.
 
 > Observação: para a integração funcionar localmente, a API deve estar rodando em `http://127.0.0.1:8000`.
+
+Na correção visual da v0.13.0, a página inicial da demo também foi atualizada para destacar a integração com FastAPI, o fluxo frontend → API → service → persistência e os recursos interativos do simulador.
 
 ## 🧪 Testes automatizados
 
@@ -1091,10 +1098,11 @@ Durante a evolução do projeto foram praticados conceitos como:
 
 ## ⚠️ Limitações atuais
 
-Mesmo com o CRUD de escalas salvas implementado na API, o projeto ainda possui limitações importantes:
+Mesmo com a demo web consumindo a API local, o projeto ainda possui limitações importantes:
 
-- a API ainda é local e não está em deploy;
-- a demo web ainda não consome a API;
+- a API ainda é local e não está em deploy público;
+- a demo web consome a API local, mas ainda não consome uma API publicada em produção;
+- escalas personalizadas salvas ainda não são simuladas por nome pela API;
 - ainda não possui login;
 - ainda não possui cadastro de usuários;
 - ainda não existe vínculo entre escala e colaborador;
