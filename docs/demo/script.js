@@ -111,6 +111,7 @@ const state = {
     simulatorTurns: ["Manhã", "Tarde", "Noite", "Folga"],
     savedTurns: ["Manhã", "Tarde", "Noite", "Folga"],
     selectedSavedScaleName: null,
+    isSavingScale: false,
     heroIndex: 0,
     processIndex: 0,
     scrollTicking: false
@@ -141,6 +142,8 @@ const elements = {
     savedType: $("#savedType"),
     savedDynamicFields: $("#savedDynamicFields"),
     savedScalesList: $("#savedScalesList"),
+    savedScaleSubmitButton: $("#savedScaleSubmitButton"),
+    savedScaleFeedback: $("#savedScaleFeedback"),
     resetScalesButton: $("#resetScalesButton"),
     heroTerminalLine: $("#heroTerminalLine"),
     heroTerminalOutput: $("#heroTerminalOutput"),
@@ -1181,6 +1184,24 @@ async function handleSimulatorSubmit(event) {
 
 
 
+
+function setSavedScaleFeedback(message, type = "info") {
+    if (!elements.savedScaleFeedback) {
+        return;
+    }
+
+    elements.savedScaleFeedback.textContent = message;
+    elements.savedScaleFeedback.dataset.feedbackType = type;
+}
+
+function getSavedScaleSubmitButton(fallbackButton = null) {
+    return fallbackButton
+        || elements.savedScaleSubmitButton
+        || elements.savedScaleForm?.querySelector('[data-save-scale-button]')
+        || elements.savedScaleForm?.querySelector('button[type="submit"]')
+        || elements.savedScaleForm?.querySelector('button');
+}
+
 function getScaleKey(scale) {
     return String(scale?.nome || "").trim().toLowerCase();
 }
@@ -1247,16 +1268,138 @@ function renderSavedScales() {
     createLucideIcons();
 }
 
-async function handleSavedScaleSubmit(event) {
-    event.preventDefault();
+async function saveScaleFromForm(button = null) {
+    if (!elements.savedScaleForm) {
+        return;
+    }
 
-    const submitButton = event.submitter || elements.savedScaleForm.querySelector('button[type="submit"]');
+    if (state.isSavingScale) {
+        return;
+    }
+
+    const submitButton = getSavedScaleSubmitButton(button);
     const originalButtonText = submitButton ? submitButton.innerHTML : "";
 
     const name = elements.savedName.value.trim();
     const type = elements.savedType.value;
 
     if (!name) {
+        setSavedScaleFeedback("Informe um nome para salvar a escala.", "error");
+        elements.savedName.focus();
+        return;
+    }
+
+    let scale;
+
+    if (type === TIPO_CICLO_HORAS) {
+        const workHoursInput = $("#savedWorkHours");
+        const offHoursInput = $("#savedOffHours");
+
+        if (!workHoursInput || !offHoursInput) {
+            setSavedScaleFeedback("Campos de horas não encontrados. Troque o tipo e tente novamente.", "error");
+            return;
+        }
+
+        scale = {
+            nome: name,
+            tipo,
+            horas_trabalho: Number(workHoursInput.value),
+            horas_folga: Number(offHoursInput.value)
+        };
+    } else if (type === TIPO_TURNO_ROTATIVO) {
+        const turns = normalizeTurns(state.savedTurns);
+
+        if (!turns.length) {
+            setSavedScaleFeedback("Adicione pelo menos um turno antes de salvar.", "error");
+            return;
+        }
+
+        scale = {
+            nome: name,
+            tipo,
+            sequencia_turnos: turns
+        };
+    } else {
+        const workDaysInput = $("#savedWorkDays");
+        const offDaysInput = $("#savedOffDays");
+
+        if (!workDaysInput || !offDaysInput) {
+            setSavedScaleFeedback("Campos de dias não encontrados. Troque o tipo e tente novamente.", "error");
+            return;
+        }
+
+        scale = {
+            nome: name,
+            tipo,
+            dias_trabalho: Number(workDaysInput.value),
+            dias_folga: Number(offDaysInput.value)
+        };
+    }
+
+    try {
+        state.isSavingScale = true;
+
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = `Salvando na API... <i data-lucide="loader-circle"></i>`;
+            createLucideIcons();
+        }
+
+        setSavedScaleFeedback(`Enviando "${scale.nome}" para a API...`, "info");
+        showSavedScalesLoading(`Salvando "${scale.nome}" na API...`);
+
+        console.info("Tentando salvar escala pela demo:", scale);
+
+        const data = await apiRequest("/api/v1/escalas", {
+            method: "POST",
+            body: JSON.stringify(scale)
+        });
+
+        console.info("Escala criada pela API:", data);
+
+        const createdScale = data.escala || scale;
+
+        upsertSavedScale(createdScale);
+        renderSavedScales();
+
+        elements.savedScaleForm.reset();
+        state.savedTurns = ["Manhã", "Tarde", "Noite", "Folga"];
+        renderSavedDynamicFields();
+
+        setSavedScaleFeedback(`Escala "${createdScale.nome}" salva com sucesso.`, "success");
+
+        showResult(
+            "Escala salva pela API",
+            `A escala "${createdScale.nome}" foi cadastrada com sucesso no backend. Ela já aparece na lista abaixo.`,
+            state.resultItems
+        );
+
+        await loadSavedScalesFromApi({ preserveCurrentOnEmpty: true });
+    } catch (error) {
+        renderSavedScales();
+        setSavedScaleFeedback(`Erro ao salvar: ${error.message}`, "error");
+        alert(`Não foi possível salvar a escala pela API: ${error.message}`);
+    } finally {
+        state.isSavingScale = false;
+
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonText;
+            createLucideIcons();
+        }
+    }
+}
+
+async function handleSavedScaleSubmit(event) {
+    event.preventDefault();
+
+    console.info("Submit detectado no formulário de escala salva.");
+
+    const name = elements.savedName.value.trim();
+    const type = elements.savedType.value;
+
+    if (!name) {
+        setSavedScaleFeedback("Informe um nome para a escala antes de salvar.", "error");
         return;
     }
 
@@ -1273,7 +1416,7 @@ async function handleSavedScaleSubmit(event) {
         const turns = normalizeTurns(state.savedTurns);
 
         if (!turns.length) {
-            alert("Adicione pelo menos um turno antes de salvar.");
+            setSavedScaleFeedback("Adicione pelo menos um turno antes de salvar.", "error");
             return;
         }
 
@@ -1292,13 +1435,10 @@ async function handleSavedScaleSubmit(event) {
     }
 
     try {
-        if (submitButton) {
-            submitButton.disabled = true;
-            submitButton.innerHTML = `Salvando na API... <i data-lucide="loader-circle"></i>`;
-            createLucideIcons();
-        }
+        setSavedScaleButtonLoading(true);
+        setSavedScaleFeedback(`Enviando "${scale.nome}" para a API...`, "info");
 
-        showSavedScalesLoading(`Salvando "${scale.nome}" na API...`);
+        console.info("Payload enviado para salvar escala:", scale);
 
         const data = await apiRequest("/api/v1/escalas", {
             method: "POST",
@@ -1309,12 +1449,19 @@ async function handleSavedScaleSubmit(event) {
 
         const createdScale = data.escala || scale;
 
-        upsertSavedScale(createdScale);
+        if (typeof upsertSavedScale === "function") {
+            upsertSavedScale(createdScale);
+        } else {
+            state.savedScales.push(cloneScale(createdScale));
+        }
+
         renderSavedScales();
 
         elements.savedScaleForm.reset();
         state.savedTurns = ["Manhã", "Tarde", "Noite", "Folga"];
         renderSavedDynamicFields();
+
+        setSavedScaleFeedback(`Escala "${createdScale.nome}" salva com sucesso.`, "success");
 
         showResult(
             "Escala salva pela API",
@@ -1325,13 +1472,10 @@ async function handleSavedScaleSubmit(event) {
         await loadSavedScalesFromApi({ preserveCurrentOnEmpty: true });
     } catch (error) {
         renderSavedScales();
+        setSavedScaleFeedback(`Erro ao salvar: ${error.message}`, "error");
         alert(`Não foi possível salvar a escala pela API: ${error.message}`);
     } finally {
-        if (submitButton) {
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalButtonText;
-            createLucideIcons();
-        }
+        setSavedScaleButtonLoading(false);
     }
 }
 
@@ -1856,9 +2000,25 @@ function configureEvents() {
         elements.savedScaleForm.addEventListener("click", handleTurnBuilderClick);
     }
 
+    const savedScaleSubmitButton = $("#savedScaleSubmitButton");
+
+    if (savedScaleSubmitButton && elements.savedScaleForm) {
+        savedScaleSubmitButton.addEventListener("click", () => {
+            console.info("Clique detectado no botão Salvar escala.");
+        });
+    }
+
+    if (elements.savedScaleSubmitButton) {
+        elements.savedScaleSubmitButton.addEventListener("click", async (event) => {
+            event.preventDefault();
+            await saveScaleFromForm(elements.savedScaleSubmitButton);
+        });
+    }
+
     if (elements.savedType) {
         elements.savedType.addEventListener("change", () => {
             renderSavedDynamicFields();
+            setSavedScaleFeedback("Preencha os dados da escala e clique em Salvar escala.", "info");
         });
     }
 
