@@ -14,5 +14,5 @@ def test_health_deve_retornar_status_ok():
     data = response.json()
 
     assert data["status"] == "ok"
-    assert data["version"] == "0.13.0"
+    assert data["version"] == "0.14.0"
     assert "Simulador de Escala de Trabalho" in data["message"]
