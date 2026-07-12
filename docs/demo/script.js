@@ -1302,7 +1302,7 @@ async function saveScaleFromForm(button = null) {
 
         scale = {
             nome: name,
-            tipo,
+            tipo: type,
             horas_trabalho: Number(workHoursInput.value),
             horas_folga: Number(offHoursInput.value)
         };
@@ -1316,7 +1316,7 @@ async function saveScaleFromForm(button = null) {
 
         scale = {
             nome: name,
-            tipo,
+            tipo: type,
             sequencia_turnos: turns
         };
     } else {
@@ -1330,7 +1330,7 @@ async function saveScaleFromForm(button = null) {
 
         scale = {
             nome: name,
-            tipo,
+            tipo: type,
             dias_trabalho: Number(workDaysInput.value),
             dias_folga: Number(offDaysInput.value)
         };
@@ -1395,88 +1395,7 @@ async function handleSavedScaleSubmit(event) {
 
     console.info("Submit detectado no formulário de escala salva.");
 
-    const name = elements.savedName.value.trim();
-    const type = elements.savedType.value;
-
-    if (!name) {
-        setSavedScaleFeedback("Informe um nome para a escala antes de salvar.", "error");
-        return;
-    }
-
-    let scale;
-
-    if (type === TIPO_CICLO_HORAS) {
-        scale = {
-            nome: name,
-            tipo,
-            horas_trabalho: Number($("#savedWorkHours").value),
-            horas_folga: Number($("#savedOffHours").value)
-        };
-    } else if (type === TIPO_TURNO_ROTATIVO) {
-        const turns = normalizeTurns(state.savedTurns);
-
-        if (!turns.length) {
-            setSavedScaleFeedback("Adicione pelo menos um turno antes de salvar.", "error");
-            return;
-        }
-
-        scale = {
-            nome: name,
-            tipo,
-            sequencia_turnos: turns
-        };
-    } else {
-        scale = {
-            nome: name,
-            tipo,
-            dias_trabalho: Number($("#savedWorkDays").value),
-            dias_folga: Number($("#savedOffDays").value)
-        };
-    }
-
-    try {
-        setSavedScaleButtonLoading(true);
-        setSavedScaleFeedback(`Enviando "${scale.nome}" para a API...`, "info");
-
-        console.info("Payload enviado para salvar escala:", scale);
-
-        const data = await apiRequest("/api/v1/escalas", {
-            method: "POST",
-            body: JSON.stringify(scale)
-        });
-
-        console.info("Escala criada pela API:", data);
-
-        const createdScale = data.escala || scale;
-
-        if (typeof upsertSavedScale === "function") {
-            upsertSavedScale(createdScale);
-        } else {
-            state.savedScales.push(cloneScale(createdScale));
-        }
-
-        renderSavedScales();
-
-        elements.savedScaleForm.reset();
-        state.savedTurns = ["Manhã", "Tarde", "Noite", "Folga"];
-        renderSavedDynamicFields();
-
-        setSavedScaleFeedback(`Escala "${createdScale.nome}" salva com sucesso.`, "success");
-
-        showResult(
-            "Escala salva pela API",
-            `A escala "${createdScale.nome}" foi cadastrada com sucesso no backend. Ela já aparece na lista abaixo.`,
-            state.resultItems
-        );
-
-        await loadSavedScalesFromApi({ preserveCurrentOnEmpty: true });
-    } catch (error) {
-        renderSavedScales();
-        setSavedScaleFeedback(`Erro ao salvar: ${error.message}`, "error");
-        alert(`Não foi possível salvar a escala pela API: ${error.message}`);
-    } finally {
-        setSavedScaleButtonLoading(false);
-    }
+    await saveScaleFromForm(event.submitter);
 }
 
 function applySavedScale(index) {
@@ -1998,21 +1917,6 @@ function configureEvents() {
     if (elements.savedScaleForm) {
         elements.savedScaleForm.addEventListener("submit", handleSavedScaleSubmit);
         elements.savedScaleForm.addEventListener("click", handleTurnBuilderClick);
-    }
-
-    const savedScaleSubmitButton = $("#savedScaleSubmitButton");
-
-    if (savedScaleSubmitButton && elements.savedScaleForm) {
-        savedScaleSubmitButton.addEventListener("click", () => {
-            console.info("Clique detectado no botão Salvar escala.");
-        });
-    }
-
-    if (elements.savedScaleSubmitButton) {
-        elements.savedScaleSubmitButton.addEventListener("click", async (event) => {
-            event.preventDefault();
-            await saveScaleFromForm(elements.savedScaleSubmitButton);
-        });
     }
 
     if (elements.savedType) {
