@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Simulador interativo de escalas consumindo API FastAPI local para modelos, escalas salvas e simulação com calendário multi-mês.">
-    <title>Simulador | Demo API v0.13.1</title>
+    <title>Simulador | Demo API v0.14.0</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,7 +66,7 @@
             <div class="section-heading reveal">
                 <span class="eyebrow">
                     <i data-lucide="plug-zap"></i>
-                    Integração com API v0.13.1
+                    Integração com API v0.14.0
                 </span>
 
                 <h1>Escolha uma escala, simule datas e visualize o calendário.</h1>
@@ -166,9 +166,9 @@
                         <div id="dynamicFields"></div>
 
                         <p class="turn-empty">
-                            Modelos prontos são calculados pela API. Se você aplicar ou montar uma escala personalizada
-                            que ainda não existe como modelo da API, a demo usa cálculo local como fallback para não
-                            travar a experiência do usuário.
+                            Modelos prontos e escalas salvas aplicadas pela lista são calculados pela API.
+                            Se você montar uma escala manual que ainda não foi salva, a demo usa cálculo local
+                            como fallback para não travar a experiência do usuário.
                         </p>
 
                         <button class="button primary full" type="submit">
@@ -222,12 +222,12 @@
                         Escalas salvas
                     </span>
 
-                    <h3>Cadastre, aplique e teste escalas salvas na demo.</h3>
+                    <h3>Cadastre, recarregue, aplique e simule escalas salvas pela API.</h3>
 
                     <p>
-                        Na versão v0.13.1, a demo consome as escalas salvas diretamente
-                        da API FastAPI local. O backend pode usar JSON ou PostgreSQL como
-                        camada de persistência.
+                        Na versão v0.14.0, a demo consome as escalas salvas diretamente
+                        da API FastAPI local. Ao salvar, a escala deve aparecer na lista abaixo
+                        e pode ser aplicada para simulação pelos novos endpoints do backend.
                     </p>
                 </div>
 
@@ -265,7 +265,7 @@
 
     <footer class="site-footer">
         <p>
-            Simulador de Escala de Trabalho · Demo web v0.13.1 · Python, FastAPI,
+            Simulador de Escala de Trabalho · Demo web v0.14.0 · Python, FastAPI,
             PostgreSQL, JSON e arquitetura em camadas
         </p>
         <a href="#topo">Voltar ao topo</a>

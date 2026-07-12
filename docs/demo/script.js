@@ -110,6 +110,7 @@ const state = {
     availableModels: [],
     simulatorTurns: ["Manhã", "Tarde", "Noite", "Folga"],
     savedTurns: ["Manhã", "Tarde", "Noite", "Folga"],
+    selectedSavedScaleName: null,
     heroIndex: 0,
     processIndex: 0,
     scrollTicking: false
@@ -263,6 +264,7 @@ function applyModelToSimulator(model) {
         return;
     }
 
+    state.selectedSavedScaleName = null;
     state.selectedType = model.tipo;
     updateScaleButtons();
 
@@ -884,14 +886,186 @@ function simulateLocally(reason = "") {
 }
 
 
+
+function currentSimulatorMatchesScale(scale) {
+    if (!scale || !hasSimulator()) {
+        return false;
+    }
+
+    if (scale.tipo !== state.selectedType) {
+        return false;
+    }
+
+    if (scale.tipo === TIPO_CICLO_HORAS) {
+        const workHoursInput = $("#workHours");
+        const offHoursInput = $("#offHours");
+
+        if (!workHoursInput || !offHoursInput) {
+            return false;
+        }
+
+        return Number(scale.horas_trabalho) === Number(workHoursInput.value)
+            && Number(scale.horas_folga) === Number(offHoursInput.value);
+    }
+
+    if (scale.tipo === TIPO_TURNO_ROTATIVO) {
+        return turnSequencesAreEqual(scale.sequencia_turnos, state.simulatorTurns);
+    }
+
+    const workDaysInput = $("#workDays");
+    const offDaysInput = $("#offDays");
+
+    if (!workDaysInput || !offDaysInput) {
+        return false;
+    }
+
+    return Number(scale.dias_trabalho) === Number(workDaysInput.value)
+        && Number(scale.dias_folga) === Number(offDaysInput.value);
+}
+
+function getSelectedSavedScaleForApi() {
+    if (!state.selectedSavedScaleName) {
+        return null;
+    }
+
+    const scale = state.savedScales.find((savedScale) =>
+        savedScale.nome === state.selectedSavedScaleName
+    );
+
+    if (!currentSimulatorMatchesScale(scale)) {
+        return null;
+    }
+
+    return scale;
+}
+
+async function simulateSavedScaleByApi(scale) {
+    if (!scale || !scale.nome) {
+        throw new Error("Escala salva inválida para simulação.");
+    }
+
+    const encodedName = encodeURIComponent(scale.nome);
+
+    if (state.selectedType === TIPO_CICLO_HORAS) {
+        const startDateTime = parseDateTimeInput($("#startDateTime").value);
+        const queryDateTime = parseDateTimeInput($("#queryDateTime").value);
+        const quantity = Number($("#quantityPeriods").value);
+
+        const statusPayload = {
+            data_inicio: formatDate(startDateTime),
+            hora_inicio: formatTime(startDateTime),
+            data_consulta: formatDate(queryDateTime),
+            hora_consulta: formatTime(queryDateTime)
+        };
+
+        const nextDaysPayload = {
+            data_inicio: formatDate(startDateTime),
+            hora_inicio: formatTime(startDateTime),
+            hora_consulta: formatTime(queryDateTime),
+            quantidade_dias: quantity
+        };
+
+        const statusData = await apiRequest(`/api/v1/escalas/${encodedName}/simulacao/status`, {
+            method: "POST",
+            body: JSON.stringify(statusPayload)
+        });
+
+        const nextDaysData = await apiRequest(`/api/v1/escalas/${encodedName}/simulacao/proximos-dias`, {
+            method: "POST",
+            body: JSON.stringify(nextDaysPayload)
+        });
+
+        const items = nextDaysData.dias.map((dia) => createTimelineItem(
+            dia.data,
+            dia.status,
+            dia.hora_consulta ? `Consulta às ${dia.hora_consulta}` : ""
+        ));
+
+        showResult(
+            `Status: ${statusData.status}`,
+            `Resultado calculado pela API usando a escala salva "${statusData.escala_nome}".`,
+            items
+        );
+
+        console.info("Escala salva simulada pela API:", {
+            scale,
+            statusData,
+            nextDaysData
+        });
+
+        return;
+    }
+
+    const startDate = parseDateInput($("#startDate").value);
+    const queryDate = parseDateInput($("#queryDate").value);
+    const quantity = Number($("#quantityDays").value);
+
+    const statusPayload = {
+        data_inicio: formatDate(startDate),
+        data_consulta: formatDate(queryDate)
+    };
+
+    const nextDaysPayload = {
+        data_inicio: formatDate(startDate),
+        quantidade_dias: quantity
+    };
+
+    const statusData = await apiRequest(`/api/v1/escalas/${encodedName}/simulacao/status`, {
+        method: "POST",
+        body: JSON.stringify(statusPayload)
+    });
+
+    const nextDaysData = await apiRequest(`/api/v1/escalas/${encodedName}/simulacao/proximos-dias`, {
+        method: "POST",
+        body: JSON.stringify(nextDaysPayload)
+    });
+
+    const items = nextDaysData.dias.map((dia, index) => createTimelineItem(
+        dia.data,
+        dia.status,
+        `Dia ${index + 1} do período visualizado`
+    ));
+
+    showResult(
+        state.selectedType === TIPO_TURNO_ROTATIVO
+            ? `Turno: ${statusData.status}`
+            : `Status: ${statusData.status}`,
+        `Resultado calculado pela API usando a escala salva "${statusData.escala_nome}".`,
+        items
+    );
+
+    console.info("Escala salva simulada pela API:", {
+        scale,
+        statusData,
+        nextDaysData
+    });
+}
+
+
 async function handleSimulatorSubmit(event) {
     event.preventDefault();
 
     const selectedModel = getSelectedModelForApi();
+    const selectedSavedScale = getSelectedSavedScaleForApi();
+
+    if (!selectedModel && selectedSavedScale) {
+        try {
+            await simulateSavedScaleByApi(selectedSavedScale);
+        } catch (error) {
+            console.warn("Não foi possível simular a escala salva pela API. Usando cálculo local.", error);
+
+            simulateLocally(
+                `A API não conseguiu simular a escala salva "${selectedSavedScale.nome}" (${error.message}). ` +
+                "Para não travar a experiência, a demo calculou o resultado localmente."
+            );
+        }
+
+        return;
+    }
 
     if (!selectedModel || !selectedModel.id) {
         simulateLocally(
-            "Essa escala não existe como modelo pronto da API nesta versão. " +
+            "Essa escala ainda não existe como modelo pronto da API e não há uma escala salva ativa correspondente. " +
             "Mesmo assim, a demo calculou o resultado localmente para você visualizar a escala."
         );
 
@@ -1005,6 +1179,38 @@ async function handleSimulatorSubmit(event) {
 }
 
 
+
+
+function getScaleKey(scale) {
+    return String(scale?.nome || "").trim().toLowerCase();
+}
+
+function upsertSavedScale(scale) {
+    if (!scale || !scale.nome) {
+        return;
+    }
+
+    const key = getScaleKey(scale);
+    const index = state.savedScales.findIndex((savedScale) =>
+        getScaleKey(savedScale) === key
+    );
+
+    if (index >= 0) {
+        state.savedScales[index] = cloneScale(scale);
+    } else {
+        state.savedScales.push(cloneScale(scale));
+    }
+}
+
+function showSavedScalesLoading(message = "Carregando escalas da API...") {
+    if (!elements.savedScalesList) {
+        return;
+    }
+
+    elements.savedScalesList.innerHTML = `<p class="turn-empty">${message}</p>`;
+}
+
+
 function renderSavedScales() {
     if (!elements.savedScalesList) {
         console.warn("Elemento #savedScalesList não encontrado para renderização.");
@@ -1012,7 +1218,7 @@ function renderSavedScales() {
     }
 
     if (!Array.isArray(state.savedScales) || state.savedScales.length === 0) {
-        elements.savedScalesList.innerHTML = `<p class="turn-empty">Nenhuma escala salva encontrada na API.</p>`;
+        elements.savedScalesList.innerHTML = `<p class="turn-empty">Nenhuma escala personalizada salva encontrada na API. Cadastre uma escala no formulário acima.</p>`;
         return;
     }
 
@@ -1043,6 +1249,9 @@ function renderSavedScales() {
 
 async function handleSavedScaleSubmit(event) {
     event.preventDefault();
+
+    const submitButton = event.submitter || elements.savedScaleForm.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton ? submitButton.innerHTML : "";
 
     const name = elements.savedName.value.trim();
     const type = elements.savedType.value;
@@ -1083,6 +1292,14 @@ async function handleSavedScaleSubmit(event) {
     }
 
     try {
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = `Salvando na API... <i data-lucide="loader-circle"></i>`;
+            createLucideIcons();
+        }
+
+        showSavedScalesLoading(`Salvando "${scale.nome}" na API...`);
+
         const data = await apiRequest("/api/v1/escalas", {
             method: "POST",
             body: JSON.stringify(scale)
@@ -1090,7 +1307,10 @@ async function handleSavedScaleSubmit(event) {
 
         console.info("Escala criada pela API:", data);
 
-        await loadSavedScalesFromApi();
+        const createdScale = data.escala || scale;
+
+        upsertSavedScale(createdScale);
+        renderSavedScales();
 
         elements.savedScaleForm.reset();
         state.savedTurns = ["Manhã", "Tarde", "Noite", "Folga"];
@@ -1098,11 +1318,20 @@ async function handleSavedScaleSubmit(event) {
 
         showResult(
             "Escala salva pela API",
-            `A escala "${scale.nome}" foi cadastrada com sucesso no backend.`,
+            `A escala "${createdScale.nome}" foi cadastrada com sucesso no backend. Ela já aparece na lista abaixo.`,
             state.resultItems
         );
+
+        await loadSavedScalesFromApi({ preserveCurrentOnEmpty: true });
     } catch (error) {
+        renderSavedScales();
         alert(`Não foi possível salvar a escala pela API: ${error.message}`);
+    } finally {
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonText;
+            createLucideIcons();
+        }
     }
 }
 
@@ -1127,6 +1356,14 @@ function applySavedScale(index) {
         $("#workDays").value = scale.dias_trabalho;
         $("#offDays").value = scale.dias_folga;
     }
+
+    state.selectedSavedScaleName = scale.nome;
+
+    showResult(
+        `Escala aplicada: ${scale.nome}`,
+        `${getTypeName(scale.tipo)} · ${getScaleSummary(scale)}. Agora clique em simular para calcular pela API usando a escala salva.`,
+        []
+    );
 
     const simulator = document.querySelector("#simulador");
 
@@ -1166,7 +1403,7 @@ async function deleteSavedScale(index) {
 }
 
 async function resetSavedScales() {
-    await loadSavedScalesFromApi();
+    await loadSavedScalesFromApi({ preserveCurrentOnEmpty: false });
 }
 
 function updateScaleButtons() {
@@ -1430,6 +1667,8 @@ function configureMobileMenu() {
 
 async function apiRequest(endpoint, options = {}) {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: options.method || "GET",
+        cache: "no-store",
         headers: {
             "Content-Type": "application/json",
             ...(options.headers || {})
@@ -1438,10 +1677,22 @@ async function apiRequest(endpoint, options = {}) {
     });
 
     const responseText = await response.text();
-    const data = responseText ? JSON.parse(responseText) : {};
+    let data = {};
+
+    try {
+        data = responseText ? JSON.parse(responseText) : {};
+    } catch (error) {
+        throw new Error("A API retornou uma resposta que não é JSON válido.");
+    }
+
+    console.info(`[API] ${options.method || "GET"} ${endpoint}`, {
+        status: response.status,
+        ok: response.ok,
+        data
+    });
 
     if (!response.ok) {
-        throw new Error(data.detail || "Erro ao consumir a API.");
+        throw new Error(data.detail || `Erro HTTP ${response.status} ao consumir a API.`);
     }
 
     return data;
@@ -1515,21 +1766,31 @@ async function loadModelsFromApi() {
     }
 }
 
-async function loadSavedScalesFromApi() {
+async function loadSavedScalesFromApi(options = {}) {
+    const { preserveCurrentOnEmpty = false } = options;
+
     if (!elements.savedScalesList) {
         console.warn("Elemento #savedScalesList não encontrado.");
         return;
     }
 
-    elements.savedScalesList.innerHTML = `<p class="turn-empty">Carregando escalas da API...</p>`;
+    showSavedScalesLoading();
 
     try {
-        const data = await apiRequest("/api/v1/escalas");
+        const data = await apiRequest(`/api/v1/escalas?_=${Date.now()}`);
 
         console.info("Resposta completa de escalas da API:", data);
 
         if (!Array.isArray(data.escalas)) {
             throw new Error("A API não retornou uma lista de escalas.");
+        }
+
+        if (preserveCurrentOnEmpty && data.escalas.length === 0 && state.savedScales.length > 0) {
+            console.warn(
+                "A API retornou lista vazia logo após salvar. Mantendo a escala recém-criada na interface até a próxima recarga."
+            );
+            renderSavedScales();
+            return;
         }
 
         state.savedScales = data.escalas.map(cloneScale);
@@ -1539,7 +1800,10 @@ async function loadSavedScalesFromApi() {
     } catch (error) {
         console.warn("Não foi possível carregar escalas salvas da API. Usando localStorage.", error);
 
-        state.savedScales = loadSavedScales();
+        if (!preserveCurrentOnEmpty || state.savedScales.length === 0) {
+            state.savedScales = loadSavedScales();
+        }
+
         renderSavedScales();
     }
 }
@@ -1553,6 +1817,7 @@ function configureEvents() {
                 return;
             }
 
+            state.selectedSavedScaleName = null;
             state.selectedType = button.dataset.type;
             updateScaleButtons();
             renderDynamicFields();
@@ -1631,7 +1896,7 @@ function bootInitialSimulation() {
 
     showResult(
         "Exemplo: Trabalhando",
-        "Este é um exemplo automático usando o modelo 6x3. Ao clicar em Simular agora, o cálculo será feito pela API.",
+        "Este é um exemplo automático usando o modelo 6x3. Modelos prontos e escalas salvas agora podem ser calculados pela API.",
         items
     );
 }
