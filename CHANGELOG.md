@@ -1,4 +1,54 @@
 
+## [v0.14.0] - Simulação de escalas salvas pela API
+
+### Adicionado
+
+- Endpoint `POST /api/v1/escalas/{nome}/simulacao/status`.
+- Endpoint `POST /api/v1/escalas/{nome}/simulacao/proximos-dias`.
+- Simulação de escalas salvas dos tipos `ciclo_dias`, `ciclo_horas` e `turno_rotativo`.
+- Schemas próprios para consulta de status e próximos dias de escalas salvas.
+- Validação de datas no formato `dd/mm/aaaa`.
+- Validação de horários no formato `HH:MM` para ciclos por horas.
+- Limite de `1` a `60` dias na consulta de próximos dias.
+- Testes automatizados para os novos endpoints.
+- Integração da demo com simulação de escalas salvas pelo nome.
+
+### Alterado
+
+- Versão da aplicação FastAPI atualizada para `0.14.0`.
+- Endpoint `/health` atualizado para retornar `0.14.0`.
+- Demo passou a diferenciar modelo pronto, escala salva aplicada e escala manual.
+- Escalas salvas aplicadas pela lista agora priorizam cálculo pelo backend.
+- Fallback local mantido para configurações manuais ainda não salvas.
+- Textos da demo atualizados para refletir a nova integração.
+
+### Corrigido
+
+- Corrigido o formulário de cadastro que não enviava a escala ao backend.
+- Corrigido `ReferenceError: tipo is not defined` no `script.js`.
+- Corrigido o payload de criação para usar `tipo: type`.
+- Melhorado o feedback visual durante o cadastro de escala.
+- Melhorada a atualização da lista após o `POST /api/v1/escalas`.
+
+### Testado
+
+- Criação e listagem de escalas pelo Thunder Client.
+- Simulação de ciclo por dias salvo.
+- Simulação de ciclo por horas salvo.
+- Simulação de turno rotativo salvo.
+- Escala inexistente.
+- Data inválida.
+- Horários obrigatórios ausentes.
+- Quantidade de dias acima do limite.
+- Integração manual entre demo web e API local.
+
+### Limitações conhecidas
+
+- A API ainda precisa ser executada localmente para integração completa com a demo.
+- Ainda não existe autenticação, cadastro de usuários ou vínculo com colaboradores.
+- A demo publicada no GitHub Pages ainda não consome uma API em produção.
+
+---
 
 ## [v0.13.0] - Demo web consumindo API local
 
