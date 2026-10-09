@@ -1,23 +1,39 @@
+import os
+import re
 import uuid
 
 import psycopg2
 import pytest
 
-from database.postgres_connection import criar_conexao_postgres
 from models.escala_ciclo_dias import EscalaCicloDias
 from models.escala_ciclo_horas import EscalaCicloHoras
 from models.escala_turno_rotativo import EscalaTurnoRotativo
+from psycopg2.extensions import parse_dsn
 from repositories.postgres_escala_repository import PostgresEscalaRepository
 
 
-def criar_repository_postgres_ou_pular():
-    try:
-        conexao = criar_conexao_postgres()
-    except psycopg2.OperationalError as erro:
-        pytest.skip(f"PostgreSQL não disponível para teste: {erro}")
+@pytest.fixture
+def repository_postgres_teste():
+    dsn = os.getenv("TEST_POSTGRES_DSN")
+    if not dsn:
+        pytest.skip(
+            "Defina TEST_POSTGRES_DSN para habilitar testes em um banco PostgreSQL dedicado a testes."
+        )
 
+    database = parse_dsn(dsn).get("dbname", "")
+    if not database or not re.search(r"(^|[_-])test($|[_-])", database, re.IGNORECASE):
+        pytest.fail(
+            "TEST_POSTGRES_DSN deve apontar para um banco dedicado cujo nome contenha 'test'.",
+            pytrace=False,
+        )
+
+    # Erros de conexão e esquema permanecem visíveis com os testes habilitados.
+    conexao = psycopg2.connect(dsn)
     repository = PostgresEscalaRepository(conexao)
-    return repository, conexao
+    try:
+        yield repository
+    finally:
+        conexao.close()
 
 
 def gerar_nome_teste(prefixo):
@@ -25,8 +41,8 @@ def gerar_nome_teste(prefixo):
     return f"{prefixo} {identificador}"
 
 
-def test_postgres_deve_adicionar_buscar_listar_e_excluir_escala_ciclo_dias():
-    repository, conexao = criar_repository_postgres_ou_pular()
+def test_postgres_deve_adicionar_buscar_listar_e_excluir_escala_ciclo_dias(repository_postgres_teste):
+    repository = repository_postgres_teste
     nome = gerar_nome_teste("Teste PostgreSQL 6x3")
 
     try:
@@ -51,11 +67,10 @@ def test_postgres_deve_adicionar_buscar_listar_e_excluir_escala_ciclo_dias():
 
     finally:
         repository.excluir_por_nome(nome)
-        conexao.close()
 
 
-def test_postgres_deve_adicionar_e_buscar_escala_ciclo_horas():
-    repository, conexao = criar_repository_postgres_ou_pular()
+def test_postgres_deve_adicionar_e_buscar_escala_ciclo_horas(repository_postgres_teste):
+    repository = repository_postgres_teste
     nome = gerar_nome_teste("Teste PostgreSQL 12x36")
 
     try:
@@ -73,11 +88,10 @@ def test_postgres_deve_adicionar_e_buscar_escala_ciclo_horas():
 
     finally:
         repository.excluir_por_nome(nome)
-        conexao.close()
 
 
-def test_postgres_deve_adicionar_e_buscar_escala_turno_rotativo():
-    repository, conexao = criar_repository_postgres_ou_pular()
+def test_postgres_deve_adicionar_e_buscar_escala_turno_rotativo(repository_postgres_teste):
+    repository = repository_postgres_teste
     nome = gerar_nome_teste("Teste PostgreSQL Turno")
 
     try:
@@ -102,11 +116,10 @@ def test_postgres_deve_adicionar_e_buscar_escala_turno_rotativo():
 
     finally:
         repository.excluir_por_nome(nome)
-        conexao.close()
 
 
-def test_postgres_deve_retornar_none_quando_nome_nao_existir():
-    repository, conexao = criar_repository_postgres_ou_pular()
+def test_postgres_deve_retornar_none_quando_nome_nao_existir(repository_postgres_teste):
+    repository = repository_postgres_teste
     nome = gerar_nome_teste("Teste PostgreSQL Inexistente")
 
     try:
@@ -118,11 +131,10 @@ def test_postgres_deve_retornar_none_quando_nome_nao_existir():
 
     finally:
         repository.excluir_por_nome(nome)
-        conexao.close()
 
 
-def test_postgres_deve_retornar_false_quando_excluir_nome_inexistente():
-    repository, conexao = criar_repository_postgres_ou_pular()
+def test_postgres_deve_retornar_false_quando_excluir_nome_inexistente(repository_postgres_teste):
+    repository = repository_postgres_teste
     nome = gerar_nome_teste("Teste PostgreSQL Exclusao Inexistente")
 
     try:
@@ -134,4 +146,3 @@ def test_postgres_deve_retornar_false_quando_excluir_nome_inexistente():
 
     finally:
         repository.excluir_por_nome(nome)
-        conexao.close()

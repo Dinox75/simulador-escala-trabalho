@@ -6,7 +6,7 @@ A API foi criada na versão `v0.11.0` para expor funcionalidades do simulador po
 
 Na versão `v0.12.0`, a API evoluiu para incluir um CRUD completo de escalas salvas, permitindo listar, criar, buscar, editar e excluir escalas por meio de requisições HTTP.
 
-Na versão `v0.13.0`, a demo web passou a consumir a API local para verificar conexão, carregar modelos, listar escalas salvas, cadastrar escalas, excluir escalas e simular modelos prontos. Também foram adicionadas configurações de CORS e exemplos manuais atualizados.
+Na versão `v0.14.0`, a API simula escalas salvas por nome. A demo pública funciona também sem backend, mantendo os cadastros locais no navegador.
 
 ---
 
@@ -26,6 +26,10 @@ A API permite:
 - servir como backend local para a demo web.
 
 ---
+
+## Persistência e segurança
+
+O serviço criado pela API usa `JsonEscalaRepository` com arquivo `data/escalas.json` por padrão. PostgreSQL existe como alternativa explicitamente selecionada na factory; não é exigido para iniciar a API. A API não possui autenticação nem separa escalas por usuário. Mantenha as operações de escrita locais. A demo pública usa somente armazenamento do navegador e não grava na API.
 
 ## Base URL local
 
@@ -61,7 +65,7 @@ http://127.0.0.1:8000/redoc
 
 ## Integração com a demo web
 
-A partir da `v0.13.0`, a demo web localizada em `docs/demo/` consome a API local.
+A partir da `v0.14.0`, a demo web pode consumir a API local; sem API, escalas personalizadas ficam no navegador.
 
 A demo utiliza a API para:
 
@@ -90,7 +94,7 @@ ou por outro servidor estático equivalente.
 
 ## CORS
 
-A versão `v0.13.0` adiciona configuração de CORS para permitir que a demo web consuma a API local.
+A configuração de CORS permite que a demo local ou publicada consulte a API de desenvolvimento local. Não publique operações de escrita compartilhadas: a API não autentica nem separa usuários.
 
 Origens permitidas no ambiente de desenvolvimento:
 
@@ -117,6 +121,8 @@ https://dinox75.github.io
 | `GET`    | `/api/v1/escalas/{nome}`          | Busca uma escala salva pelo nome                 |
 | `PUT`    | `/api/v1/escalas/{nome}`          | Edita uma escala salva pelo nome                 |
 | `DELETE` | `/api/v1/escalas/{nome}`          | Exclui uma escala salva pelo nome                |
+| `POST`   | `/api/v1/escalas/{nome}/simulacao/status`        | Consulta status da escala salva                |
+| `POST`   | `/api/v1/escalas/{nome}/simulacao/proximos-dias` | Consulta o período a partir da data consultada |
 
 ---
 
@@ -134,7 +140,7 @@ GET /health
 {
   "status": "ok",
   "message": "API do Simulador de Escala de Trabalho funcionando",
-  "version": "0.13.0"
+  "version": "0.14.0"
 }
 ```
 
@@ -154,7 +160,7 @@ Retorna os modelos de escala disponíveis para simulação.
 GET /api/v1/modelos
 ```
 
-Na versão `v0.13.0`, os modelos retornam também os dados necessários para preencher a demo web, como dias de trabalho, dias de folga, horas de trabalho, horas de folga ou sequência de turnos.
+Na versão `v0.14.0`, os modelos retornam também os dados necessários para preencher a demo web, como dias de trabalho, dias de folga, horas de trabalho, horas de folga ou sequência de turnos.
 
 ## Exemplo de resposta
 
@@ -397,6 +403,8 @@ POST /api/v1/simulacao/proximos-dias
 
 O campo `quantidade_dias` aceita valores de `1` até `60`.
 
+O campo opcional `data_consulta` escolhe a primeira data exibida, mantendo `data_inicio` como âncora do ciclo. Quando omitido, o período começa em `data_inicio` para compatibilidade com clientes existentes.
+
 ## Exemplo - Próximos dias da escala 6x3
 
 ### Requisição
@@ -491,9 +499,7 @@ O campo `quantidade_dias` aceita valores de `1` até `60`.
 
 Os endpoints de escalas salvas permitem gerenciar modelos cadastrados pelo usuário.
 
-Na `v0.13.0`, a demo web já usa esses endpoints para listar, criar e excluir escalas salvas.
-
-> Observação: a simulação pela API ainda usa `modelo_id` dos modelos prontos. Escalas personalizadas salvas podem ser cadastradas, listadas, aplicadas visualmente e excluídas pela demo, mas a simulação personalizada por nome fica para uma evolução futura.
+Na `v0.14.0`, a demo usa estes endpoints quando a API local está ativa; sem ela, mantém os cadastros no navegador. Escalas salvas podem ser simuladas pelo nome nos três tipos aceitos.
 
 ## Listar escalas salvas
 
@@ -940,6 +946,26 @@ Status esperado:
 
 ---
 
+## Simular uma escala salva
+
+As duas rotas aceitam o nome da escala no caminho e usam `data_inicio` para ancorar o ciclo. A lista de próximos dias aceita `data_consulta` opcional; quando enviada, esse é o primeiro dia exibido. Se omitida, o comportamento antigo começa em `data_inicio`.
+
+```http
+POST /api/v1/escalas/Minha%20Escala/simulacao/status
+Content-Type: application/json
+
+{"data_inicio":"29/08/2026","data_consulta":"31/08/2026"}
+```
+
+Para próximos dias, envie também `quantidade_dias` (1 a 60). Em ciclos por horas, inclua `hora_inicio`, `hora_consulta` e `data_consulta`; os resultados mantêm a hora consultada enquanto avançam um dia por item.
+
+```http
+POST /api/v1/escalas/Minha%20Escala/simulacao/proximos-dias
+Content-Type: application/json
+
+{"data_inicio":"29/08/2026","data_consulta":"31/08/2026","quantidade_dias":5}
+```
+
 # Testes manuais
 
 Os exemplos de requisições manuais estão disponíveis em:
@@ -965,7 +991,7 @@ Para executar os testes automatizados do projeto:
 python -m pytest
 ```
 
-A API possui testes para:
+A suíte (`python -m pytest`) cobre a API, as três classes de escala e os repositories. Foram adicionados casos para período a partir de data consultada, virada de mês e ciclo por horas. A API possui testes para:
 
 - health check;
 - listagem de modelos;
@@ -990,9 +1016,7 @@ A API possui testes para:
 
 # Observações
 
-A versão `v0.13.0` consolida a primeira integração real entre a demo web e a API local.
-
-O foco desta versão é permitir que a interface web consuma dados reais do backend para modelos, escalas salvas e simulações de modelos prontos.
+A versão `v0.14.0` inclui simulação de escalas salvas e modo local sem backend. A API usa `JsonEscalaRepository` em `data/escalas.json` por padrão; a opção `ESCALA_REPOSITORY=postgres` pertence à configuração do CLI, enquanto as rotas da API chamam a factory com JSON padrão.
 
 Esta versão ainda não implementa:
 
@@ -1001,13 +1025,12 @@ Esta versão ainda não implementa:
 - usuários;
 - vínculo entre escala e colaborador;
 - deploy da API;
-- simulação personalizada por nome de escala salva.
+- autorização e isolamento de dados por usuário.
 
 ---
 
 # Próximos passos planejados
 
-- Permitir simular escalas personalizadas salvas pela API.
 - Criar estrutura de usuários em versão futura.
 - Implementar login em versão futura.
 - Associar escalas a colaboradores.
@@ -1019,5 +1042,5 @@ Esta versão ainda não implementa:
 # Versão
 
 ```text
-v0.13.0 - Demo web consumindo API local
+v0.14.0 - Simulação de escalas salvas
 ```

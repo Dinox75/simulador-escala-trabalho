@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.13.0-00B4D8?style=for-the-badge&labelColor=061A2B">
+  <img src="https://img.shields.io/badge/VERS%C3%83O-v0.14.0-00B4D8?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/STATUS-EM%20EVOLU%C3%87%C3%83O-48CAE4?style=for-the-badge&labelColor=061A2B">
   <img src="https://img.shields.io/badge/PYTHON-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=061A2B">
   <img src="https://img.shields.io/badge/API-FASTAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white&labelColor=061A2B">
@@ -34,7 +34,7 @@
   <a href="#-sobre-o-projeto">Sobre</a> •
   <a href="#-versão-atual">Versão atual</a> •
   <a href="#-funcionalidades">Funcionalidades</a> •
-  <a href="#-api-v0130">API</a> •
+  <a href="#-api">API</a> •
   <a href="#-arquitetura">Arquitetura</a> •
   <a href="#-persistência-json-e-postgresql">Persistência</a> •
   <a href="#-testes-automatizados">Testes</a> •
@@ -60,7 +60,7 @@
     </td>
     <td width="25%" align="center">
       <h3>⚡ API integrada</h3>
-      <p>Demo web consumindo FastAPI local na v0.13.0.</p>
+      <p>Demo pública sem backend na v0.14.0.</p>
     </td>
   </tr>
 </table>
@@ -99,75 +99,40 @@ O foco do projeto é transformar uma necessidade comum de consulta de escala em 
 
 ## 🚀 Versão atual
 
-**Versão:** `v0.13.0 - Demo web consumindo API local`
+**Versão:** `v0.14.0 - Simulação de escalas salvas e demo pública sem backend`
 
-A `v0.13.0` conecta a demo web com a API FastAPI local. A interface agora consegue verificar conexão, carregar modelos prontos, listar escalas salvas, criar novas escalas, excluir escalas e executar simulações de modelos prontos por HTTP.
+A demo pública em [GitHub Pages](https://dinox75.github.io/simulador-escala-trabalho/demo/) funciona sem instalar Python e sem iniciar a API. Modelos prontos e escalas personalizadas são calculados no navegador. Escalas criadas sem API ficam no `localStorage` daquele navegador e continuam disponíveis após recarregar a página. Esses dados não são enviados ao projeto.
 
-Essa evolução aproxima o projeto de um sistema web real: o frontend deixa de depender apenas de dados locais e passa a consumir o backend criado nas versões anteriores.
+Quando executada com a API local ativa, a demo usa os endpoints FastAPI e salva as escalas no repository configurado no backend. A configuração padrão é `JsonEscalaRepository` em `data/escalas.json`; PostgreSQL é uma opção explícita da camada de serviços e não é necessário para a execução básica. A API não tem autenticação ou isolamento de usuários; use-a somente localmente e não publique operações compartilhadas de escrita.
 
-### Resumo da v0.13.0
+### O que a v0.14.0 entrega
 
-| Área | Evolução |
-|---|---|
-| Demo web | Integração com API FastAPI local |
-| CORS | Configuração para permitir consumo da API pela demo |
-| Health | Card visual verificando conexão com o backend |
-| Modelos | Demo carregando modelos via `GET /api/v1/modelos` |
-| Escalas salvas | Demo listando escalas via `GET /api/v1/escalas` |
-| Cadastro | Demo criando escalas via `POST /api/v1/escalas` |
-| Exclusão | Demo excluindo escalas via `DELETE /api/v1/escalas/{nome}` |
-| Simulação | Demo simulando modelos prontos via endpoints de simulação |
-| Calendário | Exibição melhorada para períodos com mais de um mês |
-| Documentação | API docs, requests manuais, README e CHANGELOG atualizados |
-| Testes | Testes automatizados preservados |
+- CRUD e simulação de escalas salvas dos tipos `ciclo_dias`, `ciclo_horas` e `turno_rotativo` pela API.
+- Modo de navegador para criar, listar, aplicar, simular, excluir e persistir escalas personalizadas sem backend.
+- Indicação da origem dos dados: navegador ou API local.
+- Status consultado na data escolhida; calendário e linha do tempo começam nessa data e calculam o ciclo a partir da data/hora inicial configurada.
+- Calendário multi-mês e ciclos por horas que atravessam datas e meses.
 
-Até a versão anterior, a API já possuía CRUD completo de escalas salvas. Nesta versão, a demo web passa a consumir essa API local, validando a comunicação entre frontend e backend.
+### Primeira experiência
 
-### Resumo da v0.12.0
+1. Abra o [simulador público](https://dinox75.github.io/simulador-escala-trabalho/demo/simulador.html).
+2. Escolha um modelo ou cadastre uma escala. Sem backend, a confirmação informa que ela ficou salva neste navegador.
+3. Aplique a escala, escolha data inicial, data consultada e quantidade do período, e clique em simular.
+4. Atualize a página para confirmar que a escala local continua na lista. O armazenamento é específico do navegador/dispositivo.
 
-| Área | Evolução |
-|---|---|
-| API | CRUD completo de escalas salvas |
-| Listagem | Endpoint para listar escalas cadastradas |
-| Criação | Endpoint para criar novas escalas |
-| Busca | Endpoint para buscar escala pelo nome |
-| Edição | Endpoint para editar escala salva |
-| Exclusão | Endpoint para excluir escala salva |
-| Service | Reaproveitamento do `EscalaService` |
-| Repository | Reaproveitamento da persistência padrão |
-| Testes | Testes automatizados para os novos endpoints |
-| Documentação | README, CHANGELOG, API docs e requests atualizados |
+### Executar localmente e testar
 
-### Resumo da v0.11.0
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m pytest
+uvicorn api.app:app --reload
+```
 
-| Área | Evolução |
-|---|---|
-| API | Estrutura inicial com FastAPI |
-| Health check | Endpoint para verificar se a API está ativa |
-| Modelos | Endpoint para listar modelos disponíveis |
-| Simulação | Endpoint para consultar status de uma escala |
-| Próximos dias | Endpoint para retornar sequência de dias calculados |
-| Documentação | Arquivo `docs/API.md` e exemplos em `docs/api_requests.http` |
-| Testes | Testes automatizados para os endpoints da API |
-| Validação manual | Testes realizados com Thunder Client |
+A API usa JSON por padrão e pode ser consultada em `http://127.0.0.1:8000/docs`. Sirva `docs/demo/` com uma extensão de servidor estático do VS Code ou equivalente e abra `simulador.html`. Se a API não estiver ativa, o modo local permanece disponível. Testes automatizados: `python -m pytest`; persistência PostgreSQL requer configuração e serviço próprios.
 
-## ✅ Principais entregas da v0.13.0
-
-| Categoria | Entrega |
-|---|---|
-| Frontend | Demo web consumindo a API local |
-| API | CORS configurado para desenvolvimento local e GitHub Pages |
-| Health | Card de status da API na demo |
-| Modelos | Modelos carregados diretamente da rota `/api/v1/modelos` |
-| Escalas salvas | Listagem de escalas salvas consumindo `/api/v1/escalas` |
-| Cadastro | Cadastro de escalas pela interface usando `POST /api/v1/escalas` |
-| Exclusão | Exclusão de escalas pela interface usando `DELETE /api/v1/escalas/{nome}` |
-| Simulação | Simulação de modelos prontos usando `/api/v1/simulacao/status` |
-| Próximos dias | Linha do tempo e calendário usando `/api/v1/simulacao/proximos-dias` |
-| Documentação | API.md e requests manuais atualizados |
-| Estabilidade | Correções na renderização das escalas salvas na demo |
-| Limitação conhecida | Escalas personalizadas salvas ainda não são simuladas por nome pela API |
-
+Consulte [documentação da API](docs/API.md) e [changelog](CHANGELOG.md) para detalhes e rotas.
 ## 📊 Linha de evolução
 
 ```mermaid
@@ -361,15 +326,13 @@ Escolha uma opção:
 
 ---
 
-## ⚡ API v0.13.0
-
-## Versão atual
+## ⚡ API
 
 ```text
-v0.13.0 - Demo web consumindo API local
+v0.14.0 - Simulação de escalas salvas
 ```
 
-A versão `v0.13.0` mantém o CRUD de escalas salvas criado na `v0.12.0` e adiciona integração prática entre a demo web e a API FastAPI local.
+A versão `v0.14.0` adiciona simulação de escalas salvas por nome. A demo pública também funciona sem API, usando armazenamento do navegador para escalas personalizadas.
 
 A demo agora consome a API para:
 
@@ -379,11 +342,14 @@ A demo agora consome a API para:
 - criar novas escalas salvas;
 - excluir escalas salvas;
 - simular modelos prontos;
+- simular escalas salvas por nome nos tipos ciclo por dias, ciclo por horas e turno rotativo;
 - exibir próximos dias em linha do tempo e calendário.
+
+Sem API, os cadastros ficam no navegador. Com a API ativa, a persistência é `data/escalas.json` por padrão.
 
 ---
 
-## API
+### Executar API FastAPI
 
 A API foi desenvolvida com **FastAPI** e permite consumir funcionalidades do simulador por meio de requisições HTTP.
 
@@ -412,10 +378,12 @@ http://127.0.0.1:8000/docs
 | `GET`    | `/api/v1/escalas/{nome}`          | Busca uma escala salva pelo nome            |
 | `PUT`    | `/api/v1/escalas/{nome}`          | Edita uma escala salva pelo nome            |
 | `DELETE` | `/api/v1/escalas/{nome}`          | Exclui uma escala salva pelo nome           |
+| `POST`   | `/api/v1/escalas/{nome}/simulacao/status` | Consulta status de escala salva |
+| `POST`   | `/api/v1/escalas/{nome}/simulacao/proximos-dias` | Consulta período a partir de `data_consulta` |
 
 ### Integração com a demo web
 
-A demo web em `docs/demo/` usa a API local em:
+A demo web em `docs/demo/` funciona sem API e usa a API local em:
 
 ```text
 http://127.0.0.1:8000
@@ -429,11 +397,17 @@ Para testar corretamente:
 4. use os modelos prontos para simular;
 5. teste criar, recarregar e excluir escalas salvas.
 
-> Observação: a simulação pela API ainda trabalha com `modelo_id` dos modelos prontos. Escalas personalizadas salvas podem ser cadastradas e excluídas pela demo, mas a simulação personalizada por nome fica para uma evolução futura.
+Sem API, escalas personalizadas ficam no armazenamento local do navegador. A API não possui autenticação ou isolamento por usuário; mantenha as operações de escrita locais.
 
 ---
 
 ## Evolução recente
+
+### v0.14.0
+
+* Demo pública com modo sem backend e armazenamento local no navegador.
+* Simulação pela API de escalas salvas por nome nos três tipos.
+* Período da linha do tempo iniciado na data consultada; APIs preservam compatibilidade quando o campo não é enviado.
 
 ### v0.13.0
 
@@ -676,13 +650,7 @@ python main.py
 
 ### PostgreSQL
 
-O PostgreSQL pode ser usado configurando variáveis de ambiente.
-
-```powershell
-$env:ESCALA_REPOSITORY="postgres"
-```
-
-A aplicação utiliza o repository correspondente de acordo com a configuração técnica definida.
+O seletor `ESCALA_REPOSITORY=postgres` é lido pela aplicação CLI. A API FastAPI chama a factory com JSON padrão (`data/escalas.json`) e não exige banco para iniciar. A camada de serviços também oferece repository PostgreSQL quando selecionada explicitamente.
 
 ---
 
@@ -755,22 +723,11 @@ A demo possui páginas separadas para:
 - sobre;
 - termos.
 
-Na `v0.13.0`, a página do simulador passa a consumir a API FastAPI local durante o desenvolvimento.
+A demo pública funciona sem API para modelos prontos e escalas personalizadas. Sem backend, cadastros ficam no armazenamento do navegador e permanecem após recarregar.
 
-Recursos integrados à API:
+Com a API FastAPI local ativa, a demo carrega e grava escalas em `data/escalas.json`, além de demonstrar as requisições entre frontend e backend. A linha do tempo e o calendário começam na data consultada, usando a data inicial para calcular o ciclo.
 
-- verificação de conexão com o backend;
-- carregamento de modelos prontos;
-- listagem de escalas salvas;
-- cadastro de escalas salvas;
-- exclusão de escalas salvas;
-- simulação de modelos prontos;
-- renderização dos próximos dias em linha do tempo e calendário;
-- exibição de múltiplos meses no calendário quando o período visualizado cruza a virada do mês.
-
-> Observação: para a integração funcionar localmente, a API deve estar rodando em `http://127.0.0.1:8000`.
-
-Na correção visual da v0.13.0, a página inicial da demo também foi atualizada para destacar a integração com FastAPI, o fluxo frontend → API → service → persistência e os recursos interativos do simulador.
+Para experimentar localmente, sirva `docs/demo/` por um servidor estático. Inicie opcionalmente a API em `http://127.0.0.1:8000` com `uvicorn api.app:app --reload`.
 
 ## 🧪 Testes automatizados
 
@@ -795,20 +752,22 @@ python -m pytest
 ### Rodar testes da API
 
 ```powershell
-python -m pytest tests/test_api_health.py tests/test_api_modelos.py tests/test_api_simulacao.py tests/test_api_proximos_dias.py
+python -m pytest tests/test_api_escalas.py tests/test_api_escalas_simulacao.py tests/test_api_health.py tests/test_api_modelos.py tests/test_api_proximos_dias.py tests/test_api_simulacao.py
 ```
 
 ### Rodar testes do PostgreSQL
 
+Esses cinco testes de integração ficam ignorados por padrão. Para habilitá-los, crie e inicialize um banco dedicado chamado `simulador_escala_test`; nunca use o banco de desenvolvimento ou de produção. As operações dos testes inserem e removem apenas registros com nomes aleatórios `Teste PostgreSQL ...`.
+
+No PowerShell, configure uma DSN explícita para o banco de teste e execute:
+
 ```powershell
-python -m pytest tests/test_postgres_escala_repository.py
+$env:TEST_POSTGRES_DSN = "host=localhost port=5432 dbname=simulador_escala_test user=postgres password=SUA_SENHA"
+psql "$env:TEST_POSTGRES_DSN" -f database/schema_postgresql.sql
+.\.venv\Scripts\python.exe -m pytest tests/test_postgres_escala_repository.py
 ```
 
-### Observação sobre PostgreSQL nos testes
-
-Os testes do PostgreSQL podem ser pulados automaticamente quando o ambiente de banco não estiver configurado.
-
-Isso evita falhas em ambientes onde não existe conexão local com PostgreSQL.
+Sem `TEST_POSTGRES_DSN`, os testes são ignorados. Se a variável estiver configurada, erros de conexão, credenciais ou esquema fazem os testes falharem para que o problema apareça.
 
 ---
 
@@ -951,24 +910,7 @@ python main.py
 
 ### PostgreSQL
 
-Exemplo de consulta:
-
-```sql
-SELECT
-    e.id,
-    e.nome,
-    e.tipo,
-    d.dias_trabalho,
-    d.dias_folga,
-    h.horas_trabalho,
-    h.horas_folga
-FROM escalas e
-LEFT JOIN escalas_ciclo_dias d
-    ON e.id = d.escala_id
-LEFT JOIN escalas_ciclo_horas h
-    ON e.id = h.escala_id
-ORDER BY e.id;
-```
+O seletor `ESCALA_REPOSITORY=postgres` é lido pela aplicação CLI. A API FastAPI chama a factory com JSON padrão (`data/escalas.json`) e não exige banco para iniciar. A camada de serviços também oferece repository PostgreSQL quando selecionada explicitamente.
 
 ---
 
@@ -1009,18 +951,17 @@ Possíveis funcionalidades futuras:
 | `v0.11.0` | API integrada com FastAPI |
 | `v0.12.0` | API com CRUD de escalas salvas |
 | `v0.13.0` | Demo web consumindo API local |
+| `v0.14.0` | Demo pública sem backend e simulação de escalas salvas |
 
 ### Próximas versões sugeridas
 
 | Versão | Objetivo |
 |---|---|
-| `v0.14.0` | Simular escalas personalizadas salvas pela API |
 | `v0.15.0` | Usuários e login |
 | `v1.0.0` | Primeira versão completa do sistema |
 
 ### Melhorias técnicas planejadas
 
-- Permitir simular escalas salvas personalizadas por nome ou ID.
 - Criar schemas de request/response mais detalhados.
 - Separar camada de serviços da API de forma mais explícita.
 - Criar autenticação em versão futura.
@@ -1096,48 +1037,16 @@ Durante a evolução do projeto foram praticados conceitos como:
 
 ---
 
-## ⚠️ Limitações atuais
+## Limitações atuais
 
-Mesmo com a demo web consumindo a API local, o projeto ainda possui limitações importantes:
+- A demo pública não envia operações de escrita para uma API hospedada; sem API, os dados ficam no armazenamento local daquele navegador.
+- A API não possui autenticação nem isolamento por usuário; use-a apenas localmente.
+- Não há login, colaboradores, férias, gestão empresarial ou migrations versionadas.
+- Regras de feriados, trocas, afastamentos e exceções operacionais não fazem parte do cálculo.
 
-- a API ainda é local e não está em deploy público;
-- a demo web consome a API local, mas ainda não consome uma API publicada em produção;
-- escalas personalizadas salvas ainda não são simuladas por nome pela API;
-- ainda não possui login;
-- ainda não possui cadastro de usuários;
-- ainda não existe vínculo entre escala e colaborador;
-- ainda não possui painel web completo;
-- ainda não possui migrations versionadas;
-- a escolha de JSON/PostgreSQL ainda é técnica, feita por variável de ambiente.
+## Status da v0.14.0
 
----
-
-## ✅ Status da v0.13.0
-
-A `v0.13.0` está funcional para o objetivo da versão.
-
-Entregas confirmadas:
-
-- CLI continua funcionando.
-- JSON continua como persistência padrão.
-- PostgreSQL permanece funcional como alternativa.
-- API FastAPI continua funcionando.
-- CRUD de escalas salvas preservado.
-- CORS configurado para integração local.
-- Demo web verifica conexão com a API.
-- Demo web carrega modelos pela API.
-- Demo web lista escalas salvas pela API.
-- Demo web cria escalas salvas pela API.
-- Demo web exclui escalas salvas pela API.
-- Demo web simula modelos prontos pela API.
-- Testes automatizados passando.
-- Testes manuais realizados com Thunder Client.
-- Documentação da API atualizada.
-- Requisições manuais documentadas.
-
-Limitação conhecida:
-
-- Escalas personalizadas salvas ainda não são simuladas por nome pela API.
+A v0.14.0 inclui simulação de escalas salvas por nome pela API para os três tipos e modo público sem backend. O modo público mantém escalas personalizadas no armazenamento do navegador após recarregar a página.
 
 ## 📄 Licença
 

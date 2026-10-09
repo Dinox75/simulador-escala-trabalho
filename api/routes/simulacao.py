@@ -31,6 +31,7 @@ class ConsultaStatusRequest(BaseModel):
 class ProximosDiasRequest(BaseModel):
     modelo_id: str
     data_inicio: str
+    data_consulta: str | None = None
     quantidade_dias: int = Field(ge=1, le=60)
     hora_inicio: str | None = None
     hora_consulta: str | None = None
@@ -129,7 +130,10 @@ def consultar_proximos_dias(payload: ProximosDiasRequest):
         hora_consulta = payload.hora_consulta or payload.hora_inicio
 
         data_inicio = converter_data_hora(payload.data_inicio, payload.hora_inicio)
-        data_consulta_base = converter_data_hora(payload.data_inicio, hora_consulta)
+        data_consulta_base = converter_data_hora(
+            payload.data_consulta or payload.data_inicio,
+            hora_consulta
+        )
 
         for indice in range(payload.quantidade_dias):
             data_consulta = data_consulta_base + timedelta(days=indice)
@@ -148,9 +152,10 @@ def consultar_proximos_dias(payload: ProximosDiasRequest):
 
     else:
         data_inicio = converter_data(payload.data_inicio)
+        data_consulta_base = converter_data(payload.data_consulta or payload.data_inicio)
 
         for indice in range(payload.quantidade_dias):
-            data_consulta = data_inicio + timedelta(days=indice)
+            data_consulta = data_consulta_base + timedelta(days=indice)
 
             status = calcular_status_por_escala(
                 escala,

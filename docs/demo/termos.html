@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Termos de uso responsável da demo do Simulador de Escala de Trabalho v0.13.1 com API local e finalidade educacional.">
-    <title>Termos de uso | Simulador de Escala v0.13.1</title>
+    <meta name="description" content="Termos de uso responsável da demo do Simulador de Escala de Trabalho v0.14.0 com API local e finalidade educacional.">
+    <title>Termos de uso | Simulador de Escala v0.14.0</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,16 +20,7 @@
 </head>
 <body>
     <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
-    <div class="theme-flash" id="themeFlash" aria-hidden="true"></div>
-    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
-    <div class="background-scene" aria-hidden="true">
-        <span class="orb orb-a"></span>
-        <span class="orb orb-b"></span>
-        <span class="orb orb-c"></span>
-        <span class="grid-overlay"></span>
-        <span class="grain-overlay"></span>
-    </div>
 
     <header class="site-header" id="siteHeader">
         <a class="brand" href="index.html" aria-label="Ir para a página inicial">
@@ -100,15 +91,8 @@
 
                 <article class="terms-card reveal tilt-card">
                     <h3>3. Dados locais e API local</h3>
-                    <p>
-                        Na versão pública, a demo pode funcionar parcialmente com dados locais ou fallback visual.
-                        Quando executada com a API FastAPI local, as escalas cadastradas são enviadas para o backend
-                        local em <strong>http://127.0.0.1:8000</strong>.
-                    </p>
-                    <p>
-                        Este projeto não envia dados para uma API pública de produção. A integração atual é voltada
-                        para ambiente local de desenvolvimento.
-                    </p>
+                    <p>A demo pública funciona sem backend. Escalas personalizadas ficam no armazenamento deste navegador e persistem após atualizar a página. Com a API local ativa, os dados são gravados no backend local.</p>
+                    <p>A API não possui autenticação nem isolamento por usuário; use-a somente localmente. A demo pública não envia cadastros à API.</p>
                 </article>
 
                 <article class="terms-card reveal tilt-card">
@@ -121,11 +105,7 @@
 
                 <article class="terms-card reveal tilt-card">
                     <h3>5. Limitação da API atual</h3>
-                    <p>
-                        A simulação pela API funciona com modelos prontos, como 6x3, 5x2, 4x2, 12x36 e turnos
-                        rotativos definidos no projeto. Escalas personalizadas salvas ainda não são simuladas por
-                        nome pela API nesta versão.
-                    </p>
+                    <p>A simulação pela API aceita escalas salvas dos tipos ciclo por dias, ciclo por horas e turno rotativo.</p>
                 </article>
 
                 <article class="terms-card reveal tilt-card">
@@ -183,7 +163,7 @@
 
     <footer class="site-footer">
         <p>
-            Simulador de Escala de Trabalho · Demo web v0.13.1 · Python, FastAPI,
+            Simulador de Escala de Trabalho · Demo web v0.14.0 · Python, FastAPI,
             PostgreSQL, JSON e arquitetura em camadas
         </p>
         <a href="#topo">Voltar ao topo</a>

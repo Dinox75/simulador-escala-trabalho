@@ -328,3 +328,41 @@ def test_simular_proximos_dias_escala_salva_deve_validar_quantidade_limite():
 
     finally:
         excluir_escala_se_existir(nome)
+
+
+def test_proximos_dias_escala_salva_inicia_na_data_consultada_e_virada_de_mes():
+    nome = "Escala API Calendario Virada Mes"
+    payload = {"nome": nome, "tipo": "ciclo_dias", "dias_trabalho": 2, "dias_folga": 1}
+    try:
+        criar_escala_para_teste(payload)
+        response = client.post(url_proximos_dias_escala(nome), json={
+            "data_inicio": "29/08/2026",
+            "data_consulta": "31/08/2026",
+            "quantidade_dias": 3,
+        })
+        assert response.status_code == 200
+        dias = response.json()["dias"]
+        assert [dia["data"] for dia in dias] == ["31/08/2026", "01/09/2026", "02/09/2026"]
+        assert [dia["status"] for dia in dias] == ["Folga", "Trabalhando", "Trabalhando"]
+    finally:
+        excluir_escala_se_existir(nome)
+
+
+def test_proximos_dias_ciclo_horas_usa_data_consultada_como_inicio_da_linha_do_tempo():
+    nome = "Escala API Horas Linha Tempo"
+    payload = {"nome": nome, "tipo": "ciclo_horas", "horas_trabalho": 12, "horas_folga": 36}
+    try:
+        criar_escala_para_teste(payload)
+        response = client.post(url_proximos_dias_escala(nome), json={
+            "data_inicio": "31/07/2026",
+            "data_consulta": "31/08/2026",
+            "hora_inicio": "08:00",
+            "hora_consulta": "08:00",
+            "quantidade_dias": 2,
+        })
+        assert response.status_code == 200
+        dias = response.json()["dias"]
+        assert [dia["data"] for dia in dias] == ["31/08/2026", "01/09/2026"]
+        assert [dia["status"] for dia in dias] == ["Folga", "Trabalhando"]
+    finally:
+        excluir_escala_se_existir(nome)

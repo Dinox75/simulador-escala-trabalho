@@ -12,6 +12,11 @@
 - Limite de `1` a `60` dias na consulta de próximos dias.
 - Testes automatizados para os novos endpoints.
 - Integração da demo com simulação de escalas salvas pelo nome.
+- Modo público sem backend para criar, listar, aplicar, simular e excluir escalas no navegador.
+- Dados de escalas locais separados da lista persistida pela API.
+- Linha do tempo e calendário iniciados na data consultada, mantendo a data inicial como âncora do ciclo.
+- Compatibilidade retroativa: `data_consulta` é opcional em próximos dias e assume `data_inicio` quando omitida.
+- Casos de teste para virada de mês e ciclo por horas consultado em data futura.
 
 ### Alterado
 
@@ -21,6 +26,8 @@
 - Escalas salvas aplicadas pela lista agora priorizam cálculo pelo backend.
 - Fallback local mantido para configurações manuais ainda não salvas.
 - Textos da demo atualizados para refletir a nova integração.
+- Documentação esclarece que a API usa JSON em `data/escalas.json` por padrão; PostgreSQL não é necessário.
+- Demo e README documentam como experimentar o modo público e executar a API/testes localmente.
 
 ### Corrigido
 
@@ -44,9 +51,9 @@
 
 ### Limitações conhecidas
 
-- A API ainda precisa ser executada localmente para integração completa com a demo.
+- Sem API, os cadastros da demo ficam apenas no armazenamento local do navegador.
 - Ainda não existe autenticação, cadastro de usuários ou vínculo com colaboradores.
-- A demo publicada no GitHub Pages ainda não consome uma API em produção.
+- A demo publicada não envia operações de escrita para uma API pública.
 
 ---
 
