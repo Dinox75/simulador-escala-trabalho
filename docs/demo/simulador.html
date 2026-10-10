@@ -3,272 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Simulador interativo de escalas consumindo API FastAPI local para modelos, escalas salvas e simulação com calendário multi-mês.">
-    <title>Simulador | Demo API v0.13.1</title>
-
+    <meta name="description" content="Planeje ciclos de trabalho no calendário mensal. Crie escalas neste navegador ou use a API FastAPI local opcional.">
+    <title>Mesa de turnos · Simulador v0.14.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap"
-        rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script defer src="calendar-core.js"></script>
     <script defer src="script.js"></script>
 </head>
-<body>
+<body class="simulator-page">
     <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
-    <div class="theme-flash" id="themeFlash" aria-hidden="true"></div>
-    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
-
-    <div class="background-scene" aria-hidden="true">
-        <span class="orb orb-a"></span>
-        <span class="orb orb-b"></span>
-        <span class="orb orb-c"></span>
-        <span class="grid-overlay"></span>
-        <span class="grain-overlay"></span>
-    </div>
-
     <header class="site-header" id="siteHeader">
-        <a class="brand" href="index.html" aria-label="Ir para a página inicial">
-            <span class="brand-mark">SE</span>
-            <span>
-                <strong>Simulador de Escala</strong>
-                <small>Planejamento de turnos</small>
-            </span>
+        <a class="brand" href="index.html" aria-label="Início do Simulador de Escala">
+            <span class="brand-mark" aria-hidden="true">SE</span>
+            <span><strong>Simulador de Escala</strong><small>Mesa de planejamento</small></span>
         </a>
-
         <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
             <a href="index.html">Início</a>
             <a href="simulador.html">Simulador</a>
             <a href="modelos.html">Modelos</a>
-            <a href="roadmap.html">Roadmap</a>
             <a href="documentacao.html">Documentação</a>
             <a href="sobre.html">Sobre</a>
-            <a href="termos.html">Termos</a>
         </nav>
-
         <div class="header-actions">
-            <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro ou escuro">
-                <i data-lucide="moon"></i>
-            </button>
-
-            <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu">
-                <i data-lucide="menu"></i>
-            </button>
+            <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro ou escuro">◐</button>
+            <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button>
         </div>
     </header>
-
-    <main id="topo">
-        <section class="section page-hero simulator-hero">
-            <div class="section-heading reveal">
-                <span class="eyebrow">
-                    <i data-lucide="plug-zap"></i>
-                    Integração com API v0.13.1
-                </span>
-
-                <h1>Escolha uma escala, simule datas e visualize o calendário.</h1>
-
-                <p>
-                    Esta página consome a API FastAPI local do projeto para verificar conexão,
-                    carregar modelos, listar escalas salvas, cadastrar escalas, excluir escalas
-                    e simular modelos prontos.
-                </p>
-
-                <div class="quick-guide">
-                    <span><i data-lucide="server"></i> 1. Rode a API local</span>
-                    <span><i data-lucide="mouse-pointer-click"></i> 2. Escolha um modelo</span>
-                    <span><i data-lucide="calendar-days"></i> 3. Veja linha do tempo e calendário</span>
-                </div>
+    <main class="workbench" id="topo">
+        <section class="workspace-heading">
+            <div><span class="mono-kicker">SIMULADOR · DEMO V0.14.0</span><h1>Mesa de planejamento</h1><p>Escolha um modelo, defina o início do ciclo e consulte qualquer data no calendário.</p></div>
+            <div class="api-connection" id="apiStatusCard" role="status" aria-live="polite">
+                <span class="api-dot" aria-hidden="true"></span>
+                <div><strong id="apiStatusText">Modo local no navegador</strong><small id="apiStatusDescription">A origem da demo define onde os dados são consultados.</small></div>
+                <button class="icon-button compact-icon" id="apiRefreshButton" type="button" aria-label="Testar conexão com a API">↻</button>
             </div>
         </section>
-
-        <section class="section api-status-section">
-            <div class="glass-card reveal api-status-card-pro" id="apiStatusCard">
-                <span class="eyebrow">
-                    <i data-lucide="server"></i>
-                    Status da API
-                </span>
-
-                <h3 id="apiStatusText">Verificando conexão...</h3>
-
-                <p id="apiStatusDescription">
-                    A demo tentará se conectar à API local em
-                    <strong>http://127.0.0.1:8000</strong>.
-                </p>
-
-                <button class="button secondary" id="apiRefreshButton" type="button">
-                    Testar conexão novamente
-                    <i data-lucide="refresh-cw"></i>
-                </button>
-            </div>
-        </section>
-
-        <section class="section simulator-section" id="simulador">
-            <div class="simulator-layout">
-                <aside class="control-panel glass-card reveal">
-                    <h3>Tipo de escala</h3>
-
-                    <div
-                        class="scale-type-grid"
-                        id="scaleTypeButtons"
-                        role="group"
-                        aria-label="Escolher tipo de escala"
-                    >
-                        <button class="scale-type-button active" type="button" data-type="ciclo_dias">
-                            <i data-lucide="calendar-days"></i>
-                            <span>
-                                <strong>Ciclo por dias</strong>
-                                <small>Ex: 6x3, 5x2, 4x2</small>
-                            </span>
-                        </button>
-
-                        <button class="scale-type-button" type="button" data-type="ciclo_horas">
-                            <i data-lucide="clock"></i>
-                            <span>
-                                <strong>Ciclo por horas</strong>
-                                <small>Ex: 12x36</small>
-                            </span>
-                        </button>
-
-                        <button class="scale-type-button" type="button" data-type="turno_rotativo">
-                            <i data-lucide="repeat-2"></i>
-                            <span>
-                                <strong>Turno rotativo</strong>
-                                <small>Manhã, tarde, noite e folga</small>
-                            </span>
-                        </button>
+        <div class="planner-workspace" id="simulador">
+            <aside class="planner-sidebar" aria-label="Configuração da escala">
+                <section class="control-section">
+                    <div class="section-kicker"><span>01</span><h2>Tipo de escala</h2></div>
+                    <div class="scale-type-grid" id="scaleTypeButtons" role="group" aria-label="Escolher tipo de escala">
+                        <button class="scale-type-button active" type="button" data-type="ciclo_dias"><i data-lucide="calendar-days"></i><span>Ciclo por dias</span></button>
+                        <button class="scale-type-button" type="button" data-type="ciclo_horas"><i data-lucide="clock-3"></i><span>Ciclo por horas</span></button>
+                        <button class="scale-type-button" type="button" data-type="turno_rotativo"><i data-lucide="repeat-2"></i><span>Turno rotativo</span></button>
                     </div>
-
-                    <div class="model-panel" id="modelos">
-                        <div class="model-panel-header">
-                            <span class="eyebrow">
-                                <i data-lucide="layers-3"></i>
-                                Modelos da API
-                            </span>
-
-                            <p>
-                                Escolha um modelo pronto carregado pela API para preencher automaticamente
-                                a simulação.
-                            </p>
-                        </div>
-
-                        <div
-                            class="model-grid"
-                            id="modelButtons"
-                            aria-label="Modelos predefinidos de escala"
-                        ></div>
-                    </div>
-
-                    <form class="simulator-form" id="simulatorForm">
+                    <details class="model-picker" open>
+                        <summary><span>Modelos prontos</span><small>6 ciclos</small></summary>
+                        <div class="model-grid" id="modelButtons" aria-label="Modelos predefinidos de escala"></div>
+                    </details>
+                </section>
+                <section class="control-section cycle-settings">
+                    <div class="section-kicker"><span>02</span><h2>Configurar e consultar</h2></div>
+                    <form class="simulator-form" id="simulatorForm" novalidate>
                         <div id="dynamicFields"></div>
-
-                        <p class="turn-empty">
-                            Modelos prontos são calculados pela API. Se você aplicar ou montar uma escala personalizada
-                            que ainda não existe como modelo da API, a demo usa cálculo local como fallback para não
-                            travar a experiência do usuário.
-                        </p>
-
-                        <button class="button primary full" type="submit">
-                            Simular agora
-                            <i data-lucide="zap"></i>
-                        </button>
+                        <p class="form-feedback" id="simulatorFeedback" role="alert" aria-live="assertive"></p>
+                        <button class="button primary full" type="submit"><i data-lucide="play"></i> Atualizar calendário</button>
                     </form>
-                </aside>
-
-                <div class="result-panel reveal">
-                    <div class="result-card glass-card" id="resultCard">
-                        <span class="card-label">Resultado da consulta</span>
-                        <h3 id="resultTitle">Pronto para simular</h3>
-                        <p id="resultDescription">
-                            Escolha um tipo de escala, preencha os dados e veja o status calculado pela API.
-                        </p>
+                </section>
+                <details class="saved-panel" id="savedScalesDisclosure">
+                    <summary><span>Minhas escalas</span><span class="saved-source-chip" id="savedScaleSourceShort">Neste navegador</span></summary>
+                    <div class="saved-panel-body">
+                        <p class="saved-source-note" id="savedScaleSourceNotice" aria-live="polite"></p>
+                        <div class="saved-list" id="savedScalesList"></div>
+                        <form class="saved-form" id="savedScaleForm">
+                            <h3>Nova escala</h3>
+                            <label>Nome da escala<input id="savedName" type="text" placeholder="Ex.: Turno noturno A" required maxlength="80"></label>
+                            <label>Tipo<select id="savedType"><option value="ciclo_dias">Ciclo por dias</option><option value="ciclo_horas">Ciclo por horas</option><option value="turno_rotativo">Turno rotativo</option></select></label>
+                            <div id="savedDynamicFields"></div>
+                            <p class="form-feedback" id="savedScaleFeedback" aria-live="polite">Preencha os dados e salve a escala.</p>
+                            <button class="button quiet full" id="savedScaleSubmitButton" data-save-scale-button type="submit">Salvar escala</button>
+                        </form>
+                        <button class="text-button" id="resetScalesButton" type="button">Atualizar lista da API local</button>
                     </div>
-
-                    <div class="visual-tabs glass-card">
-                        <div class="tabs-header">
-                            <button class="tab-button active" type="button" data-result-tab="timeline">
-                                Linha do tempo
-                            </button>
-                            <button class="tab-button" type="button" data-result-tab="calendar">
-                                Calendário
-                            </button>
-                        </div>
-
-                        <div class="tab-content active" id="timelineTab">
-                            <div class="timeline" id="timelineList"></div>
-                        </div>
-
-                        <div class="tab-content" id="calendarTab">
-                            <div class="calendar-shell">
-                                <div class="calendar-heading">
-                                    <strong id="calendarMonth">Calendário</strong>
-                                    <small>Domingo a sábado · agora com múltiplos meses</small>
-                                </div>
-
-                                <div class="calendar-grid" id="calendarGrid"></div>
-                            </div>
+                </details>
+            </aside>
+            <section class="calendar-workspace" aria-label="Resultado e calendário mensal">
+                <div class="selected-day-panel" id="resultCard" aria-live="polite">
+                    <div class="selected-day-mark"><span class="mono-kicker">DATA CONSULTADA</span><h2 id="resultTitle">Escolha uma escala</h2></div>
+                    <p id="resultDescription">Selecione um modelo e atualize o calendário. Depois, clique em outra data para consultar o ciclo.</p>
+                    <div class="selected-periods" id="selectedPeriods" aria-label="Períodos dentro do dia"></div>
+                </div>
+                <section class="calendar-panel" aria-labelledby="calendarHeading">
+                    <div class="calendar-toolbar">
+                        <div><span class="mono-kicker">VISÃO MENSAL</span><h2 id="calendarHeading"><span id="calendarMonth">Calendário</span></h2></div>
+                        <div class="calendar-nav" aria-label="Navegar pelo calendário">
+                            <button class="icon-button" id="calendarPrevious" type="button" aria-label="Mês anterior">‹</button>
+                            <button class="button quiet today-button" id="calendarToday" type="button">Ir para hoje</button>
+                            <button class="icon-button" id="calendarNext" type="button" aria-label="Próximo mês">›</button>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="saved-scales glass-card reveal">
-                <div>
-                    <span class="eyebrow">
-                        <i data-lucide="save"></i>
-                        Escalas salvas
-                    </span>
-
-                    <h3>Cadastre, aplique e teste escalas salvas na demo.</h3>
-
-                    <p>
-                        Na versão v0.13.1, a demo consome as escalas salvas diretamente
-                        da API FastAPI local. O backend pode usar JSON ou PostgreSQL como
-                        camada de persistência.
-                    </p>
-                </div>
-
-                <form class="saved-form" id="savedScaleForm">
-                    <label>
-                        Nome da escala
-                        <input id="savedName" type="text" placeholder="Ex: Revezamento Ferrero" required>
-                    </label>
-
-                    <label>
-                        Tipo
-                        <select id="savedType">
-                            <option value="ciclo_dias">Ciclo por dias</option>
-                            <option value="ciclo_horas">Ciclo por horas</option>
-                            <option value="turno_rotativo">Turno rotativo</option>
-                        </select>
-                    </label>
-
-                    <div id="savedDynamicFields"></div>
-
-                    <button class="button secondary full" type="submit">
-                        Salvar escala
-                        <i data-lucide="plus"></i>
-                    </button>
-                </form>
-
-                <div class="saved-list" id="savedScalesList"></div>
-
-                <button class="button danger-outline" id="resetScalesButton" type="button">
-                    Recarregar escalas da API
-                </button>
-            </div>
-        </section>
+                    <p class="calendar-context" id="calendarContext">Os dias são calculados a partir do início informado.</p>
+                    <div class="calendar-grid" id="calendarGrid" role="grid" aria-label="Calendário mensal"></div>
+                    <div class="shift-legend" aria-label="Legenda do calendário">
+                        <span class="legend-work"><i data-lucide="briefcase-business"></i> Trabalho</span>
+                        <span class="legend-off"><i data-lucide="coffee"></i> Folga</span>
+                        <span class="legend-manha"><i data-lucide="sunrise"></i> Manhã</span>
+                        <span class="legend-tarde"><i data-lucide="sun"></i> Tarde</span>
+                        <span class="legend-noite"><i data-lucide="moon-star"></i> Noite</span>
+                        <span class="legend-selected"><i data-lucide="circle-dot"></i> Data consultada</span>
+                    </div>
+                </section>
+                <section class="cycle-strip" aria-labelledby="cycleBoardTitle">
+                    <div class="cycle-strip-heading"><div><span class="mono-kicker">REGRA DO CICLO</span><h2 id="cycleBoardTitle">Posição na sequência</h2></div><small id="cycleBoardCaption">A posição consultada fica destacada.</small></div>
+                    <div class="cycle-sequence" id="cycleSequence" aria-live="polite"><p class="empty-state">A sequência aparece após selecionar uma escala.</p></div>
+                </section>
+                <details class="timeline-disclosure">
+                    <summary>Próximas datas <span>Lista resumida do período</span></summary>
+                    <div class="timeline" id="timelineList"></div>
+                </details>
+            </section>
+        </div>
     </main>
-
-    <footer class="site-footer">
-        <p>
-            Simulador de Escala de Trabalho · Demo web v0.13.1 · Python, FastAPI,
-            PostgreSQL, JSON e arquitetura em camadas
-        </p>
-        <a href="#topo">Voltar ao topo</a>
-    </footer>
+    <footer class="site-footer"><span>Simulador de Escala de Trabalho · demo v0.14.0</span><span>Escalas pessoais ficam no navegador; a API é local e demonstrativa.</span></footer>
 </body>
 </html>

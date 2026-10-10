@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>Verificação de ponta a ponta do simulador</title>
+    <style>
+        body { font: 16px system-ui, sans-serif; margin: 24px; background: #17191c; color: #f3f4f6; }
+        iframe { width: 100%; height: 70vh; border: 1px solid #60656d; }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Verificação de ponta a ponta</h1>
+    <pre id="testResults">Executando…</pre>
+    <iframe id="app" title="Demo do simulador"></iframe>
+    <script>
+        const output = document.querySelector("#testResults");
+        const scenario = new URLSearchParams(location.search).get("scenario") || "public";
+        const projectRootServer = location.pathname.startsWith("/tests/browser/");
+        const demoUrl = projectRootServer ? "/docs/demo/simulador.html" : "/simulador.html";
+        const demoBase = new URL(projectRootServer ? "/docs/demo/" : "/", location.origin).href;
+        const lines = [];
+        const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        const check = (condition, name, detail = "") => {
+            if (!condition) throw new Error(`${name}${detail ? `: ${detail}` : ""}`);
+            lines.push(`PASS ${name}`);
+        };
+        const until = async (predicate, label, timeout = 9000) => {
+            const deadline = Date.now() + timeout;
+            while (Date.now() < deadline) {
+                if (predicate()) return;
+                await wait(100);
+            }
+            throw new Error(`Tempo esgotado: ${label}`);
+        };
+
+        async function loadApp() {
+            const frame = document.querySelector("#app");
+            if (scenario === "public") {
+                const response = await fetch(demoUrl);
+                const html = await response.text();
+                const base = `<base href="${demoBase}">`;
+                const monitor = `<script>window.__apiCalls=[];window.__jsErrors=[];window.addEventListener("error",event=>{if(event.target===window)window.__jsErrors.push(event.message)});window.addEventListener("unhandledrejection",event=>window.__jsErrors.push(String(event.reason)));const nativeFetch=window.fetch.bind(window);window.fetch=(input,...args)=>{const url=String(input);if(url.startsWith("http://127.0.0.1:8000"))window.__apiCalls.push(url);return nativeFetch(input,...args)};<\/script>`;
+                const scriptEnd = "<" + "/script>";
+                const coreScript = '<script defer src="calendar-core.js">' + scriptEnd;
+                const monitoredCoreScript = monitor + '<script defer src="calendar-core.js">' + scriptEnd;
+                const source = html.replace("<head>", `<head>${base}`).replace(coreScript, monitoredCoreScript);
+                frame.srcdoc = source;
+            } else {
+                frame.src = demoUrl;
+            }
+            await new Promise((resolve, reject) => {
+                frame.addEventListener("load", resolve, { once: true });
+                frame.addEventListener("error", reject, { once: true });
+            });
+            const win = frame.contentWindow;
+            const doc = frame.contentDocument;
+            await until(() => doc.querySelectorAll(".model-button").length === 6, "modelos prontos carregados");
+            await until(() => doc.querySelector("#workDays"), "formulário inicial renderizado");
+            await wait(300);
+            return { win, doc };
+        }
+
+        function snapshot(doc) {
+            return {
+                title: doc.querySelector("#resultTitle").textContent,
+                rows: doc.querySelectorAll("#timelineList .timeline-item").length
+            };
+        }
+
+        function submit(doc) {
+            doc.querySelector("#simulatorForm").requestSubmit();
+        }
+
+        async function runPublic() {
+            const { win, doc } = await loadApp();
+            const apiCalls = win.__apiCalls;
+            check(Array.isArray(apiCalls), "instrumentação de requisições instalada antes do script da demo");
+            check(apiCalls.length === 0, "origem pública sem chamadas à API local no carregamento", apiCalls.join(", "));
+            check(doc.querySelector("#savedScaleSourceShort").textContent.includes("navegador"), "escalas indicam armazenamento no navegador");
+            doc.querySelector("#apiRefreshButton").click();
+            doc.querySelector("#resetScalesButton").click();
+            check(apiCalls.length === 0, "atualizar conexão e lista não chama a API local", apiCalls.join(", "));
+
+            const initial = snapshot(doc);
+            doc.querySelector("#queryDate").value = "";
+            submit(doc);
+            check(Boolean(doc.querySelector("#simulatorFeedback").textContent), "data consultada vazia é rejeitada");
+            check(JSON.stringify(snapshot(doc)) === JSON.stringify(initial), "resultado anterior permanece visível após data vazia");
+            doc.querySelector("#queryDate").dispatchEvent(new win.Event("change", { bubbles: true }));
+            check(Boolean(doc.querySelector("#simulatorFeedback").textContent), "mudança para data vazia é validada");
+            check(JSON.stringify(snapshot(doc)) === JSON.stringify(initial), "mudança inválida preserva resultado anterior");
+
+            doc.querySelector("#queryDate").value = "2026-10-09";
+            doc.querySelector("#startDate").value = "";
+            submit(doc);
+            check(doc.querySelector("#simulatorFeedback").textContent.includes("data inicial"), "data inicial vazia é rejeitada");
+            check(JSON.stringify(snapshot(doc)) === JSON.stringify(initial), "resultado anterior permanece visível após início vazio");
+            doc.querySelector("#startDate").value = "2026-10-09";
+            doc.querySelector("#workDays").value = "0";
+            submit(doc);
+            check(doc.querySelector("#simulatorFeedback").textContent.includes("maiores que zero"), "período zero é rejeitado");
+            check(JSON.stringify(snapshot(doc)) === JSON.stringify(initial), "resultado anterior permanece visível após período zero");
+
+            doc.querySelector("#workDays").value = "-1";
+            submit(doc);
+            check(doc.querySelector("#simulatorFeedback").textContent.includes("maiores que zero"), "período negativo é rejeitado");
+            doc.querySelector("#workDays").value = "121";
+            submit(doc);
+            check(doc.querySelector("#simulatorFeedback").textContent.includes("120"), "ciclo acima do limite é rejeitado");
+            doc.querySelector("#workDays").value = "6";
+            doc.querySelector("#quantityDays").value = "61";
+            submit(doc);
+            check(doc.querySelector("#simulatorFeedback").textContent.includes("entre 1 e 60"), "quantidade acima do limite é rejeitada");
+
+            doc.querySelector('[data-type="turno_rotativo"]').click();
+            doc.querySelector('[data-turn-action="clear"][data-turn-target="simulator"]').click();
+            const beforeEmptySequence = snapshot(doc);
+            submit(doc);
+            check(doc.querySelector("#simulatorFeedback").textContent.includes("sequência"), "sequência rotativa vazia é rejeitada");
+            check(JSON.stringify(snapshot(doc)) === JSON.stringify(beforeEmptySequence), "sequência vazia não recalcula o resultado");
+
+            doc.querySelector('[data-model-index="0"]').click();
+            await until(() => !doc.querySelector("#resultTitle").textContent.includes("Exemplo"), "simulação 6x3 válida");
+            await until(() => doc.querySelector("#timelineList .timeline-item"), "linha do tempo 6x3 atualizada");
+            check(doc.querySelectorAll("#timelineList .timeline-item").length === 14, "ciclo 6x3 produz linha do tempo válida");
+
+            doc.querySelector('[data-model-index="3"]').click();
+            await until(() => doc.querySelector("#selectedPeriods").textContent.includes(":"), "simulação 12x36 válida");
+            check(doc.querySelectorAll("#timelineList .timeline-item").length === 6, "ciclo 12x36 produz seis consultas diárias");
+
+            doc.querySelector("#workHours").value = "0";
+            const beforeCalendarClick = snapshot(doc);
+            const visibleDay = doc.querySelector("#calendarGrid [data-calendar-date]");
+            visibleDay.click();
+            check(doc.querySelector("#simulatorFeedback").textContent.includes("maiores que zero"), "clique no calendário valida o ciclo");
+            check(JSON.stringify(snapshot(doc)) === JSON.stringify(beforeCalendarClick), "calendário preserva resultado após ciclo inválido");
+            doc.querySelector("#workHours").value = "12";
+            submit(doc);
+
+            doc.querySelector("#savedName").value = "E2E navegador somente";
+            doc.querySelector("#savedScaleForm").requestSubmit();
+            await until(() => [...doc.querySelectorAll(".saved-item strong")].some((node) => node.textContent === "E2E navegador somente"), "escala salva no navegador");
+            check(doc.querySelector("#savedScaleSourceShort").textContent.includes("navegador"), "cadastro mantém a origem local");
+            const savedItem = [...doc.querySelectorAll(".saved-item")].find((node) => node.querySelector("strong").textContent === "E2E navegador somente");
+            savedItem.querySelector("[data-apply-scale]").click();
+            await until(() => doc.querySelector("#resultTitle").textContent.startsWith("Status:"), "escala salva aplicada");
+            check(doc.querySelector("#resultDescription").textContent.includes("navegador"), "escala salva aplicada localmente", doc.querySelector("#resultDescription").textContent);
+            const beforeInvalidSavedApply = snapshot(doc);
+            win.eval("state.savedScales[0].dias_trabalho = 121");
+            savedItem.querySelector("[data-apply-scale]").click();
+            check(doc.querySelector("#simulatorFeedback").textContent.includes("120"), "aplicação de escala salva valida o limite do ciclo");
+            check(JSON.stringify(snapshot(doc)) === JSON.stringify(beforeInvalidSavedApply), "aplicação inválida preserva resultado anterior");
+            win.eval("state.savedScales[0].dias_trabalho = 6");
+            win.confirm = () => true;
+            savedItem.querySelector("[data-delete-scale]").click();
+            await until(() => ![...doc.querySelectorAll(".saved-item strong")].some((node) => node.textContent === "E2E navegador somente"), "escala removida do navegador");
+            check(doc.querySelector("#savedScaleSourceShort").textContent.includes("navegador"), "exclusão permanece no armazenamento local");
+            check(apiCalls.length === 0, "simulações públicas não chamam a API local", apiCalls.join(", "));
+            check(win.__jsErrors.length === 0, "origem pública sem erros JavaScript", win.__jsErrors.join(" | "));
+        }
+
+        async function runLocalApi(expectedOnline) {
+            const { win, doc } = await loadApp();
+            const jsErrors = [];
+            win.addEventListener("error", (event) => jsErrors.push(event.message));
+            win.addEventListener("unhandledrejection", (event) => jsErrors.push(String(event.reason)));
+            if (expectedOnline) {
+                await until(() => doc.querySelector("#savedScaleSourceShort").textContent.includes("API"), "origem API carregada");
+                check(doc.querySelector("#apiStatusText").textContent.includes("conectada"), "conexão com API local ativa");
+            } else {
+                await until(() => doc.querySelector("#apiStatusText").textContent.includes("não conectada"), "API local indisponível reconhecida");
+                check(doc.querySelector("#savedScaleSourceShort").textContent.includes("navegador"), "fallback indica armazenamento no navegador");
+            }
+
+            doc.querySelector('[data-model-index="0"]').click();
+            await until(() => !doc.querySelector("#resultTitle").textContent.includes("Exemplo"), "simulação 6x3 concluída");
+            check(doc.querySelector("#resultTitle").textContent.includes("Status"), "ciclo 6x3 calculado");
+            check(doc.querySelector("#resultDescription").textContent.includes(expectedOnline ? "API" : "localmente"), "origem do cálculo indicada");
+
+            doc.querySelector('[data-model-index="3"]').click();
+            await until(() => doc.querySelector("#selectedPeriods").textContent.includes(":"), "simulação 12x36 concluída");
+            check(doc.querySelectorAll("#timelineList .timeline-item").length === 6, "ciclo 12x36 calculado");
+
+            const beforeInvalid = snapshot(doc);
+            const fetches = [];
+            const nativeFetch = win.fetch.bind(win);
+            win.fetch = (input, ...args) => { fetches.push(String(input)); return nativeFetch(input, ...args); };
+            doc.querySelector("#quantityPeriods").value = "0";
+            submit(doc);
+            check(doc.querySelector("#simulatorFeedback").textContent.includes("entre 1 e 60"), "quantidade zero rejeitada no formulário");
+            check(JSON.stringify(snapshot(doc)) === JSON.stringify(beforeInvalid), "resultado válido preservado após envio inválido");
+            check(fetches.length === 0, "envio inválido não inicia requisição");
+            doc.querySelector("#startDateTime").value = "";
+            submit(doc);
+            check(doc.querySelector("#simulatorFeedback").textContent.includes("data inicial"), "data e hora inicial vazias são rejeitadas");
+            check(fetches.length === 0, "data e hora inválidas não iniciam requisição");
+
+            if (expectedOnline) {
+                const savedScaleButton = doc.querySelector(".saved-item [data-apply-scale]");
+                check(Boolean(savedScaleButton), "escala existente carregada pela API");
+                savedScaleButton.click();
+                await until(() => doc.querySelector("#resultDescription").textContent.includes("API"), "escala salva simulada pela API");
+                check(doc.querySelector("#savedScaleSourceShort").textContent.includes("API"), "aplicação preserva origem dos dados na API");
+            }
+            check(jsErrors.length === 0, "fluxo local sem erros JavaScript", jsErrors.join(" | "));
+        }
+
+        (async () => {
+            try {
+                if (scenario === "api-on") await runLocalApi(true);
+                else if (scenario === "api-off") await runLocalApi(false);
+                else await runPublic();
+                document.body.dataset.result = "pass";
+                output.textContent = lines.join("\n");
+            } catch (error) {
+                document.body.dataset.result = "fail";
+                lines.push(`FAIL ${error.stack || error.message}`);
+                output.textContent = lines.join("\n");
+            }
+        })();
+    </script>
+</body>
+</html>

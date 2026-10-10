@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Roadmap visual do projeto Simulador de Escala de Trabalho, com versões entregues, próximas etapas e evolução planejada.">
-    <title>Roadmap | Simulador de Escala v0.13.1</title>
+    <title>Roadmap | Simulador de Escala v0.14.0</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,16 +20,7 @@
 </head>
 <body>
     <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
-    <div class="theme-flash" id="themeFlash" aria-hidden="true"></div>
-    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
-    <div class="background-scene" aria-hidden="true">
-        <span class="orb orb-a"></span>
-        <span class="orb orb-b"></span>
-        <span class="orb orb-c"></span>
-        <span class="grid-overlay"></span>
-        <span class="grain-overlay"></span>
-    </div>
 
     <header class="site-header" id="siteHeader">
         <a class="brand" href="index.html" aria-label="Ir para a página inicial">
@@ -73,7 +64,7 @@
 
                 <p>
                     O Simulador de Escala evolui por etapas: primeiro a regra, depois arquitetura, persistência,
-                    API, interface e, futuramente, usuários, deploy e simulação personalizada por escala salva.
+                    API, interface e simulação por escalas salvas entregues; próximos passos: login e área do colaborador.
                 </p>
             </div>
         </section>
@@ -127,18 +118,18 @@
                     <span class="roadmap-version">v0.11 → v0.13</span>
                     <div>
                         <h3>API e integração</h3>
-                        <p>FastAPI, endpoints HTTP, CRUD de escalas e demo consumindo API local.</p>
+                        <p>FastAPI, endpoints HTTP, CRUD de escalas e integração da demo com a API local.</p>
                     </div>
                     <strong>Entregue</strong>
                 </article>
 
-                <article class="roadmap-phase reveal roadmap-next" data-roadmap-status="next">
+                <article class="roadmap-phase reveal" data-roadmap-status="done">
                     <span class="roadmap-version">v0.14</span>
                     <div>
                         <h3>Simular escalas personalizadas</h3>
-                        <p>Permitir que escalas cadastradas pelo usuário sejam simuladas diretamente pela API.</p>
+                        <p>Simulação de escalas salvas pela API e modo público com armazenamento local no navegador.</p>
                     </div>
-                    <strong>Próximo</strong>
+                    <strong>Entregue</strong>
                 </article>
 
                 <article class="roadmap-phase reveal" data-roadmap-status="future">
@@ -171,8 +162,8 @@
                 <h2>O próximo passo deve ser pequeno, testável e bem documentado.</h2>
 
                 <p>
-                    A melhor evolução depois da v0.13.1 é criar uma rota capaz de simular escalas salvas personalizadas,
-                    porque isso completa a ponte entre cadastro, persistência e simulação.
+                    A próxima evolução pode incluir autenticação e gestão de usuários. Esta versão conclui
+                    o fluxo de cadastro, persistência e simulação de escalas personalizadas.
                 </p>
 
                 <div class="hero-actions">
@@ -190,7 +181,7 @@
 
     <footer class="site-footer">
         <p>
-            Simulador de Escala de Trabalho · Demo web v0.13.1 · Python, FastAPI,
+            Simulador de Escala de Trabalho · Demo web v0.14.0 · Python, FastAPI,
             PostgreSQL, JSON e arquitetura em camadas
         </p>
         <a href="#topo">Voltar ao topo</a>

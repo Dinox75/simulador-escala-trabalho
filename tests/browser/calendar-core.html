@@ -1,0 +1,33 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Calendar core checks</title>
+<script src="../../docs/demo/calendar-core.js"></script>
+<pre id="result">RUNNING</pre>
+<script>
+(() => {
+    const core = window.ScaleCalendarCore;
+    const checks = [];
+    const assert = (name, condition) => {
+        if (!condition) throw new Error(name);
+        checks.push(name);
+    };
+    const date = (value) => new Date(value + "T00:00:00");
+    const clock = (value) => new Date(value);
+
+    try {
+        const january = new Date(2026, 11, 1);
+        const januaryNext = core.moveMonth(january, 1);
+        assert("month navigation crosses year", januaryNext.getFullYear() === 2027 && januaryNext.getMonth() === 0);
+        assert("leap month has 29 dates", core.monthCells(new Date(2028, 1, 1)).filter(Boolean).length === 29);
+        assert("6x3 cycle continues across month boundary", core.cycleDaysStatus(date("2026-01-29"), date("2026-02-04"), 6, 3) === "Folga");
+        assert("rotating shift wraps at month boundary", core.rotativeStatus(date("2026-01-30"), date("2026-02-01"), ["Manhã", "Tarde", "Noite"]) === "Noite");
+        const dayTwo = core.cycleHoursSegments(clock("2026-01-01T18:00"), date("2026-01-02"), 12, 36);
+        assert("12x36 exposes partial work and rest periods", dayTwo.length === 2 && dayTwo[0].startMinute === 0 && dayTwo[0].endMinute === 360 && dayTwo[0].status === "Trabalhando" && dayTwo[1].startMinute === 360 && dayTwo[1].endMinute === 1440 && dayTwo[1].status === "Folga");
+        assert("12x36 query uses the selected clock time", core.cycleHoursStatus(clock("2026-01-01T18:00"), clock("2026-01-02T05:59"), 12, 36) === "Trabalhando" && core.cycleHoursStatus(clock("2026-01-01T18:00"), clock("2026-01-02T06:00"), 12, 36) === "Folga");
+        document.querySelector("#result").textContent = "PASS " + checks.length + ": " + checks.join("; ");
+    } catch (error) {
+        document.querySelector("#result").textContent = "FAIL: " + error.message;
+        document.documentElement.dataset.testError = error.stack || error.message;
+    }
+})();
+</script>

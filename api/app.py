@@ -10,7 +10,7 @@ from api.routes.escalas import router as escalas_router
 app = FastAPI(
     title="Simulador de Escala de Trabalho API",
     description="API do projeto Simulador de Escala de Trabalho.",
-    version="0.13.0"
+    version="0.14.0"
 )
 
 
@@ -19,7 +19,6 @@ origins = [
     "http://localhost:5500",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
-    "https://dinox75.github.io",
 ]
 
 

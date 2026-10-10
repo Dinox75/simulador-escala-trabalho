@@ -341,3 +341,146 @@ GET http://127.0.0.1:8000/api/v1/escalas/Escala%20Inexistente
 
 ### Erro - Excluir escala inexistente
 DELETE http://127.0.0.1:8000/api/v1/escalas/Escala%20Inexistente
+
+### v0.14.0 - Simulação de escalas salvas pelo nome
+
+
+### Criar escala v0.14 - Ciclo por dias 2x1
+POST http://127.0.0.1:8000/api/v1/escalas
+Content-Type: application/json
+
+{
+  "nome": "Escala Teste v014 2x1",
+  "tipo": "ciclo_dias",
+  "dias_trabalho": 2,
+  "dias_folga": 1
+}
+
+
+### Status da escala salva - Ciclo por dias
+POST http://127.0.0.1:8000/api/v1/escalas/Escala%20Teste%20v014%202x1/simulacao/status
+Content-Type: application/json
+
+{
+  "data_inicio": "01/07/2026",
+  "data_consulta": "03/07/2026"
+}
+
+
+### Próximos dias da escala salva - Ciclo por dias
+POST http://127.0.0.1:8000/api/v1/escalas/Escala%20Teste%20v014%202x1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 7
+}
+
+
+### Criar escala v0.14 - Ciclo por horas
+POST http://127.0.0.1:8000/api/v1/escalas
+Content-Type: application/json
+
+{
+  "nome": "Escala Teste v014 12x36",
+  "tipo": "ciclo_horas",
+  "horas_trabalho": 12,
+  "horas_folga": 36
+}
+
+
+### Status da escala salva - Ciclo por horas
+POST http://127.0.0.1:8000/api/v1/escalas/Escala%20Teste%20v014%2012x36/simulacao/status
+Content-Type: application/json
+
+{
+  "data_inicio": "01/07/2026",
+  "hora_inicio": "07:00",
+  "data_consulta": "01/07/2026",
+  "hora_consulta": "10:00"
+}
+
+
+### Próximos dias da escala salva - Ciclo por horas
+POST http://127.0.0.1:8000/api/v1/escalas/Escala%20Teste%20v014%2012x36/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "data_inicio": "01/07/2026",
+  "hora_inicio": "07:00",
+  "hora_consulta": "10:00",
+  "quantidade_dias": 5
+}
+
+
+### Criar escala v0.14 - Turno rotativo
+POST http://127.0.0.1:8000/api/v1/escalas
+Content-Type: application/json
+
+{
+  "nome": "Escala Teste v014 Turnos",
+  "tipo": "turno_rotativo",
+  "sequencia_turnos": ["Manhã", "Tarde", "Noite", "Folga"]
+}
+
+
+### Status da escala salva - Turno rotativo
+POST http://127.0.0.1:8000/api/v1/escalas/Escala%20Teste%20v014%20Turnos/simulacao/status
+Content-Type: application/json
+
+{
+  "data_inicio": "01/07/2026",
+  "data_consulta": "04/07/2026"
+}
+
+
+### Próximos dias da escala salva - Turno rotativo
+POST http://127.0.0.1:8000/api/v1/escalas/Escala%20Teste%20v014%20Turnos/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 8
+}
+
+
+### Erro v0.14 - Escala salva inexistente
+POST http://127.0.0.1:8000/api/v1/escalas/Escala%20Que%20Nao%20Existe/simulacao/status
+Content-Type: application/json
+
+{
+  "data_inicio": "01/07/2026",
+  "data_consulta": "01/07/2026"
+}
+
+
+### Erro v0.14 - Ciclo por horas sem horários
+POST http://127.0.0.1:8000/api/v1/escalas/Escala%20Teste%20v014%2012x36/simulacao/status
+Content-Type: application/json
+
+{
+  "data_inicio": "01/07/2026",
+  "data_consulta": "01/07/2026"
+}
+
+
+### Erro v0.14 - Quantidade acima do limite
+POST http://127.0.0.1:8000/api/v1/escalas/Escala%20Teste%20v014%202x1/simulacao/proximos-dias
+Content-Type: application/json
+
+{
+  "data_inicio": "01/07/2026",
+  "quantidade_dias": 61
+}
+
+
+### Limpeza v0.14 - Excluir ciclo por dias
+DELETE http://127.0.0.1:8000/api/v1/escalas/Escala%20Teste%20v014%202x1
+
+
+### Limpeza v0.14 - Excluir ciclo por horas
+DELETE http://127.0.0.1:8000/api/v1/escalas/Escala%20Teste%20v014%2012x36
+
+
+### Limpeza v0.14 - Excluir turno rotativo
+DELETE http://127.0.0.1:8000/api/v1/escalas/Escala%20Teste%20v014%20Turnos

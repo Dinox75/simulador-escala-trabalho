@@ -72,6 +72,20 @@ def test_consultar_proximos_dias_12x36_deve_retornar_lista_com_hora():
     assert data["dias"][0]["hora_consulta"] == "10:00"
 
 
+def test_consultar_proximos_dias_inicia_na_data_consultada_ao_cruzar_mes():
+    payload = {
+        "modelo_id": "6x3",
+        "data_inicio": "27/08/2026",
+        "data_consulta": "31/08/2026",
+        "quantidade_dias": 3,
+    }
+    response = client.post("/api/v1/simulacao/proximos-dias", json=payload)
+    assert response.status_code == 200
+    dias = response.json()["dias"]
+    assert [dia["data"] for dia in dias] == ["31/08/2026", "01/09/2026", "02/09/2026"]
+    assert [dia["status"] for dia in dias] == ["Trabalhando", "Trabalhando", "Folga"]
+
+
 def test_consultar_proximos_dias_deve_retornar_404_para_modelo_inexistente():
     payload = {
         "modelo_id": "modelo_inexistente",
