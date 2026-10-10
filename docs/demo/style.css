@@ -271,8 +271,10 @@ select option { color: #101820; }
 .saved-form { display: grid; gap: 9px; padding-top: 10px; border-top: 1px solid var(--line); }
 .saved-form h3 { font-size: .8rem; }
 .form-feedback { margin: 0; font-size: .68rem; }
-.form-feedback[data-state="error"] { color: var(--danger); }
-.form-feedback[data-state="success"] { color: var(--success); }
+.form-feedback[data-feedback-type="error"] { color: var(--danger); }
+.form-feedback[data-feedback-type="success"] { color: var(--success); }
+.form-feedback[data-feedback-type="info"] { color: var(--muted); }
+#simulatorFeedback:empty { display: none; }
 
 /* Calendar and selected day */
 .calendar-workspace { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 12px; }

@@ -38,7 +38,7 @@
             <div><span class="mono-kicker">SIMULADOR · DEMO V0.14.0</span><h1>Mesa de planejamento</h1><p>Escolha um modelo, defina o início do ciclo e consulte qualquer data no calendário.</p></div>
             <div class="api-connection" id="apiStatusCard" role="status" aria-live="polite">
                 <span class="api-dot" aria-hidden="true"></span>
-                <div><strong id="apiStatusText">Verificando API local</strong><small id="apiStatusDescription">A demo funciona sem backend.</small></div>
+                <div><strong id="apiStatusText">Modo local no navegador</strong><small id="apiStatusDescription">A origem da demo define onde os dados são consultados.</small></div>
                 <button class="icon-button compact-icon" id="apiRefreshButton" type="button" aria-label="Testar conexão com a API">↻</button>
             </div>
         </section>
@@ -60,6 +60,7 @@
                     <div class="section-kicker"><span>02</span><h2>Configurar e consultar</h2></div>
                     <form class="simulator-form" id="simulatorForm" novalidate>
                         <div id="dynamicFields"></div>
+                        <p class="form-feedback" id="simulatorFeedback" role="alert" aria-live="assertive"></p>
                         <button class="button primary full" type="submit"><i data-lucide="play"></i> Atualizar calendário</button>
                     </form>
                 </section>

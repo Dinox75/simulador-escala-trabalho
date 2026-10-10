@@ -115,6 +115,8 @@ Quando executada com a API local ativa, a demo usa os endpoints FastAPI e salva 
 
 ### Primeira experiência
 
+A origem pública do GitHub Pages funciona exclusivamente no navegador: ela não consulta `127.0.0.1`, não lê nem altera escalas da API local. Ao servir `docs/demo/` em `http://localhost` ou `http://127.0.0.1`, a demo oferece integração opcional com a API em `127.0.0.1:8000`; modelos e escalas indicam se os dados vêm da API local ou deste navegador. Ciclos personalizados aceitam até 120 dias ou horas no total, sequências rotativas até 60 posições e a linha do tempo até 60 dias.
+
 1. Abra o [simulador público](https://dinox75.github.io/simulador-escala-trabalho/demo/simulador.html).
 2. Escolha um modelo ou cadastre uma escala. Sem backend, a confirmação informa que ela ficou salva neste navegador.
 3. Aplique a escala, escolha data inicial, data consultada e quantidade do período, e clique em simular.

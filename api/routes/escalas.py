@@ -21,6 +21,9 @@ router = APIRouter(
     tags=["Escalas salvas"]
 )
 
+MAX_CYCLE_LENGTH = 120
+MAX_SEQUENCE_LENGTH = 60
+
 
 class CriarEscalaRequest(BaseModel):
     nome: str
@@ -107,6 +110,12 @@ def criar_escala_a_partir_payload(payload: CriarEscalaRequest):
                     detail="Para ciclo_dias, informe dias_trabalho e dias_folga."
                 )
 
+            if payload.dias_trabalho + payload.dias_folga > MAX_CYCLE_LENGTH:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"O ciclo por dias não pode exceder {MAX_CYCLE_LENGTH} dias."
+                )
+
             return EscalaCicloDias(
                 payload.nome,
                 payload.dias_trabalho,
@@ -120,6 +129,12 @@ def criar_escala_a_partir_payload(payload: CriarEscalaRequest):
                     detail="Para ciclo_horas, informe horas_trabalho e horas_folga."
                 )
 
+            if payload.horas_trabalho + payload.horas_folga > MAX_CYCLE_LENGTH:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"O ciclo por horas não pode exceder {MAX_CYCLE_LENGTH} horas."
+                )
+
             return EscalaCicloHoras(
                 payload.nome,
                 payload.horas_trabalho,
@@ -131,6 +146,12 @@ def criar_escala_a_partir_payload(payload: CriarEscalaRequest):
                 raise HTTPException(
                     status_code=400,
                     detail="Para turno_rotativo, informe sequencia_turnos."
+                )
+
+            if len(payload.sequencia_turnos) > MAX_SEQUENCE_LENGTH:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"A sequência não pode exceder {MAX_SEQUENCE_LENGTH} turnos."
                 )
 
             return EscalaTurnoRotativo(

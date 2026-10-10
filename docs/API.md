@@ -94,7 +94,7 @@ ou por outro servidor estático equivalente.
 
 ## CORS
 
-A configuração de CORS permite que a demo local ou publicada consulte a API de desenvolvimento local. Não publique operações de escrita compartilhadas: a API não autentica nem separa usuários.
+O CORS permite que servidores locais de desenvolvimento consultem a API local. A demo no GitHub Pages funciona exclusivamente no navegador e não usa esta API. A integração descrita aqui está disponível somente quando `docs/demo/` é servido em um host local (`localhost` ou `127.0.0.1`).
 
 Origens permitidas no ambiente de desenvolvimento:
 
@@ -103,8 +103,9 @@ http://127.0.0.1:5500
 http://localhost:5500
 http://127.0.0.1:8000
 http://localhost:8000
-https://dinox75.github.io
 ```
+
+Ciclos salvos têm duração total máxima de 120 dias ou horas; sequências rotativas têm até 60 posições; os endpoints de próximos dias aceitam de 1 a 60 dias.
 
 ---
 

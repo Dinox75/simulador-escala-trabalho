@@ -2,6 +2,26 @@ const TIPO_CICLO_DIAS = "ciclo_dias";
 const TIPO_CICLO_HORAS = "ciclo_horas";
 const TIPO_TURNO_ROTATIVO = "turno_rotativo";
 const API_BASE_URL = "http://127.0.0.1:8000";
+const MAX_CYCLE_LENGTH = 120;
+const MAX_SEQUENCE_LENGTH = 60;
+const MAX_VISIBLE_DAYS = 60;
+
+function getOperationMode() {
+    const host = window.location.hostname.toLowerCase();
+    const forcedBrowserOnly = new URLSearchParams(window.location.search).has("browserOnly");
+    const isPublicPages = host === "github.io" || host.endsWith(".github.io");
+    const isLocalStaticServer = window.location.protocol === "http:"
+        && (host === "localhost" || host === "127.0.0.1" || host === "[::1]")
+        && window.location.port !== "8000";
+
+    return !forcedBrowserOnly && !isPublicPages && isLocalStaticServer
+        ? "local-api-optional"
+        : "browser-only";
+}
+
+function canUseLocalApi() {
+    return getOperationMode() === "local-api-optional";
+}
 
 const LEGACY_STORAGE_KEY = "simulador_escala_demo_v09";
 const PREVIOUS_STORAGE_KEY = "simulador_escala_demo_v013";
@@ -259,20 +279,79 @@ function applyModelToSimulator(model) {
         $("#offDays").value = model.dias_folga;
     }
 
-    showResult(
-        `Modelo aplicado: ${model.nome}`,
-        `${getTypeName(model.tipo)} · ${getScaleSummary(model)}. Preencha as datas ou clique em simular para recalcular.`,
-        []
-    );
+    if (validateSimulatorForm()) {
+        elements.simulatorForm.requestSubmit();
+    }
 }
 
 function parseDateInput(value) {
+    if (!value) return new Date(NaN);
     const [year, month, day] = value.split("-").map(Number);
-    return new Date(year, month - 1, day);
+    const date = new Date(year, month - 1, day);
+    return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
+        ? date
+        : new Date(NaN);
 }
 
 function parseDateTimeInput(value) {
-    return new Date(value);
+    return value ? new Date(value) : new Date(NaN);
+}
+
+function setSimulatorFeedback(message = "", type = "error") {
+    const feedback = $("#simulatorFeedback");
+    if (!feedback) return;
+    feedback.textContent = message;
+    feedback.dataset.feedbackType = message ? type : "";
+}
+
+function getSimulatorValidationError() {
+    const dateField = state.selectedType === TIPO_CICLO_HORAS ? "startDateTime" : "startDate";
+    const queryField = state.selectedType === TIPO_CICLO_HORAS ? "queryDateTime" : "queryDate";
+    const startValue = $(`#${dateField}`)?.value || "";
+    const queryValue = $(`#${queryField}`)?.value || "";
+    if (!startValue || !queryValue) return "Preencha a data inicial e a data consultada.";
+
+    const start = state.selectedType === TIPO_CICLO_HORAS ? parseDateTimeInput(startValue) : parseDateInput(startValue);
+    const query = state.selectedType === TIPO_CICLO_HORAS ? parseDateTimeInput(queryValue) : parseDateInput(queryValue);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(query.getTime())) {
+        return state.selectedType === TIPO_CICLO_HORAS
+            ? "Informe datas e horários válidos para o início e a consulta."
+            : "Informe datas válidas para o início e a consulta.";
+    }
+
+    const quantityField = state.selectedType === TIPO_CICLO_HORAS ? "quantityPeriods" : "quantityDays";
+    const quantityValue = $(`#${quantityField}`)?.value ?? "";
+    const quantity = Number(quantityValue);
+    if (quantityValue.trim() === "" || !Number.isInteger(quantity) || quantity < 1 || quantity > MAX_VISIBLE_DAYS) {
+        return `A quantidade para visualizar deve ser um número inteiro entre 1 e ${MAX_VISIBLE_DAYS}.`;
+    }
+
+    if (state.selectedType === TIPO_TURNO_ROTATIVO) {
+        const turns = normalizeTurns(state.simulatorTurns);
+        if (!turns.length) return "Adicione pelo menos um turno à sequência antes de simular.";
+        if (turns.length > MAX_SEQUENCE_LENGTH) return `A sequência pode ter no máximo ${MAX_SEQUENCE_LENGTH} turnos.`;
+    } else {
+        const workField = state.selectedType === TIPO_CICLO_HORAS ? "workHours" : "workDays";
+        const offField = state.selectedType === TIPO_CICLO_HORAS ? "offHours" : "offDays";
+        const workValue = $(`#${workField}`)?.value ?? "";
+        const offValue = $(`#${offField}`)?.value ?? "";
+        const work = Number(workValue);
+        const off = Number(offValue);
+        const unit = state.selectedType === TIPO_CICLO_HORAS ? "horas" : "dias";
+        if (workValue.trim() === "" || offValue.trim() === "" || !Number.isInteger(work) || !Number.isInteger(off)) {
+            return `Preencha os períodos de trabalho e folga com números inteiros de ${unit}.`;
+        }
+        if (work < 1 || off < 1) return "Os períodos de trabalho e folga devem ser maiores que zero.";
+        if (work + off > MAX_CYCLE_LENGTH) return `O ciclo completo pode ter no máximo ${MAX_CYCLE_LENGTH} ${unit}.`;
+    }
+
+    return "";
+}
+
+function validateSimulatorForm() {
+    const error = getSimulatorValidationError();
+    setSimulatorFeedback(error, "error");
+    return !error;
 }
 
 function formatDate(date) {
@@ -467,15 +546,15 @@ function renderDynamicFields() {
                 </label>
                 <label>
                     Horas trabalhadas
-                    <input id="workHours" type="number" min="1" value="12" required>
+                    <input id="workHours" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="12" required>
                 </label>
                 <label>
                     Horas de folga
-                    <input id="offHours" type="number" min="1" value="36" required>
+                    <input id="offHours" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="36" required>
                 </label>
                 <label>
                     Dias para visualizar
-                    <input id="quantityPeriods" type="number" min="1" max="30" value="6" required>
+                    <input id="quantityPeriods" type="number" min="1" max="${MAX_VISIBLE_DAYS}" value="6" required>
                 </label>
             </div>
         `;
@@ -495,7 +574,7 @@ function renderDynamicFields() {
                 </label>
                 <label>
                     Dias para visualizar
-                    <input id="quantityDays" type="number" min="1" max="60" value="14" required>
+                    <input id="quantityDays" type="number" min="1" max="${MAX_VISIBLE_DAYS}" value="14" required>
                 </label>
             </div>
             ${renderTurnBuilder("simulator")}
@@ -516,15 +595,15 @@ function renderDynamicFields() {
             </label>
             <label>
                 Dias trabalhados
-                <input id="workDays" type="number" min="1" value="6" required>
+                <input id="workDays" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="6" required>
             </label>
             <label>
                 Dias de folga
-                <input id="offDays" type="number" min="1" value="3" required>
+                <input id="offDays" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="3" required>
             </label>
             <label>
                 Dias para visualizar
-                <input id="quantityDays" type="number" min="1" max="60" value="14" required>
+                <input id="quantityDays" type="number" min="1" max="${MAX_VISIBLE_DAYS}" value="14" required>
             </label>
         </div>
     `;
@@ -542,11 +621,11 @@ function renderSavedDynamicFields() {
             <div class="field-grid">
                 <label>
                     Horas trabalhadas
-                    <input id="savedWorkHours" type="number" min="1" value="12" required>
+                    <input id="savedWorkHours" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="12" required>
                 </label>
                 <label>
                     Horas de folga
-                    <input id="savedOffHours" type="number" min="1" value="36" required>
+                    <input id="savedOffHours" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="36" required>
                 </label>
             </div>
         `;
@@ -563,11 +642,11 @@ function renderSavedDynamicFields() {
         <div class="field-grid">
             <label>
                 Dias trabalhados
-                <input id="savedWorkDays" type="number" min="1" value="6" required>
+                <input id="savedWorkDays" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="6" required>
             </label>
             <label>
                 Dias de folga
-                <input id="savedOffDays" type="number" min="1" value="3" required>
+                <input id="savedOffDays" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="3" required>
             </label>
         </div>
     `;
@@ -642,6 +721,11 @@ function renderSelectedPeriods(spec) {
 
 function renderCalendar() {
     if (!elements.calendarGrid || !elements.calendarMonth) return;
+    const validationError = getSimulatorValidationError();
+    if (validationError) {
+        setSimulatorFeedback(validationError, "error");
+        return;
+    }
     const spec = getSimulatorSpec();
     const selectedDate = dateInputValue(spec.query);
     const today = dateInputValue(new Date());
@@ -679,6 +763,11 @@ function animateCalendarDays() {
 
 function renderCycleSequence() {
     if (!elements.cycleSequence) {
+        return;
+    }
+    const validationError = getSimulatorValidationError();
+    if (validationError) {
+        setSimulatorFeedback(validationError, "error");
         return;
     }
 
@@ -862,6 +951,10 @@ function generateCycleHoursDailyItems(start, quantity, workHours, offHours, quer
 }
 
 function simulateLocally(reason = "") {
+    if (!validateSimulatorForm()) {
+        return;
+    }
+
     if (state.selectedType === TIPO_CICLO_HORAS) {
         const startDateTime = parseDateTimeInput($("#startDateTime").value);
         const queryDateTime = parseDateTimeInput($("#queryDateTime").value);
@@ -1075,6 +1168,15 @@ async function simulateSavedScaleByApi(scale) {
 async function handleSimulatorSubmit(event) {
     event.preventDefault();
 
+    if (!validateSimulatorForm()) {
+        return;
+    }
+
+    if (!canUseLocalApi()) {
+        simulateLocally("Simulação feita neste navegador; a origem pública não usa a API local.");
+        return;
+    }
+
     const selectedModel = getSelectedModelForApi();
     const selectedSavedScale = getSelectedSavedScaleForApi();
 
@@ -1264,6 +1366,38 @@ function upsertSavedScale(scale) {
     }
 }
 
+function getScaleValidationError(scale) {
+    if (scale.tipo === TIPO_TURNO_ROTATIVO) {
+        const turns = normalizeTurns(scale.sequencia_turnos);
+        if (!turns.length) return "Adicione pelo menos um turno antes de salvar.";
+        if (turns.length > MAX_SEQUENCE_LENGTH) return `A sequência pode ter no máximo ${MAX_SEQUENCE_LENGTH} turnos.`;
+        return "";
+    }
+
+    const work = Number(scale.tipo === TIPO_CICLO_HORAS ? scale.horas_trabalho : scale.dias_trabalho);
+    const off = Number(scale.tipo === TIPO_CICLO_HORAS ? scale.horas_folga : scale.dias_folga);
+    const unit = scale.tipo === TIPO_CICLO_HORAS ? "horas" : "dias";
+    if (!Number.isInteger(work) || !Number.isInteger(off) || work < 1 || off < 1) {
+        return `Os períodos de trabalho e folga devem ser inteiros positivos em ${unit}.`;
+    }
+    if (work + off > MAX_CYCLE_LENGTH) return `O ciclo completo pode ter no máximo ${MAX_CYCLE_LENGTH} ${unit}.`;
+    return "";
+}
+
+function saveScaleInBrowser(scale) {
+    const localScales = loadSavedScales();
+    if (localScales.some((item) => getScaleKey(item) === getScaleKey(scale))) {
+        throw new Error("Já existe uma escala local com esse nome.");
+    }
+    if (localScales.some((item) => getScaleConfigurationKey(item) === getScaleConfigurationKey(scale))) {
+        throw new Error("Já existe uma escala local com essa configuração.");
+    }
+    localScales.push(cloneScale(scale));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(localScales));
+    state.savedScales = localScales;
+    state.savedScaleSource = "local";
+}
+
 function showSavedScalesLoading(message = "Carregando escalas...") {
     if (!elements.savedScalesList) {
         return;
@@ -1383,6 +1517,12 @@ async function saveScaleFromForm(button = null) {
         };
     }
 
+    const validationError = getScaleValidationError(scale);
+    if (validationError) {
+        setSavedScaleFeedback(validationError, "error");
+        return;
+    }
+
     try {
         state.isSavingScale = true;
 
@@ -1395,33 +1535,37 @@ async function saveScaleFromForm(button = null) {
         console.info("Tentando salvar escala pela demo:", scale);
         let createdScale = scale;
         let destination = "armazenamento deste navegador";
-        try {
-            const data = await apiRequest("/api/v1/escalas", {
-                method: "POST",
-                body: JSON.stringify(scale)
-            });
-            createdScale = data.escala || scale;
-            destination = "API local (JSON)";
-            if (state.savedScaleSource !== "api") {
-                state.savedScales = [];
+        if (canUseLocalApi()) {
+            try {
+                const data = await apiRequest("/api/v1/escalas", {
+                    method: "POST",
+                    body: JSON.stringify(scale)
+                });
+                createdScale = data.escala || scale;
+                destination = "API local (JSON)";
+                if (state.savedScaleSource !== "api") {
+                    state.savedScales = [];
+                }
+                state.savedScaleSource = "api";
+                upsertSavedScale(createdScale);
+            } catch (apiError) {
+                if (!(apiError instanceof TypeError) && apiError?.name !== "AbortError") {
+                    throw apiError;
+                }
+                const localScales = loadSavedScales();
+                if (localScales.some((item) => getScaleKey(item) === getScaleKey(scale))) {
+                    throw new Error("Já existe uma escala local com esse nome.");
+                }
+                if (localScales.some((item) => getScaleConfigurationKey(item) === getScaleConfigurationKey(scale))) {
+                    throw new Error("Já existe uma escala local com essa configuração.");
+                }
+                localScales.push(cloneScale(scale));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(localScales));
+                state.savedScales = localScales;
+                state.savedScaleSource = "local";
             }
-            state.savedScaleSource = "api";
-            upsertSavedScale(createdScale);
-        } catch (apiError) {
-            if (!(apiError instanceof TypeError) && apiError?.name !== "AbortError") {
-                throw apiError;
-            }
-            const localScales = loadSavedScales();
-            if (localScales.some((item) => getScaleKey(item) === getScaleKey(scale))) {
-                throw new Error("Já existe uma escala local com esse nome.");
-            }
-            if (localScales.some((item) => getScaleConfigurationKey(item) === getScaleConfigurationKey(scale))) {
-                throw new Error("Já existe uma escala local com essa configuração.");
-            }
-            localScales.push(cloneScale(scale));
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(localScales));
-            state.savedScales = localScales;
-            state.savedScaleSource = "local";
+        } else {
+            saveScaleInBrowser(scale);
         }
         renderSavedScales();
 
@@ -1488,11 +1632,9 @@ function applySavedScale(index) {
 
     state.selectedSavedScaleName = scale.nome;
 
-    showResult(
-        `Escala aplicada: ${scale.nome}`,
-        `${getTypeName(scale.tipo)} · ${getScaleSummary(scale)}. Clique em simular para calcular a partir da data escolhida${state.savedScaleSource === "api" ? " pela API local" : " neste navegador"}.`,
-        []
-    );
+    if (validateSimulatorForm()) {
+        elements.simulatorForm.requestSubmit();
+    }
 
     const simulator = document.querySelector("#simulador");
 
@@ -1555,8 +1697,16 @@ function handleTurnBuilderClick(event) {
         const value = addButton.dataset.turnValue;
         const list = target === "simulator" ? state.simulatorTurns : state.savedTurns;
 
+        if (list.length >= MAX_SEQUENCE_LENGTH) {
+            const message = `A sequência pode ter no máximo ${MAX_SEQUENCE_LENGTH} turnos.`;
+            if (target === "simulator") setSimulatorFeedback(message, "error");
+            else setSavedScaleFeedback(message, "error");
+            return;
+        }
+
         list.push(value);
         renderTurnPreview(target);
+        if (target === "simulator") validateSimulatorForm();
         return;
     }
 
@@ -1567,6 +1717,7 @@ function handleTurnBuilderClick(event) {
 
         list.splice(index, 1);
         renderTurnPreview(target);
+        if (target === "simulator") validateSimulatorForm();
         return;
     }
 
@@ -1588,6 +1739,7 @@ function handleTurnBuilderClick(event) {
         }
 
         renderTurnPreview(target);
+        if (target === "simulator") validateSimulatorForm();
     }
 }
 
@@ -1728,6 +1880,9 @@ function configureMobileMenu() {
 }
 
 async function apiRequest(endpoint, options = {}) {
+    if (!canUseLocalApi()) {
+        throw new Error("A origem desta demo permite apenas armazenamento no navegador.");
+    }
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 1800);
     let response;
@@ -1790,6 +1945,16 @@ async function checkApiHealth() {
         return;
     }
 
+    if (!canUseLocalApi()) {
+        setApiStatus(
+            "Modo público: somente navegador",
+            "Modelos e escalas ficam neste navegador. A API local não é consultada nesta origem."
+        );
+        if (elements.apiRefreshButton) elements.apiRefreshButton.hidden = true;
+        return;
+    }
+    if (elements.apiRefreshButton) elements.apiRefreshButton.hidden = false;
+
     setApiStatus(
         "Verificando conexão...",
         `Tentando conectar em ${API_BASE_URL}/health`
@@ -1817,6 +1982,12 @@ async function loadModelsFromApi() {
         return;
     }
 
+    if (!canUseLocalApi()) {
+        state.availableModels = PREDEFINED_MODELS.map(cloneScale);
+        renderModelButtons();
+        return;
+    }
+
     try {
         const data = await apiRequest("/api/v1/modelos");
 
@@ -1841,6 +2012,14 @@ async function loadSavedScalesFromApi(options = {}) {
 
     if (!elements.savedScalesList) {
         console.warn("Elemento #savedScalesList não encontrado.");
+        return;
+    }
+
+    if (!canUseLocalApi()) {
+        state.savedScaleSource = "local";
+        state.savedScales = loadSavedScales();
+        if (elements.resetScalesButton) elements.resetScalesButton.textContent = "Atualizar lista deste navegador";
+        renderSavedScales();
         return;
     }
 
@@ -1969,8 +2148,8 @@ function configureEvents() {
                 const query = event.target.id === "queryDateTime" ? parseDateTimeInput(event.target.value) : parseDateInput(event.target.value);
                 if (!Number.isNaN(query.getTime())) {
                     state.calendarView = new Date(query.getFullYear(), query.getMonth(), 1);
-                    elements.simulatorForm.requestSubmit();
                 }
+                elements.simulatorForm.requestSubmit();
             }
         });
     }
