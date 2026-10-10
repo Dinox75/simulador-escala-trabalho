@@ -34,6 +34,12 @@ def _browser_executable() -> str | None:
 
 
 def test_calendar_month_navigation_and_period_presentation() -> None:
+    if os.environ.get("CI") and not os.environ.get("SIMULADOR_BROWSER"):
+        pytest.skip(
+            "Defina SIMULADOR_BROWSER para habilitar o teste headless no CI; "
+            "o Chromium fornecido pelo runner não encerra de forma confiável."
+        )
+
     browser = _browser_executable()
     if not browser:
         pytest.skip("Instale Chrome/Edge ou defina SIMULADOR_BROWSER para rodar a verificação do calendário.")
