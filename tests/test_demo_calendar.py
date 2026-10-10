@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -39,17 +40,21 @@ def test_calendar_month_navigation_and_period_presentation() -> None:
 
     runner = Path(__file__).parent / "browser" / "calendar-core.html"
     with tempfile.TemporaryDirectory(prefix="simulador-calendar-") as profile:
+        browser_args = [
+            browser,
+            "--headless=new",
+            "--disable-extensions",
+            "--disable-gpu",
+            "--no-first-run",
+            f"--user-data-dir={profile}",
+            "--dump-dom",
+            runner.resolve().as_uri(),
+        ]
+        if sys.platform.startswith("linux"):
+            browser_args.insert(1, "--no-sandbox")
+
         completed = subprocess.run(
-            [
-                browser,
-                "--headless=new",
-                "--disable-extensions",
-                "--disable-gpu",
-                "--no-first-run",
-                f"--user-data-dir={profile}",
-                "--dump-dom",
-                runner.resolve().as_uri(),
-            ],
+            browser_args,
             capture_output=True,
             text=True,
             timeout=60,
