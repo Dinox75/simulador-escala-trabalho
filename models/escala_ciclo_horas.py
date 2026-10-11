@@ -1,4 +1,4 @@
-from tipos_escala import TIPO_CICLO_HORAS
+from tipos_escala import MAX_CYCLE_LENGTH, TIPO_CICLO_HORAS
 from models.escala_base import EscalaBase
 
 
@@ -8,6 +8,8 @@ class EscalaCicloHoras(EscalaBase):
 
         self._validar_valor_positivo(horas_trabalho, "horas_trabalho")
         self._validar_valor_positivo(horas_folga, "horas_folga")
+        if horas_trabalho + horas_folga > MAX_CYCLE_LENGTH:
+            raise ValueError(f"O ciclo por horas não pode exceder {MAX_CYCLE_LENGTH} horas.")
 
         self.horas_trabalho = horas_trabalho
         self.horas_folga = horas_folga

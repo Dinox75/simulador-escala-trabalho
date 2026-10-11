@@ -8,6 +8,11 @@ class EscalaService:
     def buscar_escala_por_nome(self, nome):
         return self.repository.buscar_por_nome(nome)
 
+    def close(self):
+        close = getattr(self.repository, "close", None)
+        if close is not None:
+            close()
+
     def adicionar_escala(self, escala):
         if self._existe_nome_duplicado(escala.nome):
             return "nome_duplicado"
@@ -24,10 +29,7 @@ class EscalaService:
         if self._indice_invalido(indice, escalas):
             return False
 
-        escalas.pop(indice)
-        self.repository.salvar_todos(escalas)
-
-        return True
+        return self.repository.excluir_por_nome(escalas[indice].nome)
 
     def editar_escala_por_indice(self, indice, nova_escala):
         escalas = self.repository.listar()
@@ -41,9 +43,8 @@ class EscalaService:
         if self._existe_configuracao_duplicada(nova_escala, indice):
             return "configuracao_duplicada"
 
-        escalas[indice] = nova_escala
-        self.repository.salvar_todos(escalas)
-
+        if not self.repository.atualizar_por_nome(escalas[indice].nome, nova_escala):
+            return "indice_invalido"
         return "sucesso"
 
     def excluir_escala_por_nome(self, nome):

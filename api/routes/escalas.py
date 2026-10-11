@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
+from ipaddress import ip_address
+import os
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from escala import calcular_status_por_escala
@@ -12,6 +14,8 @@ from tipos_escala import (
     TIPO_CICLO_DIAS,
     TIPO_CICLO_HORAS,
     TIPO_TURNO_ROTATIVO,
+    MAX_CYCLE_LENGTH,
+    MAX_SEQUENCE_LENGTH,
     validar_tipo_escala,
 )
 
@@ -20,10 +24,6 @@ router = APIRouter(
     prefix="/api/v1",
     tags=["Escalas salvas"]
 )
-
-MAX_CYCLE_LENGTH = 120
-MAX_SEQUENCE_LENGTH = 60
-
 
 class CriarEscalaRequest(BaseModel):
     nome: str
@@ -51,7 +51,34 @@ class ConsultaEscalaSalvaProximosDiasRequest(BaseModel):
 
 
 def obter_service():
-    return criar_escala_service()
+    tipo_repository = os.getenv("ESCALA_REPOSITORY", "json").strip().lower()
+    if tipo_repository == "json":
+        return criar_escala_service()
+    return criar_escala_service(tipo_repository=tipo_repository)
+
+
+def obter_service_por_requisicao():
+    service = obter_service()
+    try:
+        yield service
+    finally:
+        service.close()
+
+
+def validar_acesso_local(request: Request):
+    cliente = request.client
+    if cliente is None or cliente.host != "testclient":
+        try:
+            if cliente is None or not ip_address(cliente.host).is_loopback:
+                raise HTTPException(
+                    status_code=403,
+                    detail="As operações de escrita estão disponíveis somente localmente.",
+                )
+        except ValueError:
+            raise HTTPException(
+                status_code=403,
+                detail="As operações de escrita estão disponíveis somente localmente.",
+            )
 
 
 def obter_indice_escala_por_nome(escalas, nome):
@@ -82,9 +109,14 @@ def converter_data_hora(data_texto: str, hora_texto: str):
         )
 
 
-def buscar_escala_salva_ou_404(nome: str):
-    service = obter_service()
-    escala = service.buscar_escala_por_nome(nome)
+def buscar_escala_salva_ou_404(nome: str, service=None):
+    service_proprio = service is None
+    service = service or obter_service()
+    try:
+        escala = service.buscar_escala_por_nome(nome)
+    finally:
+        if service_proprio:
+            service.close()
 
     if escala is None:
         raise HTTPException(
@@ -252,8 +284,7 @@ def gerar_proximos_dias_escala_salva(
 
 
 @router.get("/escalas")
-def listar_escalas_salvas():
-    service = obter_service()
+def listar_escalas_salvas(service=Depends(obter_service_por_requisicao)):
     escalas = service.listar_escalas()
 
     return {
@@ -265,9 +296,15 @@ def listar_escalas_salvas():
     }
 
 
-@router.post("/escalas", status_code=201)
-def criar_escala(payload: CriarEscalaRequest):
-    service = obter_service()
+@router.post(
+    "/escalas",
+    status_code=201,
+    dependencies=[Depends(validar_acesso_local)],
+)
+def criar_escala(
+    payload: CriarEscalaRequest,
+    service=Depends(obter_service_por_requisicao),
+):
     escala = criar_escala_a_partir_payload(payload)
 
     resultado = service.adicionar_escala(escala)
@@ -290,9 +327,11 @@ def criar_escala(payload: CriarEscalaRequest):
     }
 
 
-@router.delete("/escalas/{nome}")
-def excluir_escala(nome: str):
-    service = obter_service()
+@router.delete(
+    "/escalas/{nome}",
+    dependencies=[Depends(validar_acesso_local)],
+)
+def excluir_escala(nome: str, service=Depends(obter_service_por_requisicao)):
 
     resultado = service.excluir_escala_por_nome(nome)
 
@@ -309,17 +348,23 @@ def excluir_escala(nome: str):
 
 
 @router.get("/escalas/{nome}")
-def buscar_escala_por_nome(nome: str):
-    escala = buscar_escala_salva_ou_404(nome)
+def buscar_escala_por_nome(nome: str, service=Depends(obter_service_por_requisicao)):
+    escala = buscar_escala_salva_ou_404(nome, service)
 
     return {
         "escala": escala.to_dict()
     }
 
 
-@router.put("/escalas/{nome}")
-def editar_escala(nome: str, payload: CriarEscalaRequest):
-    service = obter_service()
+@router.put(
+    "/escalas/{nome}",
+    dependencies=[Depends(validar_acesso_local)],
+)
+def editar_escala(
+    nome: str,
+    payload: CriarEscalaRequest,
+    service=Depends(obter_service_por_requisicao),
+):
     escalas = service.listar_escalas()
 
     indice = obter_indice_escala_por_nome(escalas, nome)
@@ -361,9 +406,10 @@ def editar_escala(nome: str, payload: CriarEscalaRequest):
 @router.post("/escalas/{nome}/simulacao/status")
 def consultar_status_escala_salva(
     nome: str,
-    payload: ConsultaEscalaSalvaStatusRequest
+    payload: ConsultaEscalaSalvaStatusRequest,
+    service=Depends(obter_service_por_requisicao),
 ):
-    escala = buscar_escala_salva_ou_404(nome)
+    escala = buscar_escala_salva_ou_404(nome, service)
     status = calcular_status_escala_salva(escala, payload)
     dados_escala = escala.to_dict()
 
@@ -379,9 +425,10 @@ def consultar_status_escala_salva(
 @router.post("/escalas/{nome}/simulacao/proximos-dias")
 def consultar_proximos_dias_escala_salva(
     nome: str,
-    payload: ConsultaEscalaSalvaProximosDiasRequest
+    payload: ConsultaEscalaSalvaProximosDiasRequest,
+    service=Depends(obter_service_por_requisicao),
 ):
-    escala = buscar_escala_salva_ou_404(nome)
+    escala = buscar_escala_salva_ou_404(nome, service)
     dias = gerar_proximos_dias_escala_salva(escala, payload)
     dados_escala = escala.to_dict()
 

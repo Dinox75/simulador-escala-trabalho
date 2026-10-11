@@ -60,3 +60,18 @@ def test_criar_escala_service_com_repository_postgres_usando_conexao():
 def test_criar_escala_service_com_tipo_repository_invalido():
     with pytest.raises(ValueError):
         criar_escala_service(tipo_repository="invalido")
+
+
+def test_service_fecha_repository_que_possui_conexao():
+    class RepositoryComFechamento:
+        fechado = False
+
+        def close(self):
+            self.fechado = True
+
+    repository = RepositoryComFechamento()
+    service = EscalaService(repository)
+
+    service.close()
+
+    assert repository.fechado is True

@@ -15,8 +15,10 @@ class EscalaBase:
     def _validar_nome(nome):
         if not isinstance(nome, str) or not nome.strip():
             raise ValueError("O nome da escala não pode ser vazio.")
+        if len(nome.strip()) > 100:
+            raise ValueError("O nome da escala não pode exceder 100 caracteres.")
 
     @staticmethod
     def _validar_valor_positivo(valor, campo):
-        if not isinstance(valor, int) or valor <= 0:
+        if type(valor) is not int or valor <= 0:
             raise ValueError(f"O campo {campo} deve ser um número inteiro positivo.")

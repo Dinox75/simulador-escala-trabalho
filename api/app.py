@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from api.routes.health import router as health_router
 from api.routes.modelos import router as modelos_router
 from api.routes.simulacao import router as simulacao_router
 from api.routes.escalas import router as escalas_router
+from repositories.escala_repository import EscalaRepositoryError
 
 
 app = FastAPI(
@@ -12,6 +14,14 @@ app = FastAPI(
     description="API do projeto Simulador de Escala de Trabalho.",
     version="0.14.0"
 )
+
+
+@app.exception_handler(EscalaRepositoryError)
+async def erro_repository(_request, erro):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(erro)},
+    )
 
 
 origins = [

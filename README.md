@@ -103,7 +103,7 @@ O foco do projeto é transformar uma necessidade comum de consulta de escala em 
 
 A demo pública em [GitHub Pages](https://dinox75.github.io/simulador-escala-trabalho/demo/) funciona sem instalar Python e sem iniciar a API. Modelos prontos e escalas personalizadas são calculados no navegador. Escalas criadas sem API ficam no `localStorage` daquele navegador e continuam disponíveis após recarregar a página. Esses dados não são enviados ao projeto.
 
-Quando executada com a API local ativa, a demo usa os endpoints FastAPI e salva as escalas no repository configurado no backend. A configuração padrão é `JsonEscalaRepository` em `data/escalas.json`; PostgreSQL é uma opção explícita da camada de serviços e não é necessário para a execução básica. A API não tem autenticação ou isolamento de usuários; use-a somente localmente e não publique operações compartilhadas de escrita.
+Quando executada com a API local ativa, a demo usa os endpoints FastAPI e salva as escalas no repository configurado no backend. JSON em `data/escalas.json` é o padrão; PostgreSQL pode ser selecionado explicitamente com `ESCALA_REPOSITORY=postgres` e `POSTGRES_DSN`. As rotas de escrita recusam clientes remotos, mas a API não tem autenticação ou isolamento de usuários; mantenha-a em loopback e não publique operações compartilhadas de escrita.
 
 ### O que a v0.14.0 entrega
 
@@ -129,7 +129,7 @@ py -3 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 python -m pytest
-uvicorn api.app:app --reload
+uvicorn api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 A API usa JSON por padrão e pode ser consultada em `http://127.0.0.1:8000/docs`. Sirva `docs/demo/` com uma extensão de servidor estático do VS Code ou equivalente e abra `simulador.html`. Se a API não estiver ativa, o modo local permanece disponível. Testes automatizados: `python -m pytest`; persistência PostgreSQL requer configuração e serviço próprios.
@@ -347,7 +347,7 @@ A demo agora consome a API para:
 - simular escalas salvas por nome nos tipos ciclo por dias, ciclo por horas e turno rotativo;
 - exibir próximos dias em linha do tempo e calendário.
 
-Sem API, os cadastros ficam no navegador. Com a API ativa, a persistência é `data/escalas.json` por padrão.
+Sem API, os cadastros ficam no navegador. Com a API ativa, JSON em `data/escalas.json` é o padrão; PostgreSQL exige seleção explícita por `ESCALA_REPOSITORY` e `POSTGRES_DSN`.
 
 ---
 
@@ -358,7 +358,7 @@ A API foi desenvolvida com **FastAPI** e permite consumir funcionalidades do sim
 ### Executar a API localmente
 
 ```powershell
-uvicorn api.app:app --reload
+uvicorn api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Depois acesse:
@@ -393,7 +393,7 @@ http://127.0.0.1:8000
 
 Para testar corretamente:
 
-1. execute a API com `uvicorn api.app:app --reload`;
+1. execute a API com `uvicorn api.app:app --host 127.0.0.1 --port 8000 --reload`;
 2. abra a demo por um servidor local;
 3. confira o card de status da API;
 4. use os modelos prontos para simular;
@@ -637,7 +637,7 @@ O projeto possui duas formas de persistência:
 
 | Tipo | Status | Uso |
 |---|---|---|
-| JSON | Padrão | Execução simples, testes e fallback |
+| JSON | Padrão | Execução simples e testes |
 | PostgreSQL | Funcional | Persistência relacional configurável |
 
 ### JSON
@@ -652,13 +652,15 @@ python main.py
 
 ### PostgreSQL
 
-O seletor `ESCALA_REPOSITORY=postgres` é lido pela aplicação CLI. A API FastAPI chama a factory com JSON padrão (`data/escalas.json`) e não exige banco para iniciar. A camada de serviços também oferece repository PostgreSQL quando selecionada explicitamente.
+`PostgresEscalaRepository` está implementado e pode ser selecionado explicitamente pelo terminal ou pela API. Sem `ESCALA_REPOSITORY`, ambos usam JSON. Para PostgreSQL, configure `ESCALA_REPOSITORY=postgres` e `POSTGRES_DSN`; a ausência ou falha dessa configuração é informada sem mudança automática de backend. A API controla uma conexão por requisição. Consulte `database/README.MD` para configuração e limites de segurança.
 
 ---
 
 ## 🐘 Schema PostgreSQL
 
 O schema atual usa uma tabela principal e tabelas específicas por tipo de escala.
+
+O backend JSON permanece padrão. O seletor `ESCALA_REPOSITORY=postgres` escolhe PostgreSQL no terminal e na API local, que abre e fecha uma conexão por requisição. Configure `POSTGRES_DSN` explicitamente; sem credenciais, o modo PostgreSQL falha claramente e não troca para JSON.
 
 ### Tabelas principais
 
@@ -727,9 +729,9 @@ A demo possui páginas separadas para:
 
 A demo pública funciona sem API para modelos prontos e escalas personalizadas. Sem backend, cadastros ficam no armazenamento do navegador e permanecem após recarregar.
 
-Com a API FastAPI local ativa, a demo carrega e grava escalas em `data/escalas.json`, além de demonstrar as requisições entre frontend e backend. A linha do tempo e o calendário começam na data consultada, usando a data inicial para calcular o ciclo.
+Com a API FastAPI local ativa, a demo carrega e grava escalas no repository selecionado pelo backend (`data/escalas.json` por padrão; PostgreSQL se explicitamente configurado). A linha do tempo e o calendário começam na data consultada, usando a data inicial para calcular o ciclo.
 
-Para experimentar localmente, sirva `docs/demo/` por um servidor estático. Inicie opcionalmente a API em `http://127.0.0.1:8000` com `uvicorn api.app:app --reload`.
+Para experimentar localmente, sirva `docs/demo/` por um servidor estático. Inicie opcionalmente a API somente em loopback com `uvicorn api.app:app --host 127.0.0.1 --port 8000`.
 
 ## 🧪 Testes automatizados
 
@@ -759,17 +761,30 @@ python -m pytest tests/test_api_escalas.py tests/test_api_escalas_simulacao.py t
 
 ### Rodar testes do PostgreSQL
 
-Esses cinco testes de integração ficam ignorados por padrão. Para habilitá-los, crie e inicialize um banco dedicado chamado `simulador_escala_test`; nunca use o banco de desenvolvimento ou de produção. As operações dos testes inserem e removem apenas registros com nomes aleatórios `Teste PostgreSQL ...`.
+Os testes de integração PostgreSQL são ignorados por padrão. Para habilitá-los, crie e inicialize um banco dedicado chamado `simulador_escala_test`; nunca use banco de desenvolvimento ou produção. Os testes do repository usam nomes aleatórios; o teste de migração cria e remove um schema exclusivo com nome aleatório dentro desse banco de teste.
 
 No PowerShell, configure uma DSN explícita para o banco de teste e execute:
 
 ```powershell
 $env:TEST_POSTGRES_DSN = "host=localhost port=5432 dbname=simulador_escala_test user=postgres password=SUA_SENHA"
-psql "$env:TEST_POSTGRES_DSN" -f database/schema_postgresql.sql
+$env:POSTGRES_DSN = $env:TEST_POSTGRES_DSN
+python -m database.inicializar_postgres
 .\.venv\Scripts\python.exe -m pytest tests/test_postgres_escala_repository.py
 ```
 
-Sem `TEST_POSTGRES_DSN`, os testes são ignorados. Se a variável estiver configurada, erros de conexão, credenciais ou esquema fazem os testes falharem para que o problema apareça.
+Sem `TEST_POSTGRES_DSN`, os testes são ignorados. Se estiver configurada, erros de conexão, credenciais ou esquema fazem os testes falharem. A variável `TEST_POSTGRES_DSN` nunca é usada pelo backend normal.
+
+### Prévia e migração JSON → PostgreSQL
+
+O comando de migração é explícito. Sem `--apply`, valida o JSON e mostra quantas escalas de cada tipo seriam importadas, sem conectar ou gravar. Faça a prévia em uma cópia temporária:
+
+```powershell
+$copia = Join-Path $env:TEMP 'escalas-migracao-teste.json'
+Copy-Item data/escalas.json $copia
+python migrar_json_postgres.py --source $copia
+```
+
+Para testar a importação, `--apply` exige `TEST_POSTGRES_DSN` com nome de banco contendo `test`, schema já inicializado e nenhuma escala. A importação, validação de retorno e rollback são transacionais. O arquivo JSON de origem não muda. Não use `--apply` para banco de desenvolvimento ou produção. Mais detalhes em `database/README.MD`.
 
 ---
 
@@ -842,7 +857,7 @@ python main.py
 ### 7. Executar API local
 
 ```powershell
-uvicorn api.app:app --reload
+uvicorn api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Depois acesse:
@@ -875,11 +890,7 @@ No PowerShell, configure as variáveis conforme seu ambiente local:
 
 ```powershell
 $env:ESCALA_REPOSITORY="postgres"
-$env:POSTGRES_DB="simulador_escala"
-$env:POSTGRES_USER="postgres"
-$env:POSTGRES_PASSWORD="SUA_SENHA_AQUI"
-$env:POSTGRES_HOST="localhost"
-$env:POSTGRES_PORT="5432"
+$env:POSTGRES_DSN="host=127.0.0.1 port=5432 dbname=simulador_escala user=postgres password=SUA_SENHA_AQUI"
 ```
 
 ### 3. Inicializar tabelas
@@ -912,7 +923,7 @@ python main.py
 
 ### PostgreSQL
 
-O seletor `ESCALA_REPOSITORY=postgres` é lido pela aplicação CLI. A API FastAPI chama a factory com JSON padrão (`data/escalas.json`) e não exige banco para iniciar. A camada de serviços também oferece repository PostgreSQL quando selecionada explicitamente.
+`PostgresEscalaRepository` está implementado e pode ser selecionado explicitamente pelo terminal ou pela API. Sem `ESCALA_REPOSITORY`, ambos usam JSON. Para PostgreSQL, configure `ESCALA_REPOSITORY=postgres` e `POSTGRES_DSN`; a ausência ou falha dessa configuração é informada sem mudança automática de backend. A API controla uma conexão por requisição. Consulte `database/README.MD` para configuração e limites de segurança.
 
 ---
 

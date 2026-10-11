@@ -1,5 +1,6 @@
 import os
 import unicodedata
+from contextlib import contextmanager
 
 from tipos_escala import (
     TIPO_ESCALA_PADRAO,
@@ -45,6 +46,15 @@ def obter_escala_service():
     )
 
 
+@contextmanager
+def _service_scope():
+    service = obter_escala_service()
+    try:
+        yield service
+    finally:
+        service.close()
+
+
 def normalizar_nome(nome):
     return str(nome).lower().strip()
 
@@ -67,8 +77,8 @@ def indice_invalido(indice, escalas):
 
 
 def carregar_escalas():
-    service = obter_escala_service()
-    escalas = service.listar_escalas()
+    with _service_scope() as service:
+        escalas = service.listar_escalas()
 
     return [
         escala.to_dict()
@@ -77,8 +87,6 @@ def carregar_escalas():
 
 
 def salvar_escalas(escalas):
-    service = obter_escala_service()
-
     escalas_convertidas = []
 
     for escala in escalas:
@@ -89,7 +97,8 @@ def salvar_escalas(escalas):
             escala_objeto = criar_escala_a_partir_de_dict(escala_normalizada)
             escalas_convertidas.append(escala_objeto)
 
-    service.repository.salvar_todos(escalas_convertidas)
+    with _service_scope() as service:
+        service.repository.salvar_todos(escalas_convertidas)
 
 
 def obter_campos_configuracao(tipo):
@@ -233,9 +242,8 @@ def adicionar_escala(nome, dias_trabalho, dias_folga):
 
     nova_escala = criar_escala_a_partir_de_dict(nova_escala_dict)
 
-    service = obter_escala_service()
-
-    return service.adicionar_escala(nova_escala)
+    with _service_scope() as service:
+        return service.adicionar_escala(nova_escala)
 
 
 def adicionar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
@@ -247,9 +255,8 @@ def adicionar_escala_ciclo_horas(nome, horas_trabalho, horas_folga):
 
     nova_escala = criar_escala_a_partir_de_dict(nova_escala_dict)
 
-    service = obter_escala_service()
-
-    return service.adicionar_escala(nova_escala)
+    with _service_scope() as service:
+        return service.adicionar_escala(nova_escala)
 
 
 def adicionar_escala_turno_rotativo(nome, sequencia_turnos):
@@ -268,15 +275,13 @@ def adicionar_escala_turno_rotativo(nome, sequencia_turnos):
 
     nova_escala = criar_escala_a_partir_de_dict(nova_escala_dict)
 
-    service = obter_escala_service()
-
-    return service.adicionar_escala(nova_escala)
+    with _service_scope() as service:
+        return service.adicionar_escala(nova_escala)
 
 
 def remover_escala(indice):
-    service = obter_escala_service()
-
-    return service.remover_escala_por_indice(indice)
+    with _service_scope() as service:
+        return service.remover_escala_por_indice(indice)
 
 
 def editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga):
@@ -293,9 +298,8 @@ def editar_escala(indice, novo_nome, novos_dias_trabalho, novos_dias_folga):
 
     nova_escala = criar_escala_a_partir_de_dict(nova_escala_dict)
 
-    service = obter_escala_service()
-
-    return service.editar_escala_por_indice(indice, nova_escala)
+    with _service_scope() as service:
+        return service.editar_escala_por_indice(indice, nova_escala)
 
 
 def editar_escala_ciclo_horas(
@@ -317,9 +321,8 @@ def editar_escala_ciclo_horas(
 
     nova_escala = criar_escala_a_partir_de_dict(nova_escala_dict)
 
-    service = obter_escala_service()
-
-    return service.editar_escala_por_indice(indice, nova_escala)
+    with _service_scope() as service:
+        return service.editar_escala_por_indice(indice, nova_escala)
 
 
 def editar_escala_turno_rotativo(indice, novo_nome, nova_sequencia_turnos):
@@ -343,9 +346,8 @@ def editar_escala_turno_rotativo(indice, novo_nome, nova_sequencia_turnos):
 
     nova_escala = criar_escala_a_partir_de_dict(nova_escala_dict)
 
-    service = obter_escala_service()
-
-    return service.editar_escala_por_indice(indice, nova_escala)
+    with _service_scope() as service:
+        return service.editar_escala_por_indice(indice, nova_escala)
 
 
 def montar_sequencia_por_blocos(blocos):

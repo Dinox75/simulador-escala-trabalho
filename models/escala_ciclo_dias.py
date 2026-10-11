@@ -1,4 +1,4 @@
-from tipos_escala import TIPO_ESCALA_PADRAO
+from tipos_escala import MAX_CYCLE_LENGTH, TIPO_ESCALA_PADRAO
 from models.escala_base import EscalaBase
 
 
@@ -8,6 +8,8 @@ class EscalaCicloDias(EscalaBase):
 
         self._validar_valor_positivo(dias_trabalho, "dias_trabalho")
         self._validar_valor_positivo(dias_folga, "dias_folga")
+        if dias_trabalho + dias_folga > MAX_CYCLE_LENGTH:
+            raise ValueError(f"O ciclo por dias não pode exceder {MAX_CYCLE_LENGTH} dias.")
 
         self.dias_trabalho = dias_trabalho
         self.dias_folga = dias_folga

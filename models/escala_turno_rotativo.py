@@ -1,4 +1,4 @@
-from tipos_escala import TIPO_TURNO_ROTATIVO
+from tipos_escala import MAX_SEQUENCE_LENGTH, TIPO_TURNO_ROTATIVO
 from models.escala_base import EscalaBase
 
 
@@ -36,6 +36,8 @@ class EscalaTurnoRotativo(EscalaBase):
     def _validar_sequencia_turnos(self, sequencia_turnos):
         if not isinstance(sequencia_turnos, list) or len(sequencia_turnos) == 0:
             raise ValueError("A sequência de turnos não pode ser vazia.")
+        if len(sequencia_turnos) > MAX_SEQUENCE_LENGTH:
+            raise ValueError(f"A sequência não pode exceder {MAX_SEQUENCE_LENGTH} turnos.")
 
         for turno in sequencia_turnos:
             if turno not in TURNOS_VALIDOS:

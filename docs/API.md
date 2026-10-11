@@ -29,7 +29,23 @@ A API permite:
 
 ## Persistência e segurança
 
-O serviço criado pela API usa `JsonEscalaRepository` com arquivo `data/escalas.json` por padrão. PostgreSQL existe como alternativa explicitamente selecionada na factory; não é exigido para iniciar a API. A API não possui autenticação nem separa escalas por usuário. Mantenha as operações de escrita locais. A demo pública usa somente armazenamento do navegador e não grava na API.
+JSON em `data/escalas.json` continua sendo o padrão da API. A variável `ESCALA_REPOSITORY=postgres` seleciona PostgreSQL explicitamente também para a API; nesse modo, cada requisição cria e fecha sua própria conexão usando `POSTGRES_DSN`. Falha de configuração ou conexão retorna erro e nunca seleciona JSON como fallback. As rotas de criação, edição e exclusão recusam clientes remotos com HTTP 403, e o servidor deve ser iniciado somente em loopback. A API não possui autenticação nem separa escalas por usuário. A demo pública usa apenas armazenamento do navegador e não grava na API.
+
+O repository JSON rejeita JSON malformado ou incompatível e grava por arquivo temporário com substituição atômica. PostgreSQL usa transações para substituição da coleção e operações direcionadas para edição e exclusão.
+
+### Migração JSON → PostgreSQL
+
+`migrar_json_postgres.py` mostra uma prévia por tipo sem conectar ao banco. Para preservar os dados locais, faça a prévia sobre uma cópia temporária:
+
+```powershell
+$copia = Join-Path $env:TEMP 'escalas-migracao-teste.json'
+Copy-Item data/escalas.json $copia
+python migrar_json_postgres.py --source $copia
+```
+
+O modo `--apply` exige `TEST_POSTGRES_DSN` apontando para banco dedicado cujo nome contenha `test`, com schema instalado e tabela de escalas vazia. A origem não é modificada; checagem de destino, inserção e verificação de retorno ficam na mesma transação. O comando reverte tudo se encontrar escalas existentes ou falhar durante a importação. Não use esse fluxo para apontar a dados ou banco de produção.
+
+Os testes PostgreSQL são opcionais: sem `TEST_POSTGRES_DSN`, ficam ignorados; configurados, problemas de conexão, credenciais e schema são falhas visíveis. Execute a suíte geral com `python -m pytest`.
 
 ## Base URL local
 
@@ -44,7 +60,7 @@ http://127.0.0.1:8000
 Para iniciar a API em ambiente local, execute:
 
 ```powershell
-uvicorn api.app:app --reload
+uvicorn api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Depois acesse:
@@ -1017,7 +1033,7 @@ A suíte (`python -m pytest`) cobre a API, as três classes de escala e os repos
 
 # Observações
 
-A versão `v0.14.0` inclui simulação de escalas salvas e modo local sem backend. A API usa `JsonEscalaRepository` em `data/escalas.json` por padrão; a opção `ESCALA_REPOSITORY=postgres` pertence à configuração do CLI, enquanto as rotas da API chamam a factory com JSON padrão.
+A versão `v0.14.0` inclui simulação de escalas salvas e modo local sem backend. JSON é o backend padrão do terminal e da API. `ESCALA_REPOSITORY=postgres` habilita PostgreSQL para ambos quando `POSTGRES_DSN` está configurada; a API gerencia a conexão no escopo de cada requisição.
 
 Esta versão ainda não implementa:
 

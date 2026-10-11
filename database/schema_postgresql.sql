@@ -27,7 +27,10 @@ CREATE TABLE IF NOT EXISTS escalas_ciclo_dias (
         CHECK (dias_trabalho > 0),
 
     CONSTRAINT chk_escalas_ciclo_dias_folga
-        CHECK (dias_folga > 0)
+        CHECK (dias_folga > 0),
+
+    CONSTRAINT chk_escalas_ciclo_dias_limite
+        CHECK (dias_trabalho + dias_folga <= 120)
 );
 
 CREATE TABLE IF NOT EXISTS escalas_ciclo_horas (
@@ -44,7 +47,10 @@ CREATE TABLE IF NOT EXISTS escalas_ciclo_horas (
         CHECK (horas_trabalho > 0),
 
     CONSTRAINT chk_escalas_ciclo_horas_folga
-        CHECK (horas_folga > 0)
+        CHECK (horas_folga > 0),
+
+    CONSTRAINT chk_escalas_ciclo_horas_limite
+        CHECK (horas_trabalho + horas_folga <= 120)
 );
 
 CREATE TABLE IF NOT EXISTS escalas_turnos (
@@ -59,7 +65,7 @@ CREATE TABLE IF NOT EXISTS escalas_turnos (
         ON DELETE CASCADE,
 
     CONSTRAINT chk_escalas_turnos_ordem
-        CHECK (ordem > 0),
+        CHECK (ordem > 0 AND ordem <= 60),
 
     CONSTRAINT chk_escalas_turnos_turno
         CHECK (turno IN ('Manhã', 'Tarde', 'Noite', 'Folga')),
