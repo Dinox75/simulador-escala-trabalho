@@ -723,6 +723,7 @@ A demo possui páginas separadas para:
 
 - início;
 - simulador;
+- comparador de duas escalas;
 - documentação;
 - sobre;
 - termos.
@@ -730,6 +731,10 @@ A demo possui páginas separadas para:
 A demo pública funciona sem API para modelos prontos e escalas personalizadas. Sem backend, cadastros ficam no armazenamento do navegador e permanecem após recarregar.
 
 Com a API FastAPI local ativa, a demo carrega e grava escalas no repository selecionado pelo backend (`data/escalas.json` por padrão; PostgreSQL se explicitamente configurado). A linha do tempo e o calendário começam na data consultada, usando a data inicial para calcular o ciclo.
+
+O [comparador](https://dinox75.github.io/simulador-escala-trabalho/demo/comparador.html) coloca dois modelos ou duas escalas salvas no mesmo mês e horário de consulta. Cada lado mantém sua própria data inicial e configuração; os parâmetros podem ser ajustados só para a comparação sem cadastrar uma escala. O resumo conta datas em que cada lado está trabalhando no horário escolhido e datas em que ambos estão de folga nesse horário. Ele não estima dias inteiros nem horas trabalhadas. Em ciclos por horas, como 12x36, o detalhe também mostra os intervalos de trabalho e folga dentro da data selecionada.
+
+Na origem GitHub Pages, os modelos e escalas salvas vêm dos dados estáticos e do armazenamento daquele navegador; nenhuma rota da API local é consultada. No servidor estático local, a lista de escalas pode vir da API local quando ela estiver ativa. A API não tem autenticação nem isolamento por usuário e deve permanecer restrita ao uso local.
 
 Para experimentar localmente, sirva `docs/demo/` por um servidor estático. Inicie opcionalmente a API somente em loopback com `uvicorn api.app:app --host 127.0.0.1 --port 8000`.
 

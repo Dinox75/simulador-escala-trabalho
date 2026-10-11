@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Compare duas escalas de trabalho no mesmo calendário, com âncoras e horário de consulta independentes.">
+    <title>Comparador de escalas | Simulador v0.14.0</title>
+    <link rel="icon" href="data:,">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script defer src="calendar-core.js"></script>
+    <script defer src="script.js"></script>
+</head>
+<body class="comparison-page">
+    <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+    <header class="site-header" id="siteHeader">
+        <a class="brand" href="index.html" aria-label="Início do Simulador de Escala">
+            <span class="brand-mark" aria-hidden="true">SE</span>
+            <span><strong>Simulador de Escala</strong><small>Mesa de planejamento</small></span>
+        </a>
+        <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
+            <a href="index.html">Início</a>
+            <a href="simulador.html">Simulador</a>
+            <a href="comparador.html" aria-current="page">Comparador</a>
+            <a href="modelos.html">Modelos</a>
+            <a href="roadmap.html">Roadmap</a>
+            <a href="documentacao.html">Documentação</a>
+            <a href="sobre.html">Sobre</a>
+            <a href="termos.html">Termos</a>
+        </nav>
+        <div class="header-actions">
+            <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro ou escuro">◐</button>
+            <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button>
+        </div>
+    </header>
+
+    <main class="comparison-workbench" id="topo">
+        <section class="comparison-heading">
+            <div>
+                <span class="eyebrow"><span class="eyebrow-mark"></span> ANÁLISE DE TURNOS <span class="version-stamp">v0.14.0</span></span>
+                <h1>Compare duas escalas no mesmo calendário.</h1>
+                <p>Escolha modelos ou escalas salvas, ajuste cada início de ciclo e observe o que acontece nas mesmas datas e no mesmo horário.</p>
+            </div>
+            <div class="api-connection" id="apiStatusCard" role="status" aria-live="polite">
+                <span class="api-dot" aria-hidden="true"></span>
+                <div><strong id="apiStatusText">Modo local no navegador</strong><small id="apiStatusDescription">A origem da demo define onde as escalas salvas são consultadas.</small></div>
+                <button class="icon-button compact-icon" id="apiRefreshButton" type="button" aria-label="Testar conexão com a API">↻</button>
+            </div>
+        </section>
+
+        <section class="comparison-controls" aria-label="Configuração da comparação">
+            <article class="comparison-scale-panel scale-a-panel">
+                <div class="comparison-panel-heading"><span class="comparison-letter">A</span><div><span class="mono-kicker">PRIMEIRA ESCALA</span><h2>Escala A</h2></div></div>
+                <label class="comparison-picker" for="comparisonAScale">Modelo ou escala salva</label>
+                <select id="comparisonAScale" aria-label="Selecionar escala A"></select>
+                <div class="comparison-fields" id="comparisonAFields"></div>
+            </article>
+            <article class="comparison-scale-panel scale-b-panel">
+                <div class="comparison-panel-heading"><span class="comparison-letter">B</span><div><span class="mono-kicker">SEGUNDA ESCALA</span><h2>Escala B</h2></div></div>
+                <label class="comparison-picker" for="comparisonBScale">Modelo ou escala salva</label>
+                <select id="comparisonBScale" aria-label="Selecionar escala B"></select>
+                <div class="comparison-fields" id="comparisonBFields"></div>
+            </article>
+        </section>
+
+        <section class="comparison-query-bar" aria-label="Período comum de consulta">
+            <div class="comparison-query-copy"><span class="mono-kicker">CONSULTA COMUM</span><strong>Mesmo mês, dia e horário para A e B</strong><small>As datas de início e configurações de cada escala continuam independentes.</small></div>
+            <label for="comparisonTime">Horário observado<input id="comparisonTime" type="time" value="06:00" aria-describedby="comparisonTimeHelp"></label>
+            <span id="comparisonTimeHelp" class="sr-only">O horário é usado para consultar ciclos por horas. Ciclos por dias e turnos rotativos não mudam dentro do dia.</span>
+            <button class="button quiet comparison-refresh" id="comparisonRefreshSaved" type="button">Atualizar escalas disponíveis</button>
+        </section>
+
+        <p class="comparison-feedback" id="comparisonFeedback" role="status" aria-live="polite">Escolha as escalas para iniciar a comparação.</p>
+
+        <section class="comparison-summary-panel" aria-labelledby="comparisonSummaryTitle">
+            <div class="comparison-section-heading"><div><span class="mono-kicker">RESUMO DO MÊS</span><h2 id="comparisonSummaryTitle">Observação no horário selecionado</h2></div></div>
+            <div class="comparison-summary" id="comparisonSummary" aria-live="polite"></div>
+            <p>Os totais contam datas em que cada escala está trabalhando no horário escolhido e datas em que ambas estão de folga nesse horário. Não representam dias inteiros de trabalho nem horas trabalhadas.</p>
+        </section>
+
+        <section class="comparison-calendar-panel" aria-labelledby="comparisonCalendarTitle">
+            <div class="comparison-calendar-toolbar">
+                <div><span class="mono-kicker">CALENDÁRIO COMPARATIVO</span><h2 id="comparisonCalendarTitle"><span id="comparisonMonth">Calendário</span></h2></div>
+                <div class="calendar-nav" aria-label="Navegar pelo mês comparado">
+                    <button class="icon-button" id="comparisonPrevious" type="button" aria-label="Mês anterior">‹</button>
+                    <button class="button quiet today-button" id="comparisonToday" type="button">Mês atual</button>
+                    <button class="icon-button" id="comparisonNext" type="button" aria-label="Próximo mês">›</button>
+                </div>
+            </div>
+            <div class="comparison-legend" aria-label="Legenda do comparador"><span><b>A</b> Situação da Escala A</span><span><b>B</b> Situação da Escala B</span><small>Trabalho, turnos e folga também são identificados por texto.</small></div>
+            <div class="comparison-calendar" id="comparisonCalendar" role="grid" aria-label="Calendário mensal com status das escalas A e B"></div>
+        </section>
+
+        <section class="comparison-detail-panel" aria-labelledby="comparisonSelectedHeading">
+            <span class="mono-kicker">DATA SELECIONADA</span>
+            <div id="comparisonSelectedDetails"><p class="empty-state">Selecione uma data no calendário para ver os detalhes das duas escalas.</p></div>
+        </section>
+    </main>
+
+    <footer class="site-footer"><span>Simulador de Escala de Trabalho · demo v0.14.0</span><span>Escalas pessoais ficam no navegador; a API é local e demonstrativa.</span></footer>
+</body>
+</html>

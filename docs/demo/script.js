@@ -104,7 +104,15 @@ const state = {
     scrollTicking: false,
     calendarView: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     selectedModelId: null,
-    calendarAnimating: false
+    calendarAnimating: false,
+    comparison: {
+        selections: { a: "model:6x3", b: "model:12x36" },
+        snapshots: { a: null, b: null },
+        missing: { a: false, b: false },
+        month: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        selectedDate: dateInputValue(new Date()),
+        lastResult: null
+    }
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -146,7 +154,21 @@ const elements = {
     apiStatusCard: $("#apiStatusCard"),
     apiStatusText: $("#apiStatusText"),
     apiStatusDescription: $("#apiStatusDescription"),
-    apiRefreshButton: $("#apiRefreshButton")
+    apiRefreshButton: $("#apiRefreshButton"),
+    comparisonASelect: $("#comparisonAScale"),
+    comparisonBSelect: $("#comparisonBScale"),
+    comparisonAFields: $("#comparisonAFields"),
+    comparisonBFields: $("#comparisonBFields"),
+    comparisonFeedback: $("#comparisonFeedback"),
+    comparisonCalendar: $("#comparisonCalendar"),
+    comparisonMonth: $("#comparisonMonth"),
+    comparisonSelectedDetails: $("#comparisonSelectedDetails"),
+    comparisonSummary: $("#comparisonSummary"),
+    comparisonTime: $("#comparisonTime"),
+    comparisonPrevious: $("#comparisonPrevious"),
+    comparisonNext: $("#comparisonNext"),
+    comparisonToday: $("#comparisonToday"),
+    comparisonRefreshSaved: $("#comparisonRefreshSaved")
 };
 
 function cloneScale(scale) {
@@ -161,6 +183,10 @@ function escapeHtml(value) {
 
 function hasSimulator() {
     return Boolean(elements.simulatorForm && elements.dynamicFields);
+}
+
+function hasComparator() {
+    return Boolean(elements.comparisonASelect && elements.comparisonBSelect);
 }
 
 function loadSavedScales() {
@@ -1978,13 +2004,14 @@ async function checkApiHealth() {
 }
 
 async function loadModelsFromApi() {
-    if (!elements.modelButtons) {
+    if (!elements.modelButtons && !hasComparator()) {
         return;
     }
 
     if (!canUseLocalApi()) {
         state.availableModels = PREDEFINED_MODELS.map(cloneScale);
         renderModelButtons();
+        refreshComparisonOptions();
         return;
     }
 
@@ -1997,6 +2024,7 @@ async function loadModelsFromApi() {
 
         state.availableModels = data.modelos.map(cloneScale);
         renderModelButtons();
+        refreshComparisonOptions();
 
         console.info("Modelos carregados da API:", state.availableModels);
     } catch (error) {
@@ -2004,13 +2032,14 @@ async function loadModelsFromApi() {
 
         state.availableModels = PREDEFINED_MODELS.map(cloneScale);
         renderModelButtons();
+        refreshComparisonOptions();
     }
 }
 
 async function loadSavedScalesFromApi(options = {}) {
     const { preserveCurrentOnEmpty = false } = options;
 
-    if (!elements.savedScalesList) {
+    if (!elements.savedScalesList && !hasComparator()) {
         console.warn("Elemento #savedScalesList não encontrado.");
         return;
     }
@@ -2019,7 +2048,8 @@ async function loadSavedScalesFromApi(options = {}) {
         state.savedScaleSource = "local";
         state.savedScales = loadSavedScales();
         if (elements.resetScalesButton) elements.resetScalesButton.textContent = "Atualizar lista deste navegador";
-        renderSavedScales();
+        if (elements.savedScalesList) renderSavedScales();
+        refreshComparisonOptions();
         return;
     }
 
@@ -2038,14 +2068,16 @@ async function loadSavedScalesFromApi(options = {}) {
             console.warn(
                 "A API retornou lista vazia logo após salvar. Mantendo a escala recém-criada na interface até a próxima recarga."
             );
-            renderSavedScales();
+            if (elements.savedScalesList) renderSavedScales();
+            refreshComparisonOptions();
             return;
         }
 
         state.savedScales = data.escalas.map(cloneScale);
         state.savedScaleSource = "api";
         if (elements.resetScalesButton) elements.resetScalesButton.textContent = "Recarregar escalas da API local";
-        renderSavedScales();
+        if (elements.savedScalesList) renderSavedScales();
+        refreshComparisonOptions();
 
         console.info("Escalas salvas renderizadas:", state.savedScales);
     } catch (error) {
@@ -2053,8 +2085,378 @@ async function loadSavedScalesFromApi(options = {}) {
         state.savedScaleSource = "local";
         state.savedScales = loadSavedScales();
         if (elements.resetScalesButton) elements.resetScalesButton.textContent = "Atualizar origem dos dados";
-        renderSavedScales();
+        if (elements.savedScalesList) renderSavedScales();
+        refreshComparisonOptions();
     }
+}
+
+function getComparisonCatalog() {
+    const catalog = new Map();
+    const models = state.availableModels.length ? state.availableModels : PREDEFINED_MODELS;
+    models.forEach((scale, index) => {
+        const id = String(scale.id || `modelo-${index + 1}`);
+        catalog.set(`model:${id}`, { ...cloneScale(scale), id, source: "model" });
+    });
+    state.savedScales.forEach((scale) => {
+        const source = state.savedScaleSource === "api" ? "api" : "local";
+        const key = `saved:${source}:${encodeURIComponent(String(scale.nome || ""))}`;
+        catalog.set(key, { ...cloneScale(scale), source });
+    });
+    return catalog;
+}
+
+function addComparisonOption(group, key, scale, source) {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = `${scale.nome} · ${getTypeName(scale.tipo)} · ${getScaleSummary(scale)}`;
+    option.dataset.source = source;
+    group.append(option);
+}
+
+function refreshComparisonOptions() {
+    if (!hasComparator()) return;
+    const catalog = getComparisonCatalog();
+    state.comparison.catalog = catalog;
+
+    ["a", "b"].forEach((side) => {
+        const select = side === "a" ? elements.comparisonASelect : elements.comparisonBSelect;
+        const selected = select.value || state.comparison.selections[side];
+        const modelGroup = document.createElement("optgroup");
+        modelGroup.label = "Modelos prontos";
+        const savedGroup = document.createElement("optgroup");
+        savedGroup.label = state.savedScaleSource === "api" ? "Escalas salvas na API local" : "Escalas salvas neste navegador";
+
+        catalog.forEach((scale, key) => {
+            if (scale.source === "model") addComparisonOption(modelGroup, key, scale, "model");
+            else addComparisonOption(savedGroup, key, scale, scale.source);
+        });
+
+        const fragment = document.createDocumentFragment();
+        fragment.append(modelGroup, savedGroup);
+        const exists = catalog.has(selected);
+        if (selected && !exists && state.comparison.snapshots[side]) {
+            const missingGroup = document.createElement("optgroup");
+            missingGroup.label = "Indisponível";
+            const missingOption = document.createElement("option");
+            missingOption.value = selected;
+            missingOption.textContent = `Escala removida: ${state.comparison.snapshots[side].nome}`;
+            missingGroup.append(missingOption);
+            fragment.append(missingGroup);
+            state.comparison.missing[side] = true;
+            select.replaceChildren(fragment);
+            select.value = selected;
+            return;
+        }
+
+        select.replaceChildren(fragment);
+        let nextSelection = exists ? selected : (side === "a" ? "model:6x3" : "model:12x36");
+        if (!catalog.has(nextSelection)) nextSelection = catalog.keys().next().value || "";
+        select.value = nextSelection;
+        state.comparison.selections[side] = nextSelection;
+        state.comparison.missing[side] = false;
+
+        const scale = catalog.get(nextSelection);
+        if (scale) {
+            state.comparison.snapshots[side] = cloneScale(scale);
+            if (state.comparison.fieldSelection[side] !== nextSelection) {
+                renderComparisonFields(side, scale);
+                state.comparison.fieldSelection[side] = nextSelection;
+            }
+        }
+    });
+    updateComparison();
+}
+
+function appendComparisonInput(container, side, key, labelText, value, attributes = {}) {
+    const label = document.createElement("label");
+    label.className = "comparison-field";
+    label.htmlFor = `comparison-${side}-${key}`;
+    label.textContent = labelText;
+    const input = document.createElement("input");
+    input.id = label.htmlFor;
+    input.name = label.htmlFor;
+    Object.entries(attributes).forEach(([name, attributeValue]) => input.setAttribute(name, attributeValue));
+    input.value = value;
+    label.append(input);
+    container.append(label);
+}
+
+function renderComparisonFields(side, scale) {
+    const container = side === "a" ? elements.comparisonAFields : elements.comparisonBFields;
+    if (!container) return;
+    container.replaceChildren();
+    const now = new Date();
+    const defaultDate = dateInputValue(now);
+
+    if (scale.tipo === TIPO_CICLO_HORAS) {
+        const anchor = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0);
+        appendComparisonInput(container, side, "anchor", "Início do ciclo · data e hora", scale.data_inicio || `${dateInputValue(anchor)}T06:00`, { type: "datetime-local", required: "required" });
+        appendComparisonInput(container, side, "work", "Horas de trabalho", scale.horas_trabalho, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
+        appendComparisonInput(container, side, "off", "Horas de folga", scale.horas_folga, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
+    } else {
+        appendComparisonInput(container, side, "anchor", "Início do ciclo · data", scale.data_inicio || defaultDate, { type: "date", required: "required" });
+        if (scale.tipo === TIPO_TURNO_ROTATIVO) {
+            appendComparisonInput(container, side, "turns", "Sequência diária · separada por vírgulas", normalizeTurns(scale.sequencia_turnos).join(", "), { type: "text", maxlength: String(MAX_SEQUENCE_LENGTH * 12), required: "required", placeholder: "Manhã, Tarde, Noite, Folga" });
+        } else {
+            appendComparisonInput(container, side, "work", "Dias de trabalho", scale.dias_trabalho, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
+            appendComparisonInput(container, side, "off", "Dias de folga", scale.dias_folga, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
+        }
+    }
+
+    const note = document.createElement("p");
+    note.className = "comparison-edit-note";
+    note.textContent = "Você pode ajustar estes parâmetros só para comparar; a escala original não será alterada nem salva.";
+    container.append(note);
+}
+
+function readComparisonSpec(side) {
+    const scale = state.comparison.snapshots[side];
+    if (!scale || state.comparison.missing[side]) {
+        throw new Error(`Escolha uma escala ${side.toUpperCase()} disponível; a seleção atual foi removida da origem.`);
+    }
+    const anchorValue = $(`#comparison-${side}-anchor`)?.value || "";
+    const start = scale.tipo === TIPO_CICLO_HORAS ? parseDateTimeInput(anchorValue) : parseDateInput(anchorValue);
+    if (!anchorValue || Number.isNaN(start.getTime())) throw new Error(`Informe um início válido para a Escala ${side.toUpperCase()}.`);
+
+    if (scale.tipo === TIPO_TURNO_ROTATIVO) {
+        const turns = normalizeTurns($(`#comparison-${side}-turns`)?.value || "");
+        return { name: scale.nome, type: scale.tipo, source: scale.source, start, turns };
+    }
+    const work = Number($(`#comparison-${side}-work`)?.value ?? "");
+    const off = Number($(`#comparison-${side}-off`)?.value ?? "");
+    return { name: scale.nome, type: scale.tipo, source: scale.source, start, work, off };
+}
+
+function comparisonIsoDate(date) {
+    return dateInputValue(date);
+}
+
+function comparisonStatusLabel(status) {
+    return status === "Trabalhando" ? "Trabalho" : status;
+}
+
+function appendComparisonStatus(parent, side, status) {
+    const line = document.createElement("span");
+    line.className = `compare-status ${getTurnClass(status)}`;
+    const tag = document.createElement("b");
+    tag.textContent = side.toUpperCase();
+    const label = document.createElement("span");
+    label.textContent = comparisonStatusLabel(status);
+    line.append(tag, label);
+    parent.append(line);
+}
+
+function renderComparisonCalendar(result) {
+    const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const month = new Date(result.year, result.month, 1);
+    elements.comparisonMonth.textContent = formatMonth(month);
+    const cells = window.ScaleCalendarCore.monthCells(month);
+    const byDate = new Map(result.days.map((day) => [comparisonIsoDate(day.date), day]));
+    const selected = state.comparison.selectedDate;
+    const fragment = document.createDocumentFragment();
+    weekdays.forEach((weekday) => {
+        const label = document.createElement("div");
+        label.className = "compare-weekday";
+        label.setAttribute("role", "columnheader");
+        label.textContent = weekday;
+        fragment.append(label);
+    });
+    cells.forEach((date) => {
+        if (!date) {
+            const empty = document.createElement("div");
+            empty.className = "compare-empty";
+            empty.setAttribute("aria-hidden", "true");
+            fragment.append(empty);
+            return;
+        }
+        const key = comparisonIsoDate(date);
+        const day = byDate.get(key);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `compare-day${key === selected ? " is-selected" : ""}`;
+        button.dataset.compareDate = key;
+        button.setAttribute("role", "gridcell");
+        button.setAttribute("aria-pressed", String(key === selected));
+        button.setAttribute("aria-label", `${formatDate(date)}. Escala A: ${day.statusA}. Escala B: ${day.statusB}.`);
+        const dateLabel = document.createElement("strong");
+        dateLabel.className = "compare-date-number";
+        dateLabel.textContent = String(date.getDate());
+        button.append(dateLabel);
+        appendComparisonStatus(button, "a", day.statusA);
+        appendComparisonStatus(button, "b", day.statusB);
+        fragment.append(button);
+    });
+    elements.comparisonCalendar.replaceChildren(fragment);
+}
+
+function sourceLabel(source) {
+    if (source === "api") return "API local";
+    if (source === "local") return "Neste navegador";
+    return "Modelo pronto";
+}
+
+function renderComparisonDetail(result, specA, specB) {
+    const date = parseDateInput(state.comparison.selectedDate);
+    const selected = result.days.find((day) => comparisonIsoDate(day.date) === state.comparison.selectedDate);
+    if (!selected) throw new Error("A data selecionada não pertence ao mês exibido.");
+
+    const panel = document.createElement("div");
+    panel.className = "compare-detail-layout";
+    [
+        { side: "a", spec: specA, status: selected.statusA, intervals: selected.intervalsA },
+        { side: "b", spec: specB, status: selected.statusB, intervals: selected.intervalsB }
+    ].forEach(({ side, spec, status, intervals }) => {
+        const card = document.createElement("article");
+        card.className = "compare-detail-card";
+        const heading = document.createElement("h3");
+        heading.textContent = `Escala ${side.toUpperCase()} · ${spec.name}`;
+        const origin = document.createElement("p");
+        origin.className = "compare-detail-origin";
+        origin.textContent = sourceLabel(spec.source);
+        const statusLine = document.createElement("p");
+        statusLine.className = "compare-detail-at-time";
+        statusLine.textContent = `Às ${elements.comparisonTime.value}: ${comparisonStatusLabel(status)}`;
+        card.append(heading, origin, statusLine);
+
+        if (intervals) {
+            const intervalTitle = document.createElement("strong");
+            intervalTitle.className = "compare-interval-heading";
+            intervalTitle.textContent = "Intervalos reais neste dia";
+            const list = document.createElement("ul");
+            list.className = "compare-interval-list";
+            intervals.forEach((interval) => {
+                const item = document.createElement("li");
+                item.className = getTurnClass(interval.status);
+                item.textContent = `${formatMinute(interval.startMinute)}–${formatMinute(interval.endMinute)} · ${interval.status}`;
+                list.append(item);
+            });
+            card.append(intervalTitle, list);
+        } else {
+            const note = document.createElement("p");
+            note.className = "compare-detail-note";
+            note.textContent = spec.type === TIPO_TURNO_ROTATIVO
+                ? "O turno rotativo representa a posição deste dia na sequência."
+                : "O ciclo por dias atribui este status à data consultada.";
+            card.append(note);
+        }
+        panel.append(card);
+    });
+    elements.comparisonSelectedDetails.replaceChildren(panel);
+    const heading = document.createElement("h2");
+    heading.id = "comparisonSelectedHeading";
+    heading.textContent = `Detalhes de ${formatDate(date)} · ${elements.comparisonTime.value}`;
+    elements.comparisonSelectedDetails.prepend(heading);
+}
+
+function renderComparisonSummary(summary) {
+    const values = [
+        ["aWorking", "Datas com A em trabalho"],
+        ["bWorking", "Datas com B em trabalho"],
+        ["bothOff", "Datas com ambas em folga"]
+    ];
+    const fragment = document.createDocumentFragment();
+    values.forEach(([key, label]) => {
+        const item = document.createElement("div");
+        item.className = "compare-summary-item";
+        const count = document.createElement("strong");
+        count.textContent = String(summary[key]);
+        const text = document.createElement("span");
+        text.textContent = label;
+        item.append(count, text);
+        fragment.append(item);
+    });
+    elements.comparisonSummary.replaceChildren(fragment);
+}
+
+function updateComparison() {
+    if (!hasComparator()) return false;
+    try {
+        const specA = readComparisonSpec("a");
+        const specB = readComparisonSpec("b");
+        const time = elements.comparisonTime.value;
+        if (!time) throw new Error("Escolha o horário usado na comparação.");
+        const selected = parseDateInput(state.comparison.selectedDate);
+        const result = window.ScaleCalendarCore.compareMonth(specA, specB, state.comparison.month, time);
+        if (!result.days.some((day) => comparisonIsoDate(day.date) === state.comparison.selectedDate)) {
+            state.comparison.selectedDate = comparisonIsoDate(new Date(result.year, result.month, 1));
+        }
+        renderComparisonCalendar(result);
+        renderComparisonDetail(result, specA, specB);
+        renderComparisonSummary(result.summary);
+        state.comparison.lastResult = result;
+        elements.comparisonFeedback.textContent = "Comparação atualizada. Os dois calendários usam o mesmo mês, dia selecionado e horário de consulta.";
+        elements.comparisonFeedback.dataset.feedbackType = "success";
+        return true;
+    } catch (error) {
+        elements.comparisonFeedback.textContent = `${error.message} O último resultado válido continua exibido.`;
+        elements.comparisonFeedback.dataset.feedbackType = "error";
+        return false;
+    }
+}
+
+function selectComparisonScale(side, key) {
+    const scale = state.comparison.catalog.get(key);
+    if (!scale) return;
+    state.comparison.selections[side] = key;
+    state.comparison.snapshots[side] = cloneScale(scale);
+    state.comparison.missing[side] = false;
+    state.comparison.fieldSelection[side] = key;
+    renderComparisonFields(side, scale);
+    updateComparison();
+}
+
+function initComparisonPage() {
+    if (!hasComparator()) return;
+    state.comparison.catalog = new Map();
+    state.comparison.fieldSelection = { a: null, b: null };
+    const today = new Date();
+    state.comparison.month = new Date(today.getFullYear(), today.getMonth(), 1);
+    state.comparison.selectedDate = dateInputValue(today);
+    elements.comparisonTime.value = "06:00";
+    state.savedScales = loadSavedScales();
+    state.availableModels = PREDEFINED_MODELS.map(cloneScale);
+    refreshComparisonOptions();
+
+    [
+        [elements.comparisonASelect, "a"],
+        [elements.comparisonBSelect, "b"]
+    ].forEach(([select, side]) => select.addEventListener("change", () => selectComparisonScale(side, select.value)));
+    [elements.comparisonAFields, elements.comparisonBFields].forEach((fields) => {
+        fields.addEventListener("input", updateComparison);
+        fields.addEventListener("change", updateComparison);
+    });
+    elements.comparisonTime.addEventListener("input", updateComparison);
+    elements.comparisonTime.addEventListener("change", updateComparison);
+    elements.comparisonPrevious.addEventListener("click", () => {
+        state.comparison.month = window.ScaleCalendarCore.moveMonth(state.comparison.month, -1);
+        state.comparison.selectedDate = dateInputValue(state.comparison.month);
+        updateComparison();
+    });
+    elements.comparisonNext.addEventListener("click", () => {
+        state.comparison.month = window.ScaleCalendarCore.moveMonth(state.comparison.month, 1);
+        state.comparison.selectedDate = dateInputValue(state.comparison.month);
+        updateComparison();
+    });
+    elements.comparisonToday.addEventListener("click", () => {
+        const current = new Date();
+        state.comparison.month = new Date(current.getFullYear(), current.getMonth(), 1);
+        state.comparison.selectedDate = dateInputValue(current);
+        updateComparison();
+    });
+    elements.comparisonCalendar.addEventListener("click", (event) => {
+        const day = event.target.closest("[data-compare-date]");
+        if (!day) return;
+        state.comparison.selectedDate = day.dataset.compareDate;
+        updateComparison();
+    });
+    elements.comparisonRefreshSaved.addEventListener("click", async () => {
+        elements.comparisonRefreshSaved.disabled = true;
+        elements.comparisonFeedback.textContent = canUseLocalApi()
+            ? "Atualizando modelos e escalas salvas da origem local..."
+            : "Atualizando modelos e escalas salvas deste navegador...";
+        await Promise.all([loadModelsFromApi(), loadSavedScalesFromApi()]);
+        elements.comparisonRefreshSaved.disabled = false;
+    });
 }
 
 function configureEvents() {
@@ -2282,7 +2684,10 @@ function configureActiveNavigation() {
 
     $$(".nav-links a").forEach((link) => {
         const linkPage = link.getAttribute("href");
-        link.classList.toggle("active", linkPage === currentPage);
+        const isCurrent = linkPage === currentPage;
+        link.classList.toggle("active", isCurrent);
+        if (isCurrent) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
     });
 }
 
@@ -2396,6 +2801,7 @@ function init() {
     configureMobileMenu();
     configureEvents();
     initSimulatorPage();
+    initComparisonPage();
     checkApiHealth();
     loadModelsFromApi();
     loadSavedScalesFromApi();

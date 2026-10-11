@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verificação do comparador</title>
+<style>body{font:16px system-ui;margin:20px;background:#17191c;color:#eee}pre{white-space:pre-wrap}iframe{width:100%;height:75vh;border:1px solid #777}</style>
+<h1>Verificação do comparador</h1>
+<pre id="result" data-result="running">Executando…</pre>
+<iframe id="app" title="Comparador"></iframe>
+<script>
+(() => {
+    const output = document.querySelector("#result");
+    const frame = document.querySelector("#app");
+    const scenario = new URLSearchParams(location.search).get("scenario") || "public";
+    const lines = [];
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const check = (condition, message) => {
+        if (!condition) throw new Error(message);
+        lines.push(`PASS ${message}`);
+    };
+    const until = async (predicate, message, timeout = 10000) => {
+        const end = Date.now() + timeout;
+        while (Date.now() < end) {
+            if (predicate()) return;
+            await wait(50);
+        }
+        throw new Error(`Timeout: ${message}`);
+    };
+    const input = (win, id, value) => {
+        const field = win.document.querySelector(id);
+        field.value = value;
+        field.dispatchEvent(new win.Event("input", { bubbles: true }));
+        field.dispatchEvent(new win.Event("change", { bubbles: true }));
+        return field;
+    };
+    const chooseSaved = (win, select, prefix) => {
+        const option = Array.from(select.options).find((item) => item.value.startsWith(prefix));
+        if (!option) throw new Error(`Escala salva não encontrada: ${prefix}`);
+        select.value = option.value;
+        select.dispatchEvent(new win.Event("change", { bubbles: true }));
+        return option;
+    };
+
+    async function run() {
+        if (scenario !== "api") {
+            localStorage.setItem("simulador_escala_demo_v014_local", JSON.stringify([
+                { nome: "Escala comparável local", tipo: "ciclo_dias", dias_trabalho: 4, dias_folga: 2 },
+                { nome: "<img src=x onerror=alert(1)>", tipo: "turno_rotativo", sequencia_turnos: ["Manhã", "Folga"] }
+            ]));
+        }
+        frame.src = `/docs/demo/comparador.html${scenario === "public" ? "?browserOnly" : ""}`;
+        await new Promise((resolve, reject) => {
+            frame.addEventListener("load", resolve, { once: true });
+            frame.addEventListener("error", reject, { once: true });
+        });
+        const win = frame.contentWindow;
+        const doc = frame.contentDocument;
+        await until(() => doc.querySelectorAll(".compare-day").length > 20, "calendário renderizado");
+        await until(() => doc.querySelectorAll("#comparisonBScale option").length >= 6, "modelos disponíveis");
+        if (scenario === "api") {
+            await until(() => Array.from(doc.querySelectorAll("#comparisonAScale option")).some((option) => option.value.startsWith("saved:api:")), "escala salva da API carregada");
+        } else {
+            await until(() => Array.from(doc.querySelectorAll("#comparisonAScale option")).some((option) => option.value.startsWith("saved:local:")), "escala salva neste navegador carregada");
+            if (scenario === "local-off") await until(() => doc.querySelector("#apiStatusText").textContent.includes("não conectada"), "fallback local informado após falha da API");
+        }
+        const errors = [];
+        win.addEventListener("error", (event) => errors.push(event.message));
+        win.addEventListener("unhandledrejection", (event) => errors.push(String(event.reason)));
+        check(doc.querySelectorAll("#comparisonAScale optgroup[label='Modelos prontos'] option").length >= 6, "modelos prontos carregados");
+        check(doc.querySelector(".nav-links a[aria-current='page']")?.getAttribute("href") === "comparador.html", "navegação identifica a página atual");
+        check(doc.querySelector("#comparisonSelectedDetails").textContent.includes("Escala A") && doc.querySelector("#comparisonSelectedDetails").textContent.includes("Escala B"), "detalhes das duas escalas aparecem");
+        check(doc.documentElement.scrollWidth <= win.innerWidth && doc.body.scrollWidth <= win.innerWidth, `sem rolagem horizontal (${win.innerWidth}px): html ${doc.documentElement.scrollWidth}, body ${doc.body.scrollWidth}`);
+
+        const selectA = doc.querySelector("#comparisonAScale");
+        if (scenario !== "api") {
+            const saved = chooseSaved(win, selectA, "saved:local:");
+            check(doc.querySelector("#comparisonSelectedDetails").textContent.includes("Neste navegador"), "escala salva local identificada na comparação");
+            check(!doc.querySelector("img"), "nome de escala com HTML é tratado como texto");
+            const beforeStorage = localStorage.getItem("simulador_escala_demo_v014_local");
+            input(win, "#comparison-a-work", "5");
+            check(localStorage.getItem("simulador_escala_demo_v014_local") === beforeStorage, "ajuste de parâmetros não altera a escala salva");
+
+            if (scenario === "public") {
+                let apiCalls = 0;
+                const originalFetch = win.fetch.bind(win);
+                win.fetch = (...args) => { apiCalls += 1; return originalFetch(...args); };
+                doc.querySelector("#apiRefreshButton").click();
+                doc.querySelector("#comparisonRefreshSaved").click();
+                await wait(100);
+                check(apiCalls === 0, "modo público não consulta a API ao atualizar conexão e escalas");
+            }
+        } else {
+            const saved = chooseSaved(win, selectA, "saved:api:");
+            check(doc.querySelector("#comparisonSelectedDetails").textContent.includes("API local"), "escala salva da API identificada na comparação");
+            const beforeDelete = doc.querySelector("#comparisonSelectedHeading").textContent;
+            const deletedName = saved.textContent.split(" · ")[0];
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/escalas/${encodeURIComponent(deletedName)}`, { method: "DELETE" });
+            check(response.ok, "escala salva de teste removida apenas do JSON temporário");
+            doc.querySelector("#comparisonRefreshSaved").click();
+            await until(() => doc.querySelector("#comparisonAScale").selectedOptions[0]?.textContent.startsWith("Escala removida:"), "remoção refletida na seleção");
+            check(doc.querySelector("#comparisonFeedback").dataset.feedbackType === "error", "remoção informa seleção indisponível sem quebrar a tela");
+            check(doc.querySelector("#comparisonSelectedHeading").textContent === beforeDelete, "último resultado válido permanece visível após remoção");
+            selectA.value = "model:6x3";
+            selectA.dispatchEvent(new win.Event("change", { bubbles: true }));
+            check(doc.querySelector("#comparisonFeedback").dataset.feedbackType === "success", "selecionar outro modelo recupera a comparação");
+        }
+
+        doc.querySelector("#comparisonPrevious").click();
+        const month = doc.querySelector("#comparisonMonth").textContent;
+        check(Boolean(month), "navegação para mês anterior atualiza o calendário");
+        doc.querySelector("#comparisonNext").click();
+        const day = doc.querySelector(".compare-day[data-compare-date$='-15']");
+        day.focus();
+        check(doc.activeElement === day, "data do calendário pode receber foco pelo teclado");
+        day.click();
+        check(doc.querySelector("#comparisonSelectedHeading").textContent.includes("15/"), "seleção de data atualiza painel de detalhes");
+        input(win, "#comparisonTime", "18:00");
+        check(doc.querySelector("#comparisonSelectedHeading").textContent.includes("18:00"), "mudança de horário atualiza detalhe da consulta");
+        const lastValidSummary = doc.querySelector("#comparisonSummary").textContent;
+        input(win, "#comparison-a-work", "0");
+        check(doc.querySelector("#comparisonFeedback").dataset.feedbackType === "error", "configuração inválida apresenta erro claro");
+        check(doc.querySelector("#comparisonSummary").textContent === lastValidSummary, "configuração inválida preserva o último resumo válido");
+        input(win, "#comparison-a-work", scenario === "api" ? "6" : "5");
+        check(doc.querySelector("#comparisonFeedback").dataset.feedbackType === "success", "correção do parâmetro recupera a comparação");
+        if (scenario === "api") {
+            const hours = doc.querySelector("#comparisonBScale");
+            hours.value = "model:12x36";
+            hours.dispatchEvent(new win.Event("change", { bubbles: true }));
+            check(doc.querySelector("#comparisonSelectedDetails").textContent.includes("Intervalos reais neste dia"), "12x36 exibe intervalos reais no detalhe");
+        }
+        check(errors.length === 0, `sem erros JavaScript durante interações: ${errors.join("; ")}`);
+        output.textContent = `PASS ${lines.length}: ${lines.join("; ")}`;
+        output.dataset.result = "pass";
+    }
+
+    run().catch((error) => {
+        output.textContent = `FAIL: ${error.stack || error.message}`;
+        output.dataset.result = "fail";
+    });
+})();
+</script>

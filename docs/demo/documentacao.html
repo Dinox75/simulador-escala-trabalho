@@ -34,6 +34,7 @@
         <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
             <a href="index.html">Início</a>
             <a href="simulador.html">Simulador</a>
+            <a href="comparador.html">Comparador</a>
             <a href="modelos.html">Modelos</a>
             <a href="roadmap.html">Roadmap</a>
             <a href="documentacao.html">Documentação</a>
@@ -75,6 +76,7 @@
                     <button class="doc-tab active" type="button" data-doc-tab="dias">Ciclo por dias</button>
                     <button class="doc-tab" type="button" data-doc-tab="horas">Ciclo por horas</button>
                     <button class="doc-tab" type="button" data-doc-tab="rotativo">Turno rotativo</button>
+                    <button class="doc-tab" type="button" data-doc-tab="comparador">Comparador</button>
                     <button class="doc-tab" type="button" data-doc-tab="api">API</button>
                     <button class="doc-tab" type="button" data-doc-tab="persistencia">Persistência</button>
                     <button class="doc-tab" type="button" data-doc-tab="arquitetura">Arquitetura</button>
@@ -131,6 +133,19 @@ dias_passados = data_consulta - data_inicio
 posicao = dias_passados % len(sequencia)
 
 status = sequencia[posicao]</code></pre>
+                </article>
+
+                <article class="doc-panel" id="doc-comparador">
+                    <h3>Comparação de duas escalas</h3>
+                    <p>
+                        A tela <a class="text-link" href="comparador.html">Comparador</a> calcula os dois lados pelo mesmo núcleo de calendário usado pelo simulador. Cada escala tem âncora e parâmetros independentes; a data selecionada e o horário observado são comuns.
+                    </p>
+                    <p>
+                        É possível ajustar uma configuração sem salvá-la. O resumo do mês conta apenas os status no horário selecionado, não dias completos nem horas trabalhadas. Em ciclos por horas, os detalhes da data mostram também os intervalos reais entre trabalho e folga.
+                    </p>
+                    <p>
+                        No GitHub Pages, escalas salvas vêm do armazenamento do navegador e a página não consulta a API local. No servidor estático local, pode listar escalas do navegador ou da API local disponível. A API é demonstrativa, sem autenticação ou separação por usuário.
+                    </p>
                 </article>
 
                 <article class="doc-panel" id="doc-api">
