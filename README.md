@@ -724,6 +724,7 @@ A demo possui páginas separadas para:
 - início;
 - simulador;
 - comparador de duas escalas;
+- relatório mensal com calendário, impressão, Excel e CSV;
 - documentação;
 - sobre;
 - termos.
@@ -733,6 +734,10 @@ A demo pública funciona sem API para modelos prontos e escalas personalizadas. 
 Com a API FastAPI local ativa, a demo carrega e grava escalas no repository selecionado pelo backend (`data/escalas.json` por padrão; PostgreSQL se explicitamente configurado). A linha do tempo e o calendário começam na data consultada, usando a data inicial para calcular o ciclo.
 
 O [comparador](https://dinox75.github.io/simulador-escala-trabalho/demo/comparador.html) coloca dois modelos ou duas escalas salvas no mesmo mês e horário de consulta. Cada lado mantém sua própria data inicial e configuração; os parâmetros podem ser ajustados só para a comparação sem cadastrar uma escala. O resumo conta datas em que cada lado está trabalhando no horário escolhido e datas em que ambos estão de folga nesse horário. Ele não estima dias inteiros nem horas trabalhadas. Em ciclos por horas, como 12x36, o detalhe também mostra os intervalos de trabalho e folga dentro da data selecionada.
+
+O [relatório mensal](https://dinox75.github.io/simulador-escala-trabalho/demo/relatorio.html) reúne uma ou duas escalas, com parâmetros e inícios de ciclo independentes. O calendário é a prévia principal; a tabela detalhada permite conferir cada data. **Mês exibido** define o período, enquanto **Início do ciclo** ancora o cálculo. Se houver uma escala por horas, **Consultar situação às** define o instante observado em cada data; para escalas somente por dias, horário não é necessário. O resumo, a impressão, o XLSX e o CSV vêm dos mesmos registros. Em 12x36, o status no horário consultado pode mudar dentro do dia; os totais não estimam dias inteiros nem horas trabalhadas. Ajustes são temporários, e os botões **Ir para o mês do início** de A ou B mudam o período somente quando acionados.
+
+**Baixar Excel (.xlsx)** cria uma planilha com calendário, legenda, resumo e uma aba de registros detalhados, com rótulos junto às cores. O arquivo é produzido no navegador por `docs/demo/report-xlsx.js`, um gravador pequeno e específico de XLSX/ZIP sem dependência externa ou chamada a serviço. **CSV sem formatação** contém os mesmos registros e metadados em UTF-8 com BOM e ponto e vírgula; dependendo da configuração regional do Excel, use a importação com separador `;` para distribuir as colunas. Textos de nomes são gravados como texto no XLSX e protegidos contra interpretação como fórmula no CSV. **Imprimir / salvar como PDF** usa o navegador e não requer biblioteca de PDF.
 
 Na origem GitHub Pages, os modelos e escalas salvas vêm dos dados estáticos e do armazenamento daquele navegador; nenhuma rota da API local é consultada. No servidor estático local, a lista de escalas pode vir da API local quando ela estiver ativa. A API não tem autenticação nem isolamento por usuário e deve permanecer restrita ao uso local.
 
@@ -954,7 +959,7 @@ Possíveis funcionalidades futuras:
 - vincular colaboradores a escalas;
 - gerenciar escalas por equipe;
 - consultar cobertura de turnos;
-- exportar relatórios.
+- ampliar relatórios para equipes e períodos adicionais.
 
 ---
 
@@ -993,8 +998,7 @@ Possíveis funcionalidades futuras:
 - Área da empresa.
 - Associação de escalas a colaboradores.
 - Calendário mais completo.
-- Relatórios.
-- Exportação de dados.
+- Relatórios empresariais e exportação consolidada de dados.
 - Notificações.
 
 ## 🧭 Linha de evolução técnica

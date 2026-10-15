@@ -112,6 +112,15 @@ const state = {
         month: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
         selectedDate: dateInputValue(new Date()),
         lastResult: null
+    },
+    report: {
+        mode: "single",
+        selections: { a: "model:6x3", b: "model:12x36" },
+        snapshots: { a: null, b: null },
+        missing: { a: false, b: false },
+        fieldSelection: { a: null, b: null },
+        catalog: new Map(),
+        result: null
     }
 };
 
@@ -168,7 +177,24 @@ const elements = {
     comparisonPrevious: $("#comparisonPrevious"),
     comparisonNext: $("#comparisonNext"),
     comparisonToday: $("#comparisonToday"),
-    comparisonRefreshSaved: $("#comparisonRefreshSaved")
+    comparisonRefreshSaved: $("#comparisonRefreshSaved"),
+    reportMode: $("#reportMode"),
+    reportBPanel: $("#reportBPanel"),
+    reportASelect: $("#reportAScale"),
+    reportBSelect: $("#reportBScale"),
+    reportAFields: $("#reportAFields"),
+    reportBFields: $("#reportBFields"),
+    reportMonth: $("#reportMonth"),
+    reportTime: $("#reportTime"),
+    reportTimeField: $("#reportTimeField"),
+    reportAnchorMonth: $("#reportAnchorMonth"),
+    reportBAnchorMonth: $("#reportBAnchorMonth"),
+    reportFeedback: $("#reportFeedback"),
+    reportOutput: $("#reportOutput"),
+    reportPrint: $("#reportPrint"),
+    reportDownloadXlsx: $("#reportDownloadXlsx"),
+    reportDownloadCsv: $("#reportDownloadCsv"),
+    reportRefreshSaved: $("#reportRefreshSaved")
 };
 
 function cloneScale(scale) {
@@ -187,6 +213,10 @@ function hasSimulator() {
 
 function hasComparator() {
     return Boolean(elements.comparisonASelect && elements.comparisonBSelect);
+}
+
+function hasReport() {
+    return Boolean(elements.reportASelect && elements.reportMode);
 }
 
 function loadSavedScales() {
@@ -2004,7 +2034,7 @@ async function checkApiHealth() {
 }
 
 async function loadModelsFromApi() {
-    if (!elements.modelButtons && !hasComparator()) {
+    if (!elements.modelButtons && !hasComparator() && !hasReport()) {
         return;
     }
 
@@ -2012,6 +2042,7 @@ async function loadModelsFromApi() {
         state.availableModels = PREDEFINED_MODELS.map(cloneScale);
         renderModelButtons();
         refreshComparisonOptions();
+        refreshReportOptions();
         return;
     }
 
@@ -2025,6 +2056,7 @@ async function loadModelsFromApi() {
         state.availableModels = data.modelos.map(cloneScale);
         renderModelButtons();
         refreshComparisonOptions();
+        refreshReportOptions();
 
         console.info("Modelos carregados da API:", state.availableModels);
     } catch (error) {
@@ -2033,13 +2065,14 @@ async function loadModelsFromApi() {
         state.availableModels = PREDEFINED_MODELS.map(cloneScale);
         renderModelButtons();
         refreshComparisonOptions();
+        refreshReportOptions();
     }
 }
 
 async function loadSavedScalesFromApi(options = {}) {
     const { preserveCurrentOnEmpty = false } = options;
 
-    if (!elements.savedScalesList && !hasComparator()) {
+    if (!elements.savedScalesList && !hasComparator() && !hasReport()) {
         console.warn("Elemento #savedScalesList não encontrado.");
         return;
     }
@@ -2050,6 +2083,7 @@ async function loadSavedScalesFromApi(options = {}) {
         if (elements.resetScalesButton) elements.resetScalesButton.textContent = "Atualizar lista deste navegador";
         if (elements.savedScalesList) renderSavedScales();
         refreshComparisonOptions();
+        refreshReportOptions();
         return;
     }
 
@@ -2070,6 +2104,7 @@ async function loadSavedScalesFromApi(options = {}) {
             );
             if (elements.savedScalesList) renderSavedScales();
             refreshComparisonOptions();
+            refreshReportOptions();
             return;
         }
 
@@ -2078,6 +2113,7 @@ async function loadSavedScalesFromApi(options = {}) {
         if (elements.resetScalesButton) elements.resetScalesButton.textContent = "Recarregar escalas da API local";
         if (elements.savedScalesList) renderSavedScales();
         refreshComparisonOptions();
+        refreshReportOptions();
 
         console.info("Escalas salvas renderizadas:", state.savedScales);
     } catch (error) {
@@ -2087,6 +2123,7 @@ async function loadSavedScalesFromApi(options = {}) {
         if (elements.resetScalesButton) elements.resetScalesButton.textContent = "Atualizar origem dos dados";
         if (elements.savedScalesList) renderSavedScales();
         refreshComparisonOptions();
+        refreshReportOptions();
     }
 }
 
@@ -2459,6 +2496,459 @@ function initComparisonPage() {
     });
 }
 
+function addReportOption(group, key, scale) {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = `${scale.nome} · ${getTypeName(scale.tipo)} · ${getScaleSummary(scale)}`;
+    group.append(option);
+}
+
+function refreshReportOptions() {
+    if (!hasReport()) return;
+    const catalog = getComparisonCatalog();
+    state.report.catalog = catalog;
+
+    ["a", "b"].forEach((side) => {
+        const select = side === "a" ? elements.reportASelect : elements.reportBSelect;
+        const selected = select.value || state.report.selections[side];
+        const models = document.createElement("optgroup");
+        models.label = "Modelos prontos";
+        const saved = document.createElement("optgroup");
+        saved.label = state.savedScaleSource === "api" ? "Escalas salvas na API local" : "Escalas salvas neste navegador";
+        catalog.forEach((scale, key) => {
+            addReportOption(scale.source === "model" ? models : saved, key, scale);
+        });
+
+        const options = document.createDocumentFragment();
+        options.append(models, saved);
+        const exists = catalog.has(selected);
+        if (selected && !exists && state.report.snapshots[side]) {
+            const unavailable = document.createElement("optgroup");
+            unavailable.label = "Indisponível";
+            const option = document.createElement("option");
+            option.value = selected;
+            option.textContent = `Escala removida: ${state.report.snapshots[side].nome}`;
+            unavailable.append(option);
+            options.append(unavailable);
+            state.report.missing[side] = true;
+            select.replaceChildren(options);
+            select.value = selected;
+            return;
+        }
+
+        select.replaceChildren(options);
+        let next = exists ? selected : (side === "a" ? "model:6x3" : "model:12x36");
+        if (!catalog.has(next)) next = catalog.keys().next().value || "";
+        select.value = next;
+        state.report.selections[side] = next;
+        state.report.missing[side] = false;
+        const scale = catalog.get(next);
+        if (scale) {
+            state.report.snapshots[side] = cloneScale(scale);
+            if (state.report.fieldSelection[side] !== next) {
+                renderReportFields(side, scale);
+                state.report.fieldSelection[side] = next;
+            }
+        }
+    });
+    updateReport();
+}
+
+function appendReportInput(container, side, key, labelText, value, attributes = {}) {
+    const label = document.createElement("label");
+    label.className = "comparison-field";
+    label.htmlFor = `report-${side}-${key}`;
+    label.textContent = labelText;
+    const input = document.createElement("input");
+    input.id = label.htmlFor;
+    input.name = label.htmlFor;
+    Object.entries(attributes).forEach(([name, attributeValue]) => input.setAttribute(name, attributeValue));
+    input.value = value;
+    label.append(input);
+    container.append(label);
+}
+
+function renderReportFields(side, scale) {
+    const container = side === "a" ? elements.reportAFields : elements.reportBFields;
+    container.replaceChildren();
+    const today = new Date();
+    if (scale.tipo === TIPO_CICLO_HORAS) {
+        const anchor = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 6, 0);
+        appendReportInput(container, side, "anchor", "Início do ciclo · data e hora", scale.data_inicio || `${dateInputValue(anchor)}T06:00`, { type: "datetime-local", required: "required" });
+        appendReportInput(container, side, "work", "Horas de trabalho", scale.horas_trabalho, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
+        appendReportInput(container, side, "off", "Horas de folga", scale.horas_folga, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
+    } else {
+        appendReportInput(container, side, "anchor", "Início do ciclo · data", scale.data_inicio || dateInputValue(today), { type: "date", required: "required" });
+        if (scale.tipo === TIPO_TURNO_ROTATIVO) {
+            appendReportInput(container, side, "turns", "Sequência diária · separada por vírgulas", normalizeTurns(scale.sequencia_turnos).join(", "), { type: "text", maxlength: String(MAX_SEQUENCE_LENGTH * 12), required: "required", placeholder: "Manhã, Tarde, Noite, Folga" });
+        } else {
+            appendReportInput(container, side, "work", "Dias de trabalho", scale.dias_trabalho, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
+            appendReportInput(container, side, "off", "Dias de folga", scale.dias_folga, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
+        }
+    }
+    const note = document.createElement("p");
+    note.className = "comparison-edit-note";
+    note.textContent = "Ajustes usados somente neste relatório; não alteram nem salvam a escala original.";
+    container.append(note);
+}
+
+function readReportScale(side) {
+    const scale = state.report.snapshots[side];
+    if (!scale || state.report.missing[side]) {
+        throw new Error(`Escolha uma Escala ${side.toUpperCase()} disponível. A escala selecionada não está mais na origem.`);
+    }
+    const anchorValue = $(`#report-${side}-anchor`)?.value || "";
+    const start = scale.tipo === TIPO_CICLO_HORAS ? parseDateTimeInput(anchorValue) : parseDateInput(anchorValue);
+    if (!anchorValue || !Number.isFinite(start.getTime())) throw new Error(`Informe uma data inicial válida para a Escala ${side.toUpperCase()}.`);
+
+    let work;
+    let off;
+    let turns;
+    if (scale.tipo === TIPO_TURNO_ROTATIVO) {
+        turns = normalizeTurns($(`#report-${side}-turns`)?.value || "");
+    } else {
+        work = Number($(`#report-${side}-work`)?.value ?? "");
+        off = Number($(`#report-${side}-off`)?.value ?? "");
+    }
+    const parameters = scale.tipo === TIPO_CICLO_HORAS
+        ? `${work} horas de trabalho / ${off} horas de folga`
+        : scale.tipo === TIPO_TURNO_ROTATIVO
+            ? `Sequência: ${turns.join(" → ")}`
+            : `${work} dias de trabalho / ${off} dias de folga`;
+    return {
+        name: String(scale.nome || `Escala ${side.toUpperCase()}`),
+        type: scale.tipo,
+        source: scale.source,
+        start,
+        work,
+        off,
+        turns,
+        parameters,
+        anchor: scale.tipo === TIPO_CICLO_HORAS ? formatDateTime(start) : formatDate(start),
+        origin: sourceLabel(scale.source)
+    };
+}
+
+function renderReportScaleMetadata(scale, side) {
+    const item = document.createElement("article");
+    item.className = `report-meta-card report-meta-${side}`;
+    const title = document.createElement("h3");
+    title.textContent = `Escala ${side.toUpperCase()} · ${scale.name}`;
+    const details = document.createElement("dl");
+    [
+        ["Tipo e parâmetros", `${getTypeName(scale.type)} · ${scale.parameters}`],
+        ["Início do ciclo", scale.anchor],
+        ["Origem", scale.origin]
+    ].forEach(([labelText, valueText]) => {
+        const row = document.createElement("div");
+        const label = document.createElement("dt");
+        label.textContent = labelText;
+        const value = document.createElement("dd");
+        value.textContent = valueText;
+        row.append(label, value);
+        details.append(row);
+    });
+    item.append(title, details);
+    return item;
+}
+
+function renderReport(report) {
+    const fragment = document.createDocumentFragment();
+    const heading = document.createElement("header");
+    heading.className = "report-print-heading";
+    const kicker = document.createElement("span");
+    kicker.className = "mono-kicker";
+    kicker.textContent = "RELATÓRIO MENSAL DE ESCALAS";
+    const title = document.createElement("h1");
+    title.id = "reportTitle";
+    title.textContent = `Relatório mensal · ${report.monthLabel}`;
+    const period = document.createElement("p");
+    period.className = "report-print-period";
+    period.textContent = `Período: ${report.periodStart} a ${report.periodEnd} · ${report.usesTime ? `Status observado às ${report.time}` : "Status por data"}`;
+    heading.append(kicker, title, period);
+    fragment.append(heading);
+
+    const metadata = document.createElement("div");
+    metadata.className = "report-meta-grid";
+    metadata.append(renderReportScaleMetadata(report.scaleA, "a"));
+    if (report.mode === "compare") metadata.append(renderReportScaleMetadata(report.scaleB, "b"));
+    fragment.append(metadata);
+
+    const summary = document.createElement("section");
+    summary.className = "report-summary";
+    const summaryHeading = document.createElement("h2");
+    summaryHeading.textContent = report.usesTime ? `Resumo no horário consultado · ${report.time}` : "Resumo por data";
+    const summaryList = document.createElement("div");
+    summaryList.className = "report-summary-list";
+    const timeSuffix = report.usesTime ? ` às ${report.time}` : "";
+    const values = report.mode === "single"
+        ? [[report.summary.aWorking, `Datas com status de trabalho da Escala A${timeSuffix}`], [report.summary.aOff, `Datas com status de folga da Escala A${timeSuffix}`]]
+        : [[report.summary.aWorking, `Datas com status de trabalho da Escala A${timeSuffix}`], [report.summary.bWorking, `Datas com status de trabalho da Escala B${timeSuffix}`], [report.summary.bothOff, `Datas com ambas em folga${timeSuffix}`]];
+    values.forEach(([countValue, labelText]) => {
+        const card = document.createElement("div");
+        card.className = "report-summary-item";
+        const count = document.createElement("strong");
+        count.textContent = String(countValue);
+        const label = document.createElement("span");
+        label.textContent = labelText;
+        card.append(count, label);
+        summaryList.append(card);
+    });
+    const note = document.createElement("p");
+    note.className = "report-sample-note";
+    note.textContent = report.usesTime
+        ? `Cada data registra o status às ${report.time}. Em ciclos por horas pode haver outra situação no mesmo dia. Os totais não representam dias inteiros de trabalho nem horas trabalhadas.`
+        : "Cada data registra a situação do ciclo por dias. Os totais não representam horas trabalhadas.";
+    summary.append(summaryHeading, summaryList, note);
+    fragment.append(summary);
+
+    const calendarSection = document.createElement("section");
+    calendarSection.className = "report-calendar-section";
+    const calendarHeading = document.createElement("h2");
+    calendarHeading.textContent = "Calendário do mês";
+    const legend = document.createElement("p");
+    legend.className = "report-calendar-legend";
+    legend.textContent = "Legenda: Trabalho (Trab. no celular) · Folga · Manhã · Tarde · Noite. A e B indicam cada escala; folgas coincidentes têm destaque.";
+    const calendar = document.createElement("div");
+    calendar.className = `report-calendar${report.mode === "compare" ? " has-two-scales" : ""}`;
+    calendar.setAttribute("aria-label", `Calendário de ${report.monthLabel}${report.usesTime ? ` observado às ${report.time}` : ""}`);
+    ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].forEach((weekday) => {
+        const label = document.createElement("div");
+        label.className = "report-calendar-weekday";
+        label.textContent = weekday;
+        calendar.append(label);
+    });
+    for (let index = 0; index < report.rows[0].date.getDay(); index += 1) {
+        const blank = document.createElement("div");
+        blank.className = "report-calendar-blank";
+        blank.setAttribute("aria-hidden", "true");
+        calendar.append(blank);
+    }
+    report.rows.forEach((record) => {
+        const day = document.createElement("article");
+        const bothOff = report.mode === "compare" && record.statusA === "Folga" && record.statusB === "Folga";
+        day.className = `report-calendar-day${bothOff ? " both-off" : ""}${record.transitionA || record.transitionB ? " has-transition" : ""}`;
+        day.setAttribute("aria-label", `${record.dateLabel}. Escala A: ${record.statusA}.${report.mode === "compare" ? ` Escala B: ${record.statusB}.` : ""}${record.transitionA || record.transitionB ? " Há transição de status na data." : ""}`);
+        const date = document.createElement("strong");
+        date.className = "report-calendar-date";
+        date.textContent = String(record.date.getDate());
+        day.append(date);
+        [["a", record.statusA], ...(report.mode === "compare" ? [["b", record.statusB]] : [])].forEach(([side, status]) => {
+            const statusLabel = document.createElement("span");
+            statusLabel.className = `report-calendar-status status-${TURN_CLASSES[status.toLowerCase()] || "trabalhando"}`;
+            const sideLabel = document.createElement("b");
+            sideLabel.textContent = side.toUpperCase();
+            const text = document.createElement("span");
+            text.className = "report-status-full";
+            text.textContent = status === "Trabalhando" ? "Trabalho" : status;
+            statusLabel.append(sideLabel, text);
+            if (status === "Trabalhando") {
+                const short = document.createElement("span");
+                short.className = "report-status-short";
+                short.setAttribute("aria-hidden", "true");
+                short.textContent = "Trab.";
+                statusLabel.append(short);
+            }
+            day.append(statusLabel);
+        });
+        if (record.transitionA || record.transitionB) {
+            const transition = document.createElement("small");
+            transition.className = "report-calendar-transition";
+            transition.textContent = "↔ Troca no dia";
+            day.append(transition);
+        } else if (bothOff) {
+            const coincidence = document.createElement("small");
+            coincidence.className = "report-calendar-coincidence";
+            coincidence.textContent = "Ambas em folga";
+            day.append(coincidence);
+        }
+        calendar.append(day);
+    });
+    calendarSection.append(calendarHeading, legend, calendar);
+    fragment.append(calendarSection);
+
+    const details = document.createElement("details");
+    details.className = "report-details";
+    const detailsSummary = document.createElement("summary");
+    detailsSummary.textContent = "Conferir tabela detalhada de todas as datas";
+    details.append(detailsSummary);
+    const tableWrap = document.createElement("div");
+    tableWrap.className = "report-table-wrap";
+    const table = document.createElement("table");
+    table.className = "report-table";
+    table.id = "reportRecords";
+    const caption = document.createElement("caption");
+    caption.textContent = report.usesTime ? `Status das escalas observado às ${report.time} em cada data do período.` : "Status das escalas em cada data do período.";
+    const head = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    ["Data", "Dia da semana", `Escala A${timeSuffix}`].concat(report.mode === "compare" ? [`Escala B${timeSuffix}`] : []).forEach((text) => {
+        const cell = document.createElement("th");
+        cell.scope = "col";
+        cell.textContent = text;
+        headerRow.append(cell);
+    });
+    head.append(headerRow);
+    const body = document.createElement("tbody");
+    report.rows.forEach((record) => {
+        const row = document.createElement("tr");
+        [record.dateLabel, record.weekday, record.statusA].concat(report.mode === "compare" ? [record.statusB] : []).forEach((value) => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.append(cell);
+        });
+        body.append(row);
+    });
+    table.append(caption, head, body);
+    tableWrap.append(table);
+    details.append(tableWrap);
+    fragment.append(details);
+    elements.reportOutput.replaceChildren(fragment);
+}
+
+function setReportInvalid(message) {
+    state.report.result = null;
+    elements.reportPrint.disabled = true;
+    elements.reportDownloadXlsx.disabled = true;
+    elements.reportDownloadCsv.disabled = true;
+    elements.reportFeedback.textContent = `${message} Corrija os campos para gerar e exportar uma nova prévia.`;
+    elements.reportFeedback.dataset.feedbackType = "error";
+    const empty = document.createElement("div");
+    empty.className = "report-empty report-empty-invalid";
+    const heading = document.createElement("h2");
+    heading.id = "reportTitle";
+    heading.textContent = "Relatório indisponível";
+    const note = document.createElement("p");
+    note.textContent = "A prévia anterior foi removida porque os parâmetros atuais não são válidos.";
+    empty.append(heading, note);
+    elements.reportOutput.replaceChildren(empty);
+}
+
+function updateReport() {
+    if (!hasReport()) return false;
+    const needsTime = [state.report.snapshots.a, elements.reportMode.value === "compare" ? state.report.snapshots.b : null]
+        .some((scale) => scale?.tipo === TIPO_CICLO_HORAS);
+    elements.reportTimeField.hidden = !needsTime;
+    try {
+        const mode = elements.reportMode.value;
+        const scaleA = readReportScale("a");
+        const scaleB = mode === "compare" ? readReportScale("b") : null;
+        const monthValue = elements.reportMonth.value;
+        const monthMatch = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(monthValue);
+        if (!monthMatch) throw new Error("Escolha um mês válido para o relatório.");
+        const month = new Date(Number(monthMatch[1]), Number(monthMatch[2]) - 1, 1);
+        const report = window.ScaleReportCore.createMonthlyReport({
+            mode,
+            month,
+            time: elements.reportTime.value,
+            scaleA,
+            scaleB
+        });
+        state.report.result = report;
+        renderReport(report);
+        elements.reportPrint.disabled = false;
+        elements.reportDownloadXlsx.disabled = false;
+        elements.reportDownloadCsv.disabled = false;
+        elements.reportFeedback.textContent = "Prévia atualizada. Impressão, Excel e CSV correspondem a estes registros.";
+        elements.reportFeedback.dataset.feedbackType = "success";
+        return true;
+    } catch (error) {
+        setReportInvalid(error.message);
+        return false;
+    }
+}
+
+function selectReportScale(side, key) {
+    const scale = state.report.catalog.get(key);
+    if (!scale) return;
+    state.report.selections[side] = key;
+    state.report.snapshots[side] = cloneScale(scale);
+    state.report.missing[side] = false;
+    state.report.fieldSelection[side] = key;
+    renderReportFields(side, scale);
+    updateReport();
+}
+
+function downloadReportFile(blob, extension) {
+    const report = state.report.result;
+    if (!report) return;
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `relatorio-escalas-${report.year}-${String(report.month + 1).padStart(2, "0")}.${extension}`;
+    link.hidden = true;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function downloadReportCsv() {
+    if (!state.report.result) return;
+    const csv = window.ScaleReportCore.createCsv(state.report.result);
+    downloadReportFile(new Blob([csv], { type: "text/csv;charset=utf-8" }), "csv");
+}
+
+function downloadReportXlsx() {
+    if (!state.report.result) return;
+    const bytes = window.ScaleReportXlsx.createXlsx(state.report.result);
+    downloadReportFile(new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), "xlsx");
+}
+
+function jumpReportToAnchorMonth(side) {
+    const anchorValue = $(`#report-${side}-anchor`)?.value || "";
+    const anchor = anchorValue.includes("T") ? parseDateTimeInput(anchorValue) : parseDateInput(anchorValue);
+    if (!Number.isFinite(anchor.getTime())) {
+        setReportInvalid(`Informe um início do ciclo válido para a Escala ${side.toUpperCase()}.`);
+        return;
+    }
+    elements.reportMonth.value = `${anchor.getFullYear()}-${String(anchor.getMonth() + 1).padStart(2, "0")}`;
+    updateReport();
+}
+
+function initReportPage() {
+    if (!hasReport()) return;
+    const now = new Date();
+    elements.reportMonth.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    elements.reportTime.value = "06:00";
+    elements.reportMode.value = "single";
+    elements.reportBPanel.hidden = true;
+    elements.reportBAnchorMonth.hidden = true;
+    state.savedScales = loadSavedScales();
+    state.availableModels = PREDEFINED_MODELS.map(cloneScale);
+    refreshReportOptions();
+
+    elements.reportMode.addEventListener("change", () => {
+        state.report.mode = elements.reportMode.value;
+        elements.reportBPanel.hidden = state.report.mode !== "compare";
+        elements.reportBAnchorMonth.hidden = state.report.mode !== "compare";
+        updateReport();
+    });
+    [[elements.reportASelect, "a"], [elements.reportBSelect, "b"]].forEach(([select, side]) => {
+        select.addEventListener("change", () => selectReportScale(side, select.value));
+    });
+    [elements.reportAFields, elements.reportBFields].forEach((fields) => {
+        fields.addEventListener("input", updateReport);
+        fields.addEventListener("change", updateReport);
+    });
+    elements.reportMonth.addEventListener("input", updateReport);
+    elements.reportMonth.addEventListener("change", updateReport);
+    elements.reportTime.addEventListener("input", updateReport);
+    elements.reportTime.addEventListener("change", updateReport);
+    elements.reportAnchorMonth.addEventListener("click", () => jumpReportToAnchorMonth("a"));
+    elements.reportBAnchorMonth.addEventListener("click", () => jumpReportToAnchorMonth("b"));
+    elements.reportPrint.addEventListener("click", () => {
+        if (state.report.result) window.print();
+    });
+    elements.reportDownloadCsv.addEventListener("click", downloadReportCsv);
+    elements.reportDownloadXlsx.addEventListener("click", downloadReportXlsx);
+    elements.reportRefreshSaved.addEventListener("click", async () => {
+        elements.reportRefreshSaved.disabled = true;
+        await Promise.all([loadModelsFromApi(), loadSavedScalesFromApi()]);
+        elements.reportRefreshSaved.disabled = false;
+    });
+    window.ScaleReportApp = Object.freeze({ getCurrentReport: () => state.report.result });
+}
+
 function configureEvents() {
     if (elements.calendarPrevious) {
         elements.calendarPrevious.addEventListener("click", () => {
@@ -2802,6 +3292,7 @@ function init() {
     configureEvents();
     initSimulatorPage();
     initComparisonPage();
+    initReportPage();
     checkApiHealth();
     loadModelsFromApi();
     loadSavedScalesFromApi();

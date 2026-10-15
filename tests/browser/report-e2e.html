@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verificação do relatório</title>
+<style>body{font:16px system-ui;margin:20px;background:#17191c;color:#eee}pre{white-space:pre-wrap}iframe{width:100%;height:85vh;border:1px solid #777}</style>
+<h1>Verificação do relatório</h1>
+<pre id="result" data-result="running">Executando…</pre>
+<iframe id="app" title="Relatório mensal"></iframe>
+<script>
+(() => {
+    const output = document.querySelector("#result");
+    const frame = document.querySelector("#app");
+    const scenario = new URLSearchParams(location.search).get("scenario") || "public";
+    const lines = [];
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const check = (condition, message) => {
+        if (!condition) throw new Error(message);
+        lines.push(`PASS ${message}`);
+    };
+    const until = async (predicate, message, timeout = 10000) => {
+        const end = Date.now() + timeout;
+        while (Date.now() < end) {
+            if (predicate()) return;
+            await wait(50);
+        }
+        throw new Error(`Timeout: ${message}`);
+    };
+    const setValue = (win, selector, value) => {
+        const field = win.document.querySelector(selector);
+        field.value = value;
+        field.dispatchEvent(new win.Event("input", { bubbles: true }));
+        field.dispatchEvent(new win.Event("change", { bubbles: true }));
+        return field;
+    };
+    const selectSaved = (win, select) => {
+        const option = Array.from(select.options).find((entry) => entry.value.startsWith(`saved:${scenario === "api" ? "api" : "local"}:`) && (scenario === "api" || entry.textContent.includes("HYPERLINK")));
+        if (!option) throw new Error("Escala de teste não encontrada no seletor.");
+        select.value = option.value;
+        select.dispatchEvent(new win.Event("change", { bubbles: true }));
+        return option;
+    };
+    function parseCsv(text) {
+        const rows = [];
+        let row = [];
+        let cell = "";
+        let quoted = false;
+        for (let index = text.charCodeAt(0) === 0xFEFF ? 1 : 0; index < text.length; index += 1) {
+            const char = text[index];
+            if (quoted && char === '"' && text[index + 1] === '"') { cell += '"'; index += 1; }
+            else if (char === '"') quoted = !quoted;
+            else if (char === ";" && !quoted) { row.push(cell); cell = ""; }
+            else if ((char === "\n" || char === "\r") && !quoted) {
+                if (char === "\r" && text[index + 1] === "\n") index += 1;
+                row.push(cell); rows.push(row); row = []; cell = "";
+            } else cell += char;
+        }
+        if (cell || row.length) { row.push(cell); rows.push(row); }
+        return rows;
+    }
+
+    async function run() {
+        if (scenario !== "api") {
+            localStorage.setItem("simulador_escala_demo_v014_local", JSON.stringify([
+                { nome: "=HYPERLINK(\"x\";\"clicar\")\n+1", tipo: "turno_rotativo", sequencia_turnos: ["Manhã", "Folga"] },
+                { nome: "Escala CSV 6x3", tipo: "ciclo_dias", dias_trabalho: 6, dias_folga: 3 }
+            ]));
+        }
+        frame.src = `/docs/demo/relatorio.html${scenario === "public" ? "?browserOnly" : ""}`;
+        await new Promise((resolve, reject) => {
+            frame.addEventListener("load", resolve, { once: true });
+            frame.addEventListener("error", reject, { once: true });
+        });
+        const win = frame.contentWindow;
+        const doc = frame.contentDocument;
+        await until(() => doc.querySelectorAll("#reportRecords tbody tr").length > 20, "prévia mensal inicial renderizada");
+        await until(() => doc.querySelectorAll("#reportAScale option").length >= 6, "modelos aparecem no seletor");
+        if (scenario === "api") await until(() => Array.from(doc.querySelectorAll("#reportAScale option")).some((option) => option.value.startsWith("saved:api:")), "escala da API carregada");
+        else {
+            await until(() => Array.from(doc.querySelectorAll("#reportAScale option")).some((option) => option.value.startsWith("saved:local:")), "escala do navegador carregada");
+            if (scenario === "local-off") await until(() => doc.querySelector("#apiStatusText").textContent.includes("não conectada"), "fallback informado com API desligada");
+        }
+
+        const errors = [];
+        win.addEventListener("error", (event) => errors.push(event.message));
+        win.addEventListener("unhandledrejection", (event) => errors.push(String(event.reason)));
+        check(doc.querySelector(".nav-links a[aria-current='page']")?.getAttribute("href") === "relatorio.html", "navegação marca a página atual");
+        check(doc.querySelectorAll("#reportRecords tbody tr").length === new Date(Number(doc.querySelector("#reportMonth").value.slice(0, 4)), Number(doc.querySelector("#reportMonth").value.slice(5)), 0).getDate(), "prévia contém todas as datas do mês");
+        check(doc.querySelector("#reportPrint").disabled === false && doc.querySelector("#reportDownloadCsv").disabled === false && doc.querySelector("#reportDownloadXlsx").disabled === false, "exportações habilitadas para prévia válida");
+        check(doc.querySelector("#reportTimeField").hidden && doc.querySelector(".report-sample-note").textContent.includes("não representam horas trabalhadas"), "escala por dias dispensa horário observado");
+        check(doc.querySelectorAll(".report-calendar-day").length === doc.querySelectorAll("#reportRecords tbody tr").length, "calendário e tabela mostram as mesmas datas");
+        check(doc.documentElement.scrollWidth <= win.innerWidth && doc.body.scrollWidth <= win.innerWidth, `sem rolagem horizontal (${win.innerWidth}px)`);
+
+        setValue(win, "#reportMode", "compare");
+        check(doc.querySelector("#reportBPanel").hidden === false && doc.querySelectorAll("#reportRecords thead th").length === 4, "modo comparação mostra duas escalas na tabela");
+        if (scenario !== "api") {
+            const risky = selectSaved(win, doc.querySelector("#reportAScale"));
+            check(doc.querySelector("#reportOutput").textContent.includes(risky.textContent.split(" · ")[0]), "nome salvo é apresentado como texto");
+            check(!doc.querySelector("img"), "nome dinâmico não é interpretado como HTML");
+            check(doc.querySelector("#reportOutput").textContent.includes("Neste navegador"), "prévia indica armazenamento no navegador");
+            if (scenario === "public") {
+                let apiCalls = 0;
+                const originalFetch = win.fetch.bind(win);
+                win.fetch = (...args) => { apiCalls += 1; return originalFetch(...args); };
+                doc.querySelector("#apiRefreshButton").click();
+                doc.querySelector("#reportRefreshSaved").click();
+                await wait(100);
+                check(apiCalls === 0, "modo público não consulta a API ao atualizar conexão e escalas");
+            }
+        } else {
+            selectSaved(win, doc.querySelector("#reportAScale"));
+            check(doc.querySelector("#reportOutput").textContent.includes("API local"), "prévia indica origem na API local");
+        }
+        setValue(win, "#reportMonth", "2028-02");
+        setValue(win, "#reportTime", "06:00");
+        const second = doc.querySelector("#reportBScale");
+        second.value = "model:12x36";
+        second.dispatchEvent(new win.Event("change", { bubbles: true }));
+        check(!doc.querySelector("#reportTimeField").hidden, "escala 12x36 exige horário consultado");
+        setValue(win, "#report-b-anchor", "2028-01-31T18:00");
+        check(doc.querySelectorAll("#reportRecords tbody tr").length === 29, "fevereiro bissexto tem 29 linhas na prévia");
+        check(doc.querySelector("#reportRecords tbody tr td:nth-child(4)").textContent === "Folga", "12x36 consulta a situação após a virada do dia");
+        check(doc.querySelectorAll(".report-calendar-day").length === 29 && doc.querySelector(".report-calendar-day").getAttribute("aria-label").includes(doc.querySelector("#reportRecords tbody tr td:nth-child(3)").textContent), "calendário visual usa os status da tabela");
+        check(!doc.querySelector("#reportBAnchorMonth").hidden && doc.querySelector("#reportMonth").value === "2028-02", "âncora B em janeiro não troca o mês exibido sem ação");
+        doc.querySelector("#reportBAnchorMonth").click();
+        check(doc.querySelector("#reportMonth").value === "2028-01", "ação explícita também leva ao mês do início da Escala B");
+        setValue(win, "#reportMonth", "2028-02");
+        setValue(win, "#reportTime", "");
+        check(doc.querySelector("#reportDownloadXlsx").disabled && doc.querySelector("#reportFeedback").textContent.includes("horário válido"), "horário vazio em ciclo por horas bloqueia exportação com aviso específico");
+        setValue(win, "#reportTime", "06:00");
+        setValue(win, "#report-b-anchor", "");
+        check(doc.querySelector("#reportDownloadCsv").disabled && doc.querySelector("#reportFeedback").textContent.includes("data inicial válida"), "início por horas vazio bloqueia exportação com aviso específico");
+        setValue(win, "#report-b-anchor", "2028-01-31T18:00");
+
+        let csvBlob = null;
+        let downloadName = "";
+        win.URL.createObjectURL = (blob) => { csvBlob = blob; return "blob:report-test"; };
+        win.HTMLAnchorElement.prototype.click = function captureDownload() { downloadName = this.download; };
+        const oldPrint = win.print;
+        let printCalled = false;
+        win.print = () => { printCalled = true; };
+        doc.querySelector("#reportPrint").click();
+        check(printCalled && doc.querySelector("#reportSheet").textContent.includes("Início do ciclo"), "impressão invoca o navegador com relatório completo");
+        doc.querySelector("#reportDownloadCsv").click();
+        const csv = await csvBlob.text();
+        const csvBytes = new Uint8Array(await csvBlob.arrayBuffer());
+        const parsed = parseCsv(csv);
+        const csvOrigin = parsed.find((row) => row[0] === "Origem da Escala A")?.[1];
+        const previewOrigin = doc.querySelector(".report-meta-a dl > div:last-child dd")?.textContent;
+        check(csvOrigin === previewOrigin, "CSV identifica a mesma origem legível da prévia");
+        const headerIndex = parsed.findIndex((row) => row[0] === "Data");
+        const exported = parsed.slice(headerIndex + 1);
+        const visible = Array.from(doc.querySelectorAll("#reportRecords tbody tr"), (row) => Array.from(row.cells, (cell) => cell.textContent));
+        check(csvBytes[0] === 0xEF && csvBytes[1] === 0xBB && csvBytes[2] === 0xBF && downloadName === "relatorio-escalas-2028-02.csv", `CSV baixa com BOM UTF-8 e nome do mês (${csvBytes.slice(0, 3).join(",")}, ${downloadName})`);
+        check(headerIndex >= 0 && JSON.stringify(exported) === JSON.stringify(visible), "registros do CSV são idênticos às linhas da prévia");
+        if (scenario !== "api") check(csv.includes("'=HYPERLINK") && csv.includes('""x""') && csv.includes("\n+1"), "CSV protege fórmula e escapa aspas e quebras de linha");
+
+        doc.querySelector("#reportDownloadXlsx").click();
+        const xlsxBlob = csvBlob;
+        const xlsxBytes = new Uint8Array(await xlsxBlob.arrayBuffer());
+        check(downloadName === "relatorio-escalas-2028-02.xlsx" && xlsxBlob.type.includes("spreadsheetml") && xlsxBytes[0] === 0x50 && xlsxBytes[1] === 0x4b, "Excel baixa arquivo XLSX estruturado");
+        const view = new DataView(xlsxBytes.buffer);
+        const decoder = new TextDecoder();
+        const parts = new Map();
+        for (let offset = 0; view.getUint32(offset, true) === 0x04034b50;) {
+            const length = view.getUint32(offset + 18, true);
+            const nameLength = view.getUint16(offset + 26, true);
+            const name = decoder.decode(xlsxBytes.subarray(offset + 30, offset + 30 + nameLength));
+            parts.set(name, decoder.decode(xlsxBytes.subarray(offset + 30 + nameLength, offset + 30 + nameLength + length)));
+            offset += 30 + nameLength + length;
+        }
+        const sheet = new DOMParser().parseFromString(parts.get("xl/worksheets/sheet2.xml"), "application/xml");
+        const namespace = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        const xlsxRecords = Array.from(sheet.getElementsByTagNameNS(namespace, "row"))
+            .filter((record) => Number(record.getAttribute("r")) >= 6)
+            .map((record) => Array.from(record.getElementsByTagNameNS(namespace, "c"), (entry) => entry.getElementsByTagNameNS(namespace, "t")[0]?.textContent || ""));
+        check(JSON.stringify(xlsxRecords) === JSON.stringify(visible), "registros do Excel são idênticos à prévia e ao CSV");
+        if (scenario !== "api") check(parts.get("xl/worksheets/sheet1.xml").includes("=HYPERLINK") && !parts.get("xl/worksheets/sheet1.xml").includes("<f>"), "nome com fórmula fica em célula de texto no Excel");
+
+        const primary = doc.querySelector("#reportAScale");
+        primary.value = "model:6x3";
+        primary.dispatchEvent(new win.Event("change", { bubbles: true }));
+        setValue(win, "#reportMode", "single");
+        setValue(win, "#reportTime", "");
+        check(doc.querySelector("#reportTimeField").hidden && !doc.querySelector("#reportDownloadXlsx").disabled, "retornar a uma escala por dias dispensa horário novamente");
+        setValue(win, "#report-a-anchor", "2028-01-04");
+        check(doc.querySelector("#reportMonth").value === "2028-02", "alterar início do ciclo preserva o mês exibido");
+        doc.querySelector("#reportAnchorMonth").click();
+        check(doc.querySelector("#reportMonth").value === "2028-01", "ação explícita leva ao mês do início");
+        setValue(win, "#reportMonth", "2028-02");
+        const beforeInvalid = doc.querySelector("#reportRecords tbody tr").textContent;
+        setValue(win, "#report-a-work", "0");
+        check(doc.querySelector("#reportPrint").disabled && doc.querySelector("#reportDownloadCsv").disabled && doc.querySelector("#reportDownloadXlsx").disabled, "entradas inválidas desabilitam exportações");
+        check(doc.querySelector("#reportRecords") === null && doc.querySelector("#reportOutput").textContent.includes("prévia anterior foi removida"), "relatório antigo não permanece como prévia válida");
+        printCalled = false;
+        doc.querySelector("#reportPrint").click();
+        check(!printCalled && beforeInvalid.length > 0, "entrada inválida não imprime resultado anterior");
+        setValue(win, "#report-a-work", "5");
+        check(!doc.querySelector("#reportDownloadCsv").disabled && doc.querySelector("#reportRecords"), "corrigir parâmetros gera prévia exportável novamente");
+        check(errors.length === 0, `sem erros JavaScript: ${errors.join("; ")}`);
+        win.print = oldPrint;
+        output.textContent = `PASS ${lines.length}: ${lines.join("; ")}`;
+        output.dataset.result = "pass";
+    }
+
+    run().catch((error) => {
+        output.textContent = `FAIL: ${error.stack || error.message}`;
+        output.dataset.result = "fail";
+    });
+})();
+</script>
+</html>

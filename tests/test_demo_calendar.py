@@ -47,7 +47,7 @@ def test_calendar_month_navigation_and_period_presentation() -> None:
         pytest.skip("Instale Chrome/Edge ou defina SIMULADOR_BROWSER para rodar a verificação do calendário.")
 
     runner = Path(__file__).parent / "browser" / "calendar-core.html"
-    with tempfile.TemporaryDirectory(prefix="simulador-calendar-") as profile:
+    with tempfile.TemporaryDirectory(prefix="simulador-calendar-", ignore_cleanup_errors=True) as profile:
         browser_args = [
             browser,
             "--headless=new",
@@ -73,4 +73,4 @@ def test_calendar_month_navigation_and_period_presentation() -> None:
     assert completed.returncode == 0, output[-3000:]
     error = re.search(r'data-test-error="([^"]+)"', completed.stdout)
     failure_detail = html.unescape(error.group(1)) if error else output[-3000:]
-    assert "PASS 11:" in output, failure_detail
+    assert "PASS 25:" in output, failure_detail

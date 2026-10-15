@@ -35,6 +35,7 @@
             <a href="index.html">Início</a>
             <a href="simulador.html">Simulador</a>
             <a href="comparador.html">Comparador</a>
+            <a href="relatorio.html">Relatório</a>
             <a href="modelos.html">Modelos</a>
             <a href="roadmap.html">Roadmap</a>
             <a href="documentacao.html">Documentação</a>
@@ -77,6 +78,7 @@
                     <button class="doc-tab" type="button" data-doc-tab="horas">Ciclo por horas</button>
                     <button class="doc-tab" type="button" data-doc-tab="rotativo">Turno rotativo</button>
                     <button class="doc-tab" type="button" data-doc-tab="comparador">Comparador</button>
+                    <button class="doc-tab" type="button" data-doc-tab="relatorio">Relatório</button>
                     <button class="doc-tab" type="button" data-doc-tab="api">API</button>
                     <button class="doc-tab" type="button" data-doc-tab="persistencia">Persistência</button>
                     <button class="doc-tab" type="button" data-doc-tab="arquitetura">Arquitetura</button>
@@ -145,6 +147,19 @@ status = sequencia[posicao]</code></pre>
                     </p>
                     <p>
                         No GitHub Pages, escalas salvas vêm do armazenamento do navegador e a página não consulta a API local. No servidor estático local, pode listar escalas do navegador ou da API local disponível. A API é demonstrativa, sem autenticação ou separação por usuário.
+                    </p>
+                </article>
+
+                <article class="doc-panel" id="doc-relatorio">
+                    <h3>Relatório mensal</h3>
+                    <p>
+                        A tela <a class="text-link" href="relatorio.html">Relatório</a> mostra um calendário mensal de uma escala ou compara duas, com inícios de ciclo independentes. O mês exibido só muda para o mês do início quando o botão correspondente é acionado. Modelos e escalas salvas podem receber ajustes temporários que não alteram os dados originais.
+                    </p>
+                    <p>
+                        Calendário, tabela detalhada, impressão, XLSX e CSV vêm do mesmo resultado calculado pelo núcleo compartilhado. Para ciclos por dias não há horário obrigatório. Se uma escala usa horas, o horário selecionado é o instante observado em cada data; os totais não representam dias inteiros nem horas trabalhadas. Em 12x36 pode haver troca de trabalho e folga dentro da mesma data.
+                    </p>
+                    <p>
+                        O XLSX traz calendário, legenda, resumo e aba de registros; seu gerador local <code>report-xlsx.js</code> não usa dependência externa nem CDN. A impressão usa o navegador. O CSV sem formatação traz metadados e os registros da prévia em UTF-8 com BOM e separador <code>;</code>; se o Excel abrir tudo em uma coluna, importe usando esse separador. Textos que poderiam virar fórmulas são protegidos. No GitHub Pages, a página usa somente escalas deste navegador e não consulta a API local. A API de demonstração não tem autenticação nem isolamento por usuário e deve continuar restrita ao uso local.
                     </p>
                 </article>
 
