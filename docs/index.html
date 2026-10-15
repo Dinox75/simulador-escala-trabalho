@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Experimente o Simulador de Escala de Trabalho no navegador.">
+    <title>Simulador de Escala de Trabalho</title>
+    <style>
+        :root { color-scheme: dark; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+        * { box-sizing: border-box; }
+        body { min-height: 100vh; margin: 0; display: grid; place-items: center; background: #111b25; color: #edf4fa; }
+        main { width: min(100% - 2rem, 42rem); padding: clamp(1.5rem, 5vw, 3rem); border: 1px solid #35495c; border-radius: 1rem; background: #1c2b39; }
+        h1 { margin: 0 0 1rem; font-size: clamp(1.8rem, 5vw, 2.7rem); line-height: 1.15; }
+        p { margin: 0 0 1.5rem; color: #c5d6e4; line-height: 1.6; }
+        a { display: inline-block; margin: 0.25rem 0.75rem 0.25rem 0; padding: 0.8rem 1rem; border: 1px solid #63adf0; border-radius: 0.5rem; color: #fff; font-weight: 700; text-decoration: none; }
+        a:hover, a:focus-visible { background: #17619f; }
+        a:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Simulador de Escala de Trabalho</h1>
+        <p>Consulte modelos de turnos, compare escalas e prepare um relatório mensal. A demo pública funciona no navegador, sem instalar Python nem conectar à API local.</p>
+        <a href="demo/">Abrir a demo</a>
+        <a href="demo/relatorio.html">Ver relatório mensal</a>
+    </main>
+</body>
+</html>
