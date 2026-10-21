@@ -73,7 +73,7 @@ body {
     overflow-x: hidden;
     background: var(--bg);
     color: var(--text);
-    font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     font-size: 16px;
     line-height: 1.5;
 }
@@ -90,7 +90,7 @@ h1, h2, h3 { margin: 0; line-height: 1.15; letter-spacing: -.025em; }
 h1 { font-size: clamp(2rem, 4.6vw, 4.2rem); }
 h2 { font-size: clamp(1.15rem, 2vw, 1.55rem); }
 h3 { font-size: 1.05rem; }
-.mono-kicker, code, .version-stamp, .preview-type { font-family: "IBM Plex Mono", Consolas, monospace; }
+.mono-kicker, code, .version-stamp, .preview-type { font-family: ui-monospace, Consolas, monospace; }
 .mono-kicker { color: var(--muted); font-size: .68rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
 .scroll-progress { position: fixed; inset: 0 auto auto 0; z-index: 100; width: 0; height: 3px; background: var(--primary); }
 .site-header {
@@ -110,7 +110,7 @@ h3 { font-size: 1.05rem; }
 }
 .brand, .nav-links, .header-actions { display: flex; align-items: center; }
 .brand { flex: 0 0 auto; gap: 10px; min-width: 0; }
-.brand-mark { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #4674a0; border-radius: 9px; background: var(--primary-soft); color: var(--primary); font-family: "IBM Plex Mono", monospace; font-size: .85rem; font-weight: 700; }
+.brand-mark { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #4674a0; border-radius: 9px; background: var(--primary-soft); color: var(--primary); font-family: ui-monospace, Consolas, monospace; font-size: .85rem; font-weight: 700; }
 .brand strong, .brand small { display: block; white-space: nowrap; }
 .brand strong { font-size: .92rem; }
 .brand small { color: var(--muted); font-size: .7rem; }
@@ -149,10 +149,10 @@ h3 { font-size: 1.05rem; }
 .button.danger-outline { border-color: var(--line); background: transparent; color: var(--danger); }
 .text-button { padding: 7px 0; border: 0; background: none; color: var(--muted); cursor: pointer; font-size: .8rem; text-decoration: underline; text-underline-offset: 3px; }
 .text-link { display: inline-flex; align-items: center; gap: 7px; color: var(--primary); font-weight: 700; }
-.eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--primary); font-family: "IBM Plex Mono", monospace; font-size: .7rem; font-weight: 600; letter-spacing: .09em; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--primary); font-family: ui-monospace, Consolas, monospace; font-size: .7rem; font-weight: 600; letter-spacing: .09em; }
 .eyebrow-mark { width: 8px; height: 8px; border-radius: 2px; background: var(--accent); }
 .version-stamp { padding: 3px 6px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font-size: .62rem; }
-.card-label { color: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: .64rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.card-label { color: var(--muted); font-family: ui-monospace, Consolas, monospace; font-size: .64rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
 .glass-card { border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); box-shadow: var(--shadow); }
 .reveal { opacity: 1; transform: none; }
 
@@ -170,9 +170,9 @@ h3 { font-size: 1.05rem; }
 .preview-heading h2 span { color: var(--muted); font-weight: 400; }
 .preview-type { flex: 0 0 auto; padding: 5px 7px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font-size: .58rem; }
 .preview-weekdays, .preview-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
-.preview-weekdays { margin-bottom: 5px; color: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: .58rem; text-align: center; }
+.preview-weekdays { margin-bottom: 5px; color: var(--muted); font-family: ui-monospace, Consolas, monospace; font-size: .58rem; text-align: center; }
 .preview-day { display: grid; min-width: 0; min-height: 64px; align-content: space-between; padding: 7px; border: 1px solid var(--line); border-radius: 5px; }
-.preview-day b { font-family: "IBM Plex Mono", monospace; font-size: .72rem; }
+.preview-day b { font-family: ui-monospace, Consolas, monospace; font-size: .72rem; }
 .preview-day small { font-size: .62rem; font-weight: 700; overflow-wrap: anywhere; }
 .work-day { border-color: #38658e; background: var(--work-bg); color: var(--work-ink); }
 .off-day { border-color: #876637; background: var(--off-bg); color: var(--off-ink); }
@@ -185,7 +185,7 @@ h3 { font-size: 1.05rem; }
 .how-it-works { display: grid; grid-template-columns: repeat(3, 1fr); width: min(1320px, calc(100% - 64px)); margin: 0 auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .how-step { display: flex; align-items: center; gap: 14px; min-width: 0; padding: 18px 20px; }
 .how-step + .how-step { border-left: 1px solid var(--line); }
-.how-step > span { color: var(--primary); font-family: "IBM Plex Mono", monospace; font-size: .82rem; }
+.how-step > span { color: var(--primary); font-family: ui-monospace, Consolas, monospace; font-size: .82rem; }
 .how-step strong, .how-step small { display: block; }
 .how-step strong { font-size: .86rem; }
 .how-step small { margin-top: 2px; color: var(--muted); font-size: .73rem; }
@@ -211,7 +211,7 @@ h3 { font-size: 1.05rem; }
 .control-section { min-width: 0; padding: 16px; }
 .control-section + .control-section, .saved-panel { border-top: 1px solid var(--line); }
 .section-kicker { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
-.section-kicker > span { color: var(--primary); font-family: "IBM Plex Mono", monospace; font-size: .65rem; }
+.section-kicker > span { color: var(--primary); font-family: ui-monospace, Consolas, monospace; font-size: .65rem; }
 .section-kicker h2 { font-size: .92rem; }
 .scale-type-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
 .scale-type-button { display: grid; min-width: 0; min-height: 58px; justify-items: center; align-content: center; gap: 4px; padding: 6px 4px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-muted); color: var(--muted); cursor: pointer; font-size: .67rem; font-weight: 700; text-align: center; }
@@ -285,7 +285,7 @@ select option:hover { background: #dbeafa; color: #162638; }
 .selected-day-panel > p { margin: 0; font-size: .76rem; }
 .selected-periods { display: flex; flex-wrap: wrap; gap: 5px; grid-column: 1 / -1; }
 .period-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 5px; font-size: .68rem; font-weight: 600; }
-.period-chip strong { font-family: "IBM Plex Mono", monospace; }
+.period-chip strong { font-family: ui-monospace, Consolas, monospace; }
 .period-chip.trabalhando { background: var(--work-bg); color: var(--work-ink); }
 .period-chip.folga { background: var(--off-bg); color: var(--off-ink); }
 .period-segment { display: inline-flex; align-items: center; gap: 7px; padding: 4px 8px; border-radius: 4px; font-size: .67rem; font-weight: 700; }
@@ -298,12 +298,12 @@ select option:hover { background: #dbeafa; color: #162638; }
 .today-button { min-height: 34px; padding: 0 10px; font-size: .72rem; }
 .calendar-context { min-height: 22px; margin: 7px 0 12px; color: var(--muted); font-size: .7rem; }
 .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
-.calendar-weekday { padding: 6px 3px; color: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: .6rem; font-weight: 600; text-align: center; }
+.calendar-weekday { padding: 6px 3px; color: var(--muted); font-family: ui-monospace, Consolas, monospace; font-size: .6rem; font-weight: 600; text-align: center; }
 .calendar-empty { min-height: 65px; }
 .calendar-day { position: relative; display: grid; min-width: 0; min-height: 67px; align-content: space-between; justify-items: start; gap: 4px; padding: 7px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface-muted); color: var(--text); text-align: left; cursor: pointer; transition: border-color 130ms ease, background 130ms ease, box-shadow 130ms ease; }
 .calendar-day:hover { border-color: var(--primary); }
-.calendar-day > strong { display: flex; width: 100%; align-items: start; justify-content: space-between; gap: 2px; font-family: "IBM Plex Mono", monospace; font-size: .72rem; }
-.calendar-day > strong span { color: var(--primary); font-family: "DM Sans", sans-serif; font-size: .52rem; font-weight: 700; }
+.calendar-day > strong { display: flex; width: 100%; align-items: start; justify-content: space-between; gap: 2px; font-family: ui-monospace, Consolas, monospace; font-size: .72rem; }
+.calendar-day > strong span { color: var(--primary); font-family: system-ui, sans-serif; font-size: .52rem; font-weight: 700; }
 .calendar-day > small { display: grid; gap: 1px; color: var(--muted); font-size: .58rem; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
 .calendar-day > em { color: inherit; font-size: .55rem; font-style: normal; font-weight: 600; }
 .calendar-day.trabalhando { border-color: #38658e; background: var(--work-bg); color: var(--work-ink); }
@@ -336,7 +336,7 @@ select option:hover { background: #dbeafa; color: #162638; }
 .cycle-strip-heading small { color: var(--muted); font-size: .67rem; text-align: right; }
 .cycle-sequence { display: flex; gap: 5px; max-width: 100%; overflow-x: auto; padding: 2px 2px 7px; scrollbar-color: var(--line) transparent; }
 .cycle-step { display: grid; flex: 0 0 74px; gap: 3px; min-height: 50px; align-content: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface-muted); transition: border-color 130ms ease, transform 130ms ease; }
-.cycle-step strong { font-family: "IBM Plex Mono", monospace; font-size: .62rem; }
+.cycle-step strong { font-family: ui-monospace, Consolas, monospace; font-size: .62rem; }
 .cycle-step span { font-size: .61rem; font-weight: 600; }
 .cycle-step.trabalhando { background: var(--work-bg); color: var(--work-ink); }
 .cycle-step.folga { background: var(--off-bg); color: var(--off-ink); }
@@ -349,7 +349,7 @@ select option:hover { background: #dbeafa; color: #162638; }
 .timeline-disclosure > summary span { color: var(--muted); font-size: .65rem; font-weight: 400; }
 .timeline { display: grid; gap: 5px; max-height: 260px; overflow: auto; margin-top: 10px; }
 .timeline-item { display: grid; grid-template-columns: 105px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 7px 9px; border-bottom: 1px solid var(--line); font-size: .69rem; }
-.timeline-date { color: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: .65rem; }
+.timeline-date { color: var(--muted); font-family: ui-monospace, Consolas, monospace; font-size: .65rem; }
 .timeline-status { min-width: 75px; padding: 3px 6px; border-radius: 4px; font-size: .65rem; font-weight: 700; text-align: center; }
 .timeline-status.trabalhando { background: var(--work-bg); color: var(--work-ink); }
 .timeline-status.folga-status { background: var(--off-bg); color: var(--off-ink); }
@@ -399,7 +399,7 @@ select option:hover { background: #dbeafa; color: #162638; }
 .doc-panel.active { display: block; }
 .roadmap-list, .roadmap-timeline { display: grid; gap: 8px; }
 .roadmap-item, .roadmap-phase { display: grid; grid-template-columns: 140px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
-.roadmap-version, .roadmap-phase strong { color: var(--primary); font-family: "IBM Plex Mono", monospace; font-size: .75rem; }
+.roadmap-version, .roadmap-phase strong { color: var(--primary); font-family: ui-monospace, Consolas, monospace; font-size: .75rem; }
 .roadmap-phase.is-hidden { display: none; }
 .video-frame { overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-muted); }
 .video-stage { display: grid; gap: 10px; padding: 16px; }
@@ -425,9 +425,9 @@ select option:hover { background: #dbeafa; color: #162638; }
 @media (max-width: 860px) {
     .site-header { width: calc(100% - 32px); gap: 12px; }
     .mobile-only { display: inline-grid; }
-    .nav-links { position: absolute; top: calc(100% + 5px); left: 0; right: 0; display: none; align-items: stretch; gap: 0; padding: 7px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); }
+    .nav-links { position: absolute; top: calc(100% + 5px); left: 0; right: 0; display: none; align-items: stretch; gap: 0; max-height: calc(100dvh - 72px); overflow-y: auto; padding: 7px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); }
     .nav-links.open { display: grid; }
-    .nav-links a { padding: 11px; border: 0; border-radius: 5px; }
+    .nav-links a { min-height: 44px; padding: 11px; border: 0; border-radius: 5px; }
     .nav-links a:hover, .nav-links a.active { background: var(--primary-soft); }
     .landing-hero { grid-template-columns: 1fr; gap: 20px; min-height: auto; padding: 38px 0; }
     .landing-copy h1 { max-width: 15ch; }
@@ -481,8 +481,8 @@ select option:hover { background: #dbeafa; color: #162638; }
     .selected-periods { grid-column: auto; }
     .calendar-toolbar h2 { font-size: 1.05rem; }
     .calendar-nav { gap: 3px; }
-    .calendar-nav .icon-button { width: 33px; height: 33px; }
-    .today-button { min-height: 32px; padding: 0 7px; font-size: .65rem; }
+    .calendar-nav .icon-button { width: 44px; height: 44px; }
+    .today-button { min-height: 44px; padding: 0 7px; font-size: .7rem; }
     .calendar-context { min-height: 0; font-size: .65rem; }
     .calendar-grid { width: 100%; max-width: 100%; gap: 3px; }
     .calendar-grid > *, .calendar-day { min-width: 0; }
@@ -520,7 +520,7 @@ select option:hover { background: #dbeafa; color: #162638; }
 .comparison-scale-panel { padding: 18px; border-top: 3px solid var(--primary); }
 .scale-b-panel { border-top-color: var(--accent); }
 .comparison-panel-heading { display: flex; align-items: center; gap: 11px; margin-bottom: 16px; }
-.comparison-letter { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid var(--primary); border-radius: 7px; background: var(--primary-soft); color: var(--primary); font-family: "IBM Plex Mono", monospace; font-size: 1rem; font-weight: 700; }
+.comparison-letter { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid var(--primary); border-radius: 7px; background: var(--primary-soft); color: var(--primary); font-family: ui-monospace, Consolas, monospace; font-size: 1rem; font-weight: 700; }
 .scale-b-panel .comparison-letter { border-color: var(--accent); color: var(--accent); }
 .comparison-panel-heading h2 { margin-top: 3px; font-size: 1.15rem; }
 .comparison-picker, .comparison-field { display: grid; gap: 5px; color: var(--muted); font-size: .76rem; font-weight: 600; }
@@ -542,22 +542,22 @@ select option:hover { background: #dbeafa; color: #162638; }
 .comparison-section-heading h2, .comparison-calendar-toolbar h2 { margin-top: 4px; font-size: 1.2rem; }
 .comparison-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin: 14px 0 10px; }
 .compare-summary-item { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px; border-left: 2px solid var(--primary); background: var(--surface-muted); }
-.compare-summary-item strong { color: var(--primary); font-family: "IBM Plex Mono", monospace; font-size: 1.45rem; }
+.compare-summary-item strong { color: var(--primary); font-family: ui-monospace, Consolas, monospace; font-size: 1.45rem; }
 .compare-summary-item span { color: var(--text); font-size: .75rem; font-weight: 700; line-height: 1.3; }
 .comparison-summary-panel > p { margin: 0; font-size: .72rem; }
 .comparison-calendar-toolbar { margin-bottom: 12px; }
 .comparison-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 0 0 12px; padding: 9px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--muted); font-size: .68rem; }
 .comparison-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.comparison-legend b { display: grid; width: 20px; height: 20px; place-items: center; border-radius: 4px; background: var(--primary-soft); color: var(--primary); font-family: "IBM Plex Mono", monospace; }
+.comparison-legend b { display: grid; width: 20px; height: 20px; place-items: center; border-radius: 4px; background: var(--primary-soft); color: var(--primary); font-family: ui-monospace, Consolas, monospace; }
 .comparison-legend small { margin-left: auto; font-size: .66rem; }
 .comparison-calendar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
-.compare-weekday { padding: 4px 2px; color: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: .66rem; font-weight: 600; text-align: center; }
+.compare-weekday { padding: 4px 2px; color: var(--muted); font-family: ui-monospace, Consolas, monospace; font-size: .66rem; font-weight: 600; text-align: center; }
 .compare-day { display: grid; min-width: 0; min-height: 86px; align-content: start; gap: 5px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-muted); color: var(--text); text-align: left; cursor: pointer; }
 .compare-day:hover { border-color: var(--primary); }
 .compare-day.is-selected { border-color: var(--primary); box-shadow: inset 0 0 0 2px var(--primary); }
-.compare-date-number { margin-bottom: 1px; font-family: "IBM Plex Mono", monospace; font-size: .73rem; }
+.compare-date-number { margin-bottom: 1px; font-family: ui-monospace, Consolas, monospace; font-size: .73rem; }
 .compare-status { display: grid; grid-template-columns: 13px minmax(0, 1fr); align-items: center; gap: 3px; min-width: 0; padding: 2px 3px; border-radius: 3px; font-size: .62rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
-.compare-status b { font-family: "IBM Plex Mono", monospace; font-size: .58rem; }
+.compare-status b { font-family: ui-monospace, Consolas, monospace; font-size: .58rem; }
 .compare-status.trabalhando { background: var(--work-bg); color: var(--work-ink); }
 .compare-status.folga { background: var(--off-bg); color: var(--off-ink); }
 .compare-status.manha { background: var(--morning-bg); color: var(--morning-ink); }
@@ -656,7 +656,7 @@ select option:hover { background: #dbeafa; color: #162638; }
 .report-summary h2 { margin-bottom: 9px; font-size: 1rem; }
 .report-summary-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .report-summary-item { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 9px; border-left: 2px solid var(--primary); background: var(--surface-muted); }
-.report-summary-item strong { color: var(--primary); font-family: "IBM Plex Mono", monospace; font-size: 1.25rem; }
+.report-summary-item strong { color: var(--primary); font-family: ui-monospace, Consolas, monospace; font-size: 1.25rem; }
 .report-summary-item span { font-size: .72rem; font-weight: 600; line-height: 1.3; }
 .report-sample-note { margin: 9px 0 0; color: var(--muted); font-size: .72rem; }
 .report-calendar-section { margin: 23px 0 20px; }
@@ -668,7 +668,7 @@ select option:hover { background: #dbeafa; color: #162638; }
 .report-calendar-day { min-width: 0; min-height: 110px; padding: 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-muted); }
 .report-calendar-day.both-off { border-color: var(--off-ink); background: var(--off-bg); }
 .report-calendar-day.has-transition { border-bottom: 3px solid var(--primary); }
-.report-calendar-date { display: block; margin-bottom: 7px; color: var(--text); font-family: "IBM Plex Mono", Consolas, monospace; font-size: .86rem; }
+.report-calendar-date { display: block; margin-bottom: 7px; color: var(--text); font-family: ui-monospace, Consolas, monospace; font-size: .86rem; }
 .report-calendar-status { display: flex; align-items: baseline; gap: 4px; min-width: 0; margin: 3px 0; padding: 3px 5px; border-radius: 4px; font-size: .68rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
 .report-calendar-status b { flex: none; font-size: .62rem; }
 .report-status-short { display: none; }
@@ -725,6 +725,41 @@ select option:hover { background: #dbeafa; color: #162638; }
 }
 @media (max-width: 430px) {
     .report-page-heading h1 { max-width: 100%; font-size: clamp(1.8rem, 8vw, 2.15rem); }
+}
+/* Installed app and local data management */
+.pwa-install-button { min-height: 40px; padding-inline: 10px; font-size: .75rem; white-space: nowrap; }
+.device-data-main { width: min(760px, calc(100% - 32px)); margin: 38px auto 0; }
+.device-data-main h1 { margin: 10px 0 16px; font-size: clamp(2rem, 6vw, 3rem); }
+.device-data-main > p { line-height: 1.6; }
+.device-data-main strong { color: var(--text); }
+.device-data-count { margin: 24px 0; padding: 14px 18px; border-left: 3px solid var(--primary); background: var(--surface); color: var(--text); font-weight: 700; }
+.device-data-panel { margin: 15px 0; padding: 22px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.device-data-panel h2 { margin-bottom: 8px; }
+.device-data-panel p { max-width: 65ch; }
+.device-data-panel .button { min-height: 44px; }
+.device-file-label { display: block; margin-bottom: 8px; color: var(--text); font-weight: 700; }
+.device-data-panel input[type="file"] { display: block; width: 100%; margin-bottom: 14px; padding: 9px; border: 1px solid var(--line); border-radius: 7px; color: var(--text); background: var(--surface-raised); }
+.device-import-preview { margin: 14px 0; padding: 15px; border: 1px solid var(--primary); border-radius: 7px; background: var(--primary-soft); }
+.device-import-preview h3 { margin-bottom: 8px; }
+.device-import-preview p:last-child { margin-bottom: 0; }
+.device-data-feedback, .device-update-note { min-height: 24px; overflow-wrap: anywhere; }
+.device-data-feedback[data-feedback-type="error"] { color: var(--danger); }
+.device-data-feedback[data-feedback-type="success"] { color: var(--success); }
+.device-update-note { padding: 12px; border-left: 3px solid var(--primary); background: var(--surface); }
+.device-install-help { margin: 20px 0; padding: 15px; border: 1px solid var(--line); border-radius: 8px; }
+.device-install-help summary { color: var(--primary); cursor: pointer; font-weight: 700; }
+.device-install-help p { margin: 12px 0 0; }
+[hidden] { display: none !important; }
+@media (max-width: 680px) {
+    .pwa-install-button { min-height: 44px; padding-inline: 8px; }
+    .device-data-main { width: calc(100% - 24px); margin-top: 22px; }
+    .device-data-panel { padding: 16px; }
+    .device-data-panel .button { width: 100%; }
+    .comparison-picker select, .comparison-field input, .comparison-query-bar input,
+    .report-mode-field select, .report-period-fields input, .report-scale-panel input,
+    .saved-form input, .saved-form select, .simulator-form input,
+    .simulator-form select { min-height: 44px; }
+    .comparison-calendar-toolbar .calendar-nav .icon-button { width: 44px; height: 44px; }
 }
 @media print {
     @page { size: A4 landscape; margin: 6mm; }

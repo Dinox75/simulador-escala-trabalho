@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Faça backup das escalas salvas neste dispositivo.">
+    <meta name="theme-color" content="#12171f">
+    <title>Dados neste dispositivo | Simulador de Escala</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="backup-core.js"></script>
+    <script defer src="pwa.js"></script>
+    <script defer src="dados.js"></script>
+</head>
+<body class="device-data-page">
+    <header class="site-header">
+        <a class="brand" href="index.html" aria-label="Início do Simulador de Escala">
+            <span class="brand-mark" aria-hidden="true">SE</span>
+            <span><strong>Simulador de Escala</strong><small>Mesa de planejamento</small></span>
+        </a>
+        <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
+            <a href="index.html">Início</a>
+            <a href="simulador.html">Simulador</a>
+            <a href="comparador.html">Comparador</a>
+            <a href="relatorio.html">Relatório</a>
+            <a href="dados.html" aria-current="page">Dados locais</a>
+            <a href="modelos.html">Modelos</a>
+            <a href="documentacao.html">Documentação</a>
+            <a href="sobre.html">Sobre</a>
+        </nav>
+        <div class="header-actions">
+            <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button>
+        </div>
+    </header>
+    <main class="device-data-main">
+        <span class="mono-kicker">ARMAZENAMENTO LOCAL</span>
+        <h1>Dados neste dispositivo</h1>
+        <p>As escalas salvas <strong>neste navegador</strong> ficam neste dispositivo. Elas não são sincronizadas. Limpar os dados do navegador ou desinstalar a PWA pode apagá-las; guarde um backup antes.</p>
+        <p>Escalas da API local são separadas e não entram neste backup.</p>
+        <p class="device-data-count" id="storedCount" role="status" aria-live="polite">Verificando escalas...</p>
+
+        <section class="device-data-panel" aria-labelledby="backupTitle">
+            <h2 id="backupTitle">Exportar backup</h2>
+            <p>Baixe um arquivo JSON com as escalas deste navegador para guardá-lo fora do aplicativo.</p>
+            <button class="button primary" id="exportBackup" type="button">Baixar backup JSON</button>
+        </section>
+
+        <section class="device-data-panel" aria-labelledby="importTitle">
+            <h2 id="importTitle">Importar backup</h2>
+            <p>Escolha um backup deste Simulador (até 512 KB e 200 escalas). Primeiro mostramos a substituição; nada é gravado ao selecionar o arquivo.</p>
+            <label class="device-file-label" for="importFile">Arquivo JSON</label>
+            <input id="importFile" type="file" accept=".json,application/json">
+            <div class="device-import-preview" id="importPreview" hidden></div>
+            <button class="button danger-outline" id="confirmImport" type="button" disabled>Confirmar substituição neste navegador</button>
+        </section>
+
+        <p class="device-data-feedback" id="dataFeedback" role="status" aria-live="polite"></p>
+        <p class="device-update-note" id="updateNote" hidden>Uma versão nova está pronta. Feche as páginas abertas do Simulador e abra o aplicativo novamente; seus dados locais não são apagados pela atualização.</p>
+
+        <details class="device-install-help">
+            <summary>Como instalar no celular</summary>
+            <p>No Android, abra a demo no Chrome e use <strong>Instalar app</strong> no menu caso o botão de instalação não apareça. No iPhone, abra no Safari e escolha <strong>Compartilhar → Adicionar à Tela de Início</strong>.</p>
+            <p>Visite online uma vez e aguarde o carregamento completo antes de testar sem conexão.</p>
+        </details>
+    </main>
+    <footer class="site-footer"><span>Simulador de Escala de Trabalho</span><span>Backup local, sem sincronização.</span></footer>
+</body>
+</html>

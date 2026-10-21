@@ -117,6 +117,20 @@ Quando executada com a API local ativa, a demo usa os endpoints FastAPI e salva 
 
 A origem pública do GitHub Pages funciona exclusivamente no navegador: ela não consulta `127.0.0.1`, não lê nem altera escalas da API local. Ao servir `docs/demo/` em `http://localhost` ou `http://127.0.0.1`, a demo oferece integração opcional com a API em `127.0.0.1:8000`; modelos e escalas indicam se os dados vêm da API local ou deste navegador. Ciclos personalizados aceitam até 120 dias ou horas no total, sequências rotativas até 60 posições e a linha do tempo até 60 dias.
 
+### PWA para testes
+
+A demo pode ser instalada e, depois de uma primeira visita online completa, abrir **simulador, comparador e relatório** sem conexão. No Android, abra a demo no Chrome e escolha **Instalar** quando o navegador oferecer a opção, ou use **Instalar app** no menu. No iPhone, abra no Safari e use **Compartilhar → Adicionar à Tela de Início**. A instalação pode variar conforme o navegador e o sistema.
+
+As escalas criadas no modo navegador ficam somente no `localStorage` deste dispositivo e **não são sincronizadas**. Antes de limpar dados do navegador, trocar de celular ou desinstalar, abra [Dados neste dispositivo](docs/demo/dados.html) e baixe o backup JSON. Nessa mesma tela, selecione um backup para ver uma prévia e confirme a substituição. O arquivo deve ter até 512 KB, no máximo 200 escalas e configurações dentro dos limites do simulador. Arquivos inválidos não substituem os dados existentes. Escalas da API local são separadas e não entram nesse backup.
+
+Para testar localmente, sirva a raiz do repositório com `python -m http.server 5500 --bind 127.0.0.1` e abra `http://127.0.0.1:5500/docs/demo/`. Faça a primeira visita online, espere o carregamento terminar, instale se o navegador oferecer e então desligue a rede para abrir as três páginas. Uma atualização nova espera que as páginas antigas sejam fechadas antes de ativar o novo pacote offline; ela não apaga o `localStorage`. Ao alterar qualquer recurso do pacote em uma versão futura, atualize `CACHE_NAME` em `docs/demo/sw.js`.
+
+Para repetir a verificação automatizada em Windows com Chrome pessoal, rode `.\.venv\Scripts\python.exe tests\browser\pwa-smoke.py`. O teste usa um perfil e dados temporários, simula o modo offline, verifica o backup e inicia uma API apenas com JSON temporário. Configure `SIMULADOR_BROWSER` se o executável estiver em outro caminho. Nenhum cadastro de teste vai para `data/escalas.json`.
+
+Roteiro para participantes: (1) instale a demo; (2) cadastre uma escala 6x3 no navegador; (3) teste simulador, comparador e relatório sem rede; (4) volte à rede, exporte o backup e guarde-o fora do aparelho; (5) importe o arquivo e confira a prévia antes de confirmar. Não use dados sensíveis ou a API local como serviço público.
+
+Para funcionar offline, a demo usa fontes do sistema e uma cópia local de [Lucide 0.468.0](https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js) (`docs/demo/vendor/lucide-0.468.0.min.js`, cerca de 350 KB). A [licença ISC oficial](https://github.com/lucide-icons/lucide/blob/main/LICENSE) está copiada em `docs/demo/vendor/LUCIDE-LICENSE.txt`. O GSAP remoto era opcional para animações e foi removido; os controles e cálculos não dependem dele.
+
 1. Abra o [simulador público](https://dinox75.github.io/simulador-escala-trabalho/demo/simulador.html).
 2. Escolha um modelo ou cadastre uma escala. Sem backend, a confirmação informa que ela ficou salva neste navegador.
 3. Aplique a escala, escolha data inicial, data consultada e quantidade do período, e clique em simular.
@@ -728,6 +742,7 @@ A demo possui páginas separadas para:
 - documentação;
 - sobre;
 - termos.
+- dados neste dispositivo, com backup e restauração de escalas locais.
 
 A demo pública funciona sem API para modelos prontos e escalas personalizadas. Sem backend, cadastros ficam no armazenamento do navegador e permanecem após recarregar.
 

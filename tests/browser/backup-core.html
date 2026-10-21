@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Backup core checks</title>
+<script src="../../docs/demo/backup-core.js"></script>
+<pre id="result">RUNNING</pre>
+<script>
+(() => {
+    const checks = [];
+    const assert = (label, condition) => {
+        if (!condition) throw new Error(label);
+        checks.push(label);
+    };
+    const fails = (value) => {
+        try { window.ScaleBackup.parseBackup(value); return false; }
+        catch { return true; }
+    };
+    const days = { nome: "Escala 6x3", tipo: "ciclo_dias", dias_trabalho: 6, dias_folga: 3 };
+    const hours = { nome: "Escala 12x36", tipo: "ciclo_horas", horas_trabalho: 12, horas_folga: 36 };
+    const shifts = { nome: "Turnos", tipo: "turno_rotativo", sequencia_turnos: ["Manhã", "Tarde", "Noite", "Folga"] };
+    const envelope = (scales) => JSON.stringify({ format: "simulador-escalas-backup", version: 1, scales });
+    try {
+        const exported = window.ScaleBackup.createBackup([days, hours, shifts], "2026-10-15T00:00:00.000Z");
+        assert("three scale types survive JSON backup round trip", JSON.stringify(window.ScaleBackup.parseBackup(exported)) === JSON.stringify([days, hours, shifts]));
+        assert("empty scale list is an intentional valid backup", window.ScaleBackup.parseBackup(envelope([])).length === 0);
+        assert("empty and unknown names are rejected", fails(envelope([{ ...days, nome: "" }])) && fails(envelope([{ ...days, nome: "x", tipo: "other" }])));
+        assert("zero, negative and oversized cycles are rejected", [0, -1, 120].every((work) => fails(envelope([{ ...days, dias_trabalho: work }]))));
+        assert("empty and oversized turn sequences are rejected", fails(envelope([{ ...shifts, sequencia_turnos: [] }])) && fails(envelope([{ ...shifts, sequencia_turnos: Array(61).fill("Manhã") }])));
+        assert("duplicate names and configurations are rejected", fails(envelope([days, { ...hours, nome: "escala 6x3" }])) && fails(envelope([days, { ...days, nome: "Outra" }])));
+        assert("extra fields and unsupported backup format are rejected", fails(envelope([{ ...days, admin: true }])) && fails(JSON.stringify({ version: 1, scales: [days] })));
+        assert("oversized backup is rejected before parsing", fails(" ".repeat(window.ScaleBackup.MAX_FILE_BYTES + 1)));
+        const existing = JSON.stringify([days]);
+        const memory = new Map([["simulador_escala_demo_v013", existing]]);
+        const storage = { getItem: (key) => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value) };
+        assert("legacy v0.13 data is read without changing its bytes", window.ScaleBackup.readStored(storage).scales[0].nome === days.nome && memory.get("simulador_escala_demo_v013") === existing);
+        storage.setItem(window.ScaleBackup.STORAGE_KEY, JSON.stringify([hours]));
+        assert("v0.14 data takes precedence without losing the legacy key", window.ScaleBackup.readStored(storage).scales[0].nome === hours.nome && memory.get("simulador_escala_demo_v013") === existing);
+        storage.setItem(window.ScaleBackup.STORAGE_KEY, "{invalid");
+        assert("invalid stored JSON raises and remains untouched", (() => { try { window.ScaleBackup.readStored(storage); return false; } catch { return memory.get(window.ScaleBackup.STORAGE_KEY) === "{invalid"; } })());
+        const risky = { ...days, nome: "<img src=x onerror=alert(1)>" };
+        assert("untrusted names stay JSON text", window.ScaleBackup.parseBackup(window.ScaleBackup.createBackup([risky]))[0].nome === risky.nome);
+        document.querySelector("#result").textContent = `PASS ${checks.length}: ${checks.join("; ")}`;
+    } catch (error) {
+        document.querySelector("#result").textContent = `FAIL: ${error.message}`;
+        document.documentElement.dataset.testError = error.stack || error.message;
+    }
+})();
+</script>
+</html>

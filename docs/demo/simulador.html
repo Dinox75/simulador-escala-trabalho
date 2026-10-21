@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Planeje ciclos de trabalho no calendário mensal. Crie escalas neste navegador ou use a API FastAPI local opcional.">
     <title>Mesa de turnos · Simulador v0.14.0</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script defer src="vendor/lucide-0.468.0.min.js"></script>
     <script defer src="calendar-core.js"></script>
     <script defer src="script.js"></script>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <meta name="theme-color" content="#12171f">
+    <script defer src="pwa.js"></script>
 </head>
 <body class="simulator-page">
     <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
@@ -26,6 +27,7 @@
             <a href="simulador.html">Simulador</a>
             <a href="comparador.html">Comparador</a>
             <a href="relatorio.html">Relatório</a>
+            <a href="dados.html">Dados locais</a>
             <a href="modelos.html">Modelos</a>
             <a href="documentacao.html">Documentação</a>
             <a href="sobre.html">Sobre</a>
@@ -70,6 +72,7 @@
                     <summary><span>Minhas escalas</span><span class="saved-source-chip" id="savedScaleSourceShort">Neste navegador</span></summary>
                     <div class="saved-panel-body">
                         <p class="saved-source-note" id="savedScaleSourceNotice" aria-live="polite"></p>
+                        <p class="saved-source-note">As escalas deste navegador não são sincronizadas. <a class="text-link" href="dados.html">Fazer backup dos dados</a></p>
                         <div class="saved-list" id="savedScalesList"></div>
                         <form class="saved-form" id="savedScaleForm">
                             <h3>Nova escala</h3>
