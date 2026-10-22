@@ -6,6 +6,7 @@
     <meta name="description" content="Simule ciclos de trabalho, consulte o calendário e salve escalas neste navegador. API FastAPI local opcional.">
     <title>Simulador de Escala de Trabalho · v0.14.0</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="experience.css">
     <script defer src="vendor/lucide-0.468.0.min.js"></script>
     <script defer src="script.js"></script>
     <link rel="manifest" href="manifest.webmanifest">
@@ -23,13 +24,12 @@
         </a>
         <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
             <a href="index.html">Início</a>
-            <a href="simulador.html">Simulador</a>
-            <a href="comparador.html">Comparador</a>
+            <a href="simulador.html#consultar">Ver minha escala</a>
+            <a href="simulador.html#configurar">Configurar</a>
+            <a href="simulador.html#minhas-escalas">Minhas escalas</a>
+            <a href="comparador.html">Comparar</a>
             <a href="relatorio.html">Relatório</a>
             <a href="dados.html">Dados locais</a>
-            <a href="modelos.html">Modelos</a>
-            <a href="documentacao.html">Documentação</a>
-            <a href="sobre.html">Sobre</a>
         </nav>
         <div class="header-actions">
             <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro ou escuro">◐</button>
@@ -40,33 +40,32 @@
         <section class="landing-hero">
             <div class="landing-copy">
                 <span class="eyebrow"><span class="eyebrow-mark"></span> PLANEJAMENTO DE TURNOS <span class="version-stamp">v0.14.0</span></span>
-                <h1>Saiba como seu ciclo se desenrola no calendário.</h1>
-                <p>Consulte escalas 6x3, 5x2, 4x2, 12x36 e turnos rotativos. Veja trabalho, folga e turno na data escolhida e acompanhe os próximos dias.</p>
+                <h1>Entenda sua escala em poucos passos.</h1>
+                <p>Informe quando seu ciclo começou para ver a situação de hoje, a próxima mudança e o calendário. A data de início precisa ser confirmada por você.</p>
                 <div class="hero-actions">
-                    <a class="button primary" href="simulador.html">Abrir mesa de turnos <i data-lucide="arrow-up-right"></i></a>
-                    <a class="button quiet" href="modelos.html">Conhecer os modelos</a>
+                    <a class="button primary" href="simulador.html#consultar">Ver minha escala</a>
+                    <a class="button quiet" href="simulador.html#configurar">Configurar uma escala</a>
                 </div>
-                <div class="availability-line"><span class="status-dot"></span> Funciona no navegador <span class="meta-separator">·</span> sem instalação <span class="meta-separator">·</span> API local opcional</div>
+                <div class="availability-line"><span class="status-dot"></span> Funciona no navegador e offline após a primeira visita <span class="meta-separator">·</span> dados neste dispositivo</div>
             </div>
-            <div class="landing-preview" aria-label="Calendário de exemplo da escala 6x3">
+            <div class="landing-preview" aria-label="Semana ilustrativa de uma escala 5x2">
                 <div class="preview-heading">
-                    <div><span class="mono-kicker">CICLO DE EXEMPLO</span><h2>6 dias de trabalho <span>/</span> 3 de folga</h2></div>
-                    <span class="preview-type">CICLO · 9 DIAS</span>
+                    <div><span class="mono-kicker">EXEMPLO ILUSTRATIVO</span><h2>5 dias de trabalho <span>/</span> 2 de folga</h2></div>
+                    <span class="preview-type">CONFIRME SEU INÍCIO REAL</span>
                 </div>
                 <div class="preview-calendar">
                     <div class="preview-weekdays"><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span><span>DOM</span></div>
                     <div class="preview-days">
-                        <span class="preview-day work-day"><b>1</b><small>Trabalho</small></span><span class="preview-day work-day"><b>2</b><small>Trabalho</small></span><span class="preview-day work-day"><b>3</b><small>Trabalho</small></span><span class="preview-day work-day"><b>4</b><small>Trabalho</small></span><span class="preview-day work-day"><b>5</b><small>Trabalho</small></span><span class="preview-day work-day"><b>6</b><small>Trabalho</small></span><span class="preview-day off-day"><b>7</b><small>Folga</small></span>
-                        <span class="preview-day off-day"><b>8</b><small>Folga</small></span><span class="preview-day off-day"><b>9</b><small>Folga</small></span><span class="preview-day work-day"><b>10</b><small>Trabalho</small></span><span class="preview-day work-day"><b>11</b><small>Trabalho</small></span><span class="preview-day work-day"><b>12</b><small>Trabalho</small></span><span class="preview-day work-day"><b>13</b><small>Trabalho</small></span><span class="preview-day work-day"><b>14</b><small>Trabalho</small></span>
+                        <span class="preview-day work-day"><b>Seg</b><small>Trabalho</small></span><span class="preview-day work-day"><b>Ter</b><small>Trabalho</small></span><span class="preview-day work-day"><b>Qua</b><small>Trabalho</small></span><span class="preview-day work-day"><b>Qui</b><small>Trabalho</small></span><span class="preview-day work-day"><b>Sex</b><small>Trabalho</small></span><span class="preview-day off-day"><b>Sáb</b><small>Folga</small></span><span class="preview-day off-day"><b>Dom</b><small>Folga</small></span>
                     </div>
                 </div>
-                <div class="preview-legend"><span><i class="legend-square work-square"></i> Trabalho</span><span><i class="legend-square off-square"></i> Folga</span><small>Os rótulos mantêm a leitura sem depender só da cor.</small></div>
+                <div class="preview-legend"><span><i class="legend-square work-square"></i> Trabalho</span><span><i class="legend-square off-square"></i> Folga</span><small>Esta semana é um exemplo. Seu calendário depende do início informado.</small></div>
             </div>
         </section>
         <section class="how-it-works" aria-label="Como começar">
-            <div class="how-step"><span>01</span><div><strong>Escolha o ciclo</strong><small>Use um modelo ou uma escala salva.</small></div></div>
-            <div class="how-step"><span>02</span><div><strong>Defina a data-base</strong><small>O ciclo parte do início que você informar.</small></div></div>
-            <div class="how-step"><span>03</span><div><strong>Consulte o mês</strong><small>Clique em qualquer dia para ver o resultado.</small></div></div>
+            <div class="how-step"><span>01</span><div><strong>Escolha um modelo</strong><small>5x2, 12x36 ou uma alternativa com duas folgas.</small></div></div>
+            <div class="how-step"><span>02</span><div><strong>Confirme quando começou</strong><small>Data e, no 12x36, hora real de início.</small></div></div>
+            <div class="how-step"><span>03</span><div><strong>Veja e guarde</strong><small>Confira hoje, próximos dias e calendário.</small></div></div>
         </section>
         <section class="portfolio-note">
             <div><span class="mono-kicker">DEMO TÉCNICA</span><p>Interface web, API FastAPI e persistência local em JSON. O modo público salva escalas neste navegador; a API é uma demonstração local para uma pessoa usuária.</p></div>

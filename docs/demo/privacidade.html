@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Política de Privacidade do Simulador de Escala de Trabalho: dados locais, backup, hospedagem e contato.">
+    <meta name="theme-color" content="#12171f">
+    <title>Política de Privacidade | Simulador de Escala de Trabalho</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="vendor/lucide-0.468.0.min.js"></script>
+    <script defer src="script.js"></script>
+    <script defer src="pwa.js"></script>
+</head>
+<body class="legal-page">
+    <header class="site-header">
+        <a class="brand" href="index.html" aria-label="Início do Simulador de Escala">
+            <span class="brand-mark" aria-hidden="true">SE</span>
+            <span><strong>Simulador de Escala</strong><small>Mesa de planejamento</small></span>
+        </a>
+        <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
+            <a href="index.html">Início</a>
+            <a href="simulador.html#consultar">Ver minha escala</a>
+            <a href="simulador.html#configurar">Configurar</a>
+            <a href="simulador.html#minhas-escalas">Minhas escalas</a>
+            <a href="comparador.html">Comparar</a>
+            <a href="relatorio.html">Relatório</a>
+            <a href="dados.html">Dados locais</a>
+        </nav>
+        <div class="header-actions">
+            <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button>
+        </div>
+    </header>
+    <main class="legal-main" id="topo">
+        <p class="mono-kicker">PROJETO INDEPENDENTE · EM TESTE</p>
+        <h1>Política de Privacidade</h1>
+        <p class="legal-updated">Simulador de Escala de Trabalho · Atualizada em 22 de outubro de 2026</p>
+        <p>Esta política descreve a demo web e o protótipo separado de widget Android. O projeto é independente e está em desenvolvimento. Para dúvidas ou solicitações sobre privacidade, escreva para <a href="mailto:vibylima75@gmail.com">vibylima75@gmail.com</a>.</p>
+
+        <section class="legal-section" aria-labelledby="privacy-device">
+            <h2 id="privacy-device">1. Dados digitados e guardados no dispositivo</h2>
+            <p>Você pode informar nome e tipo de escala, períodos de trabalho e folga, sequência de turnos, datas de início e horários de consulta. A demo usa esses valores para calcular e mostrar status, calendário, comparação e relatório. Na origem pública, as configurações das <strong>escalas que você salva</strong>, a consulta que você decide guardar com seu início confirmado e a preferência de tema ficam no armazenamento local do navegador. O backup v1 inclui apenas os cadastros de escalas; não inclui o início da consulta guardada. Não há conta nem sincronização pública entre dispositivos.</p>
+            <p>O cache da PWA guarda páginas, scripts, estilos, manifesto e ícones para uso offline. Ele não é um banco de escalas. Limpar os dados do site, trocar de navegador ou dispositivo, ou desinstalar a PWA pode remover as escalas locais. O comportamento da desinstalação depende do navegador e do Android; faça backup antes.</p>
+        </section>
+        <section class="legal-section" aria-labelledby="privacy-backup">
+            <h2 id="privacy-backup">2. Backup e exclusão</h2>
+            <p>Em <a href="dados.html">Dados locais</a>, você pode baixar um JSON com as escalas salvas e importar um arquivo após validação, prévia e confirmação. O download é iniciado por você; o projeto não recebe o arquivo. Guarde-o em local escolhido por você e proteja-o conforme o conteúdo. A importação substitui os cadastros deste navegador. Se a consulta guardada estiver ligada a um cadastro removido ou alterado, a prévia informa que ela também será removida. Consultas independentes de modelos e consultas ligadas à API local permanecem. A importação não altera a API nem arquivos de backup já baixados.</p>
+            <p>Para remover apenas a consulta guardada, use <strong>Remover consulta guardada deste dispositivo</strong> no <a href="simulador.html">simulador</a>; os cadastros permanecem. Para apagar uma escala cadastrada, use <strong>Minhas escalas</strong>. Se a consulta guardada estiver vinculada a essa escala, a confirmação avisa que ambas serão removidas. Para apagar todas as escalas, consulta guardada, preferência de tema e cache deste site, use as configurações do navegador para remover os dados de <code>dinox75.github.io</code>. Arquivos JSON já baixados precisam ser apagados separadamente por você. Dados importados no protótipo Android ficam no armazenamento privado do aplicativo e podem ser removidos pelo botão de limpeza nele ou pela desinstalação; não são lidos automaticamente do Chrome.</p>
+        </section>
+        <section class="legal-section" aria-labelledby="privacy-hosting">
+            <h2 id="privacy-hosting">3. Hospedagem, API opcional e contato</h2>
+            <p>Ao abrir a demo pública, o navegador solicita arquivos ao GitHub Pages. O GitHub informa que registra o endereço IP de visitantes do Pages para segurança; outros dados técnicos seguem sua <a href="https://docs.github.com/pt/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener noreferrer">declaração de privacidade</a>. O projeto não recebe os nomes e parâmetros das escalas salvas no navegador por meio dessas solicitações e não tem painel próprio de análise de uso.</p>
+            <p>Se você executar a API FastAPI em seu computador, as requisições da demo local podem enviar configurações de escalas a essa API. Ela salva em JSON por padrão ou em PostgreSQL se você configurar essa opção. A API não tem autenticação nem separação de usuários e não é oferecida como serviço público. Dados da API são separados dos dados deste navegador e do backup web.</p>
+            <p>Se você escrever ao contato público, o endereço de e-mail e o conteúdo que decidir enviar serão processados pelo serviço de e-mail usado na comunicação. Evite incluir dados sensíveis ou de terceiros. Você pode pedir esclarecimentos ou solicitar a exclusão de mensagens enviadas; a resposta dependerá do que estiver sob controle deste projeto e das regras do provedor de e-mail.</p>
+        </section>
+        <section class="legal-section" aria-labelledby="privacy-limits">
+            <h2 id="privacy-limits">4. Recursos ausentes e mudanças</h2>
+            <p>O código atual não usa anúncios, SDK de análise de uso, notificações push nem acesso à localização. O protótipo Android importa somente o backup que a pessoa escolhe e mantém a escala selecionada no armazenamento do próprio aplicativo, sem conta ou servidor. Mudanças futuras de dados ou integrações exigirão revisão desta política.</p>
+            <p>Esta página será atualizada quando o funcionamento mudar de modo relevante, com nova data e histórico no repositório. Não há aviso automático dentro da versão atual. Consulte também os <a href="termos.html">Termos de Uso</a>.</p>
+        </section>
+    </main>
+    <footer class="site-footer"><span>Simulador de Escala de Trabalho · projeto em teste</span><div><a href="termos.html">Termos</a><a href="dados.html">Dados locais</a><a href="#topo">Voltar ao topo</a></div></footer>
+</body>
+</html>

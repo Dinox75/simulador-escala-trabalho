@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Simulador de Escala de Trabalho, versão para máscara</title>
+  <desc id="desc">Calendário de seis posições azuis e três âmbar dentro da área segura central.</desc>
+  <rect width="512" height="512" fill="#12171f"/>
+  <g transform="translate(56 56) scale(.78)">
+    <rect x="78" y="78" width="356" height="356" rx="68" fill="#1e2b3a" stroke="#47698b" stroke-width="8"/>
+    <path d="M82 158h348" stroke="#47698b" stroke-width="8"/>
+    <rect x="148" y="54" width="34" height="76" rx="17" fill="#60a5fa"/>
+    <rect x="330" y="54" width="34" height="76" rx="17" fill="#60a5fa"/>
+    <g fill="#60a5fa">
+      <rect x="129" y="182" width="68" height="68" rx="14"/>
+      <rect x="222" y="182" width="68" height="68" rx="14"/>
+      <rect x="315" y="182" width="68" height="68" rx="14"/>
+      <rect x="129" y="267" width="68" height="68" rx="14"/>
+      <rect x="222" y="267" width="68" height="68" rx="14"/>
+      <rect x="315" y="267" width="68" height="68" rx="14"/>
+    </g>
+    <g fill="#f4bc64">
+      <rect x="129" y="352" width="68" height="68" rx="14"/>
+      <rect x="222" y="352" width="68" height="68" rx="14"/>
+      <rect x="315" y="352" width="68" height="68" rx="14"/>
+    </g>
+  </g>
+</svg>

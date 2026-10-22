@@ -1,0 +1,12 @@
+type	anchor_date	anchor_time	work	off	turns	query	expected
+ciclo_dias	2026-10-01	00:00	6	3		2026-09-30T10:00	Folga
+ciclo_dias	2026-10-01	00:00	6	3		2026-10-01T10:00	Trabalhando
+ciclo_dias	2026-10-01	00:00	6	3		2026-10-07T10:00	Folga
+ciclo_dias	2026-10-04	00:00	6	3		2026-10-07T10:00	Trabalhando
+ciclo_horas	2026-10-01	18:00	12	36		2026-10-02T05:59	Trabalhando
+ciclo_horas	2026-10-01	18:00	12	36		2026-10-02T06:00	Folga
+ciclo_horas	2026-10-01	18:00	12	36		2026-09-30T17:59:59	Folga
+ciclo_horas	2024-02-29	18:00	12	36		2024-03-01T05:59	Trabalhando
+ciclo_horas	2024-02-29	18:00	12	36		2024-03-01T06:00	Folga
+turno_rotativo	2026-10-01	00:00	0	0	Manhã|Tarde|Noite|Folga	2026-09-30T10:00	Folga
+turno_rotativo	2026-10-01	00:00	0	0	Manhã|Tarde|Noite|Folga	2026-10-03T10:00	Noite

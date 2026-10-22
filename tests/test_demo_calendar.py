@@ -73,4 +73,4 @@ def test_calendar_month_navigation_and_period_presentation() -> None:
     assert completed.returncode == 0, output[-3000:]
     error = re.search(r'data-test-error="([^"]+)"', completed.stdout)
     failure_detail = html.unescape(error.group(1)) if error else output[-3000:]
-    assert "PASS 25:" in output, failure_detail
+    assert "PASS 28:" in output, failure_detail

@@ -2,6 +2,7 @@
     "use strict";
 
     const backup = window.ScaleBackup;
+    const activeSelection = window.ScaleActiveSelection;
     const count = document.querySelector("#storedCount");
     const feedback = document.querySelector("#dataFeedback");
     const exportButton = document.querySelector("#exportBackup");
@@ -66,7 +67,14 @@
         description.textContent = `Neste navegador: ${current.length} escala(s). No arquivo: ${scales.length} escala(s). ${removed.length} nome(s) sairão e ${added.length} nome(s) entrarão. Escalas de mesmo nome receberão a configuração do arquivo.`;
         const names = document.createElement("p");
         names.textContent = `O arquivo contém: ${scales.slice(0, 8).map((scale) => scale.nome).join(", ")}${scales.length > 8 ? "…" : ""}${scales.length ? "." : " nenhuma escala."}`;
-        preview.replaceChildren(title, description, names);
+        const active = activeSelection.read(localStorage);
+        const affectsActive = activeSelection.invalidatedByReplacement(active, current, scales);
+        const activeEffect = document.createElement("p");
+        activeEffect.textContent = affectsActive
+            ? `A consulta guardada "${active.scale.nome}" também será removida porque seu cadastro será removido ou alterado.`
+            : active ? "A consulta guardada permanecerá neste dispositivo; confirme seu início antes de usá-la." :
+                "Não há consulta guardada para remover.";
+        preview.replaceChildren(title, description, names, activeEffect);
         preview.hidden = false;
         confirmButton.disabled = false;
     }
@@ -91,14 +99,36 @@
 
     function confirmImport() {
         if (!pending) return;
-        if (!window.confirm(`Substituir as ${current.length} escala(s) deste navegador pelas ${pending.length} escala(s) do backup? Esta ação não altera a API local.`)) return;
+        if (!refreshCurrent()) return;
+        const active = activeSelection.read(localStorage);
+        const affectsActive = activeSelection.invalidatedByReplacement(active, current, pending);
+        const effect = affectsActive ? " A consulta guardada vinculada será removida." :
+            " A consulta guardada independente permanecerá.";
+        if (!window.confirm(`Substituir as ${current.length} escala(s) deste navegador pelas ${pending.length} escala(s) do backup?${effect} Esta ação não altera a API local.`)) return;
+        let previousScales;
+        let previousActive;
+        let wroteScales = false;
         try {
+            previousScales = localStorage.getItem(backup.STORAGE_KEY);
+            previousActive = localStorage.getItem(activeSelection.KEY);
             localStorage.setItem(backup.STORAGE_KEY, JSON.stringify(pending));
+            wroteScales = true;
+            if (affectsActive) localStorage.removeItem(activeSelection.KEY);
             clearPreview();
             fileInput.value = "";
             refreshCurrent();
-            message("Backup importado. Abra o simulador, comparador ou relatório para usar as escalas restauradas.");
+            message(`Backup importado. ${affectsActive ? "A consulta guardada vinculada foi removida; configure-a novamente." : "A consulta guardada permaneceu."} Abra o simulador, comparador ou relatório para usar as escalas restauradas.`);
         } catch (error) {
+            if (wroteScales) {
+                try {
+                    if (previousScales === null) localStorage.removeItem(backup.STORAGE_KEY);
+                    else localStorage.setItem(backup.STORAGE_KEY, previousScales);
+                    if (previousActive !== null) localStorage.setItem(activeSelection.KEY, previousActive);
+                } catch (rollbackError) {
+                    message(`Falha ao concluir a importação e restaurar os dados anteriores: ${rollbackError.message}. Confira os dados neste dispositivo.`, true);
+                    return;
+                }
+            }
             message(`Nada foi importado: ${error.message}`, true);
         }
     }
@@ -114,10 +144,10 @@
     fileInput.addEventListener("change", prepareImport);
     confirmButton.addEventListener("click", confirmImport);
     window.addEventListener("storage", (event) => {
-        if (event.key === backup.STORAGE_KEY) {
+        if (event.key === backup.STORAGE_KEY || event.key === activeSelection.KEY) {
             clearPreview();
             refreshCurrent();
-            message("As escalas mudaram em outra página. Selecione o backup novamente antes de importar.");
+            message("Os dados mudaram em outra página. Selecione o backup novamente antes de importar.");
         }
     });
     document.addEventListener("pwa-update-ready", () => {
