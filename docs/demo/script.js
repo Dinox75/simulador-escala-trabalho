@@ -26,7 +26,7 @@ function canUseLocalApi() {
 const LEGACY_STORAGE_KEY = "simulador_escala_demo_v09";
 const PREVIOUS_STORAGE_KEY = "simulador_escala_demo_v013";
 const STORAGE_KEY = "simulador_escala_demo_v014_local";
-const ACTIVE_SELECTION_KEY = "simulador_escala_active_v1";
+const ACTIVE_SELECTION_KEY = window.ScaleActiveSelection?.KEY || "simulador_escala_active_v1";
 const THEME_KEY = "simulador_escala_theme";
 
 const ESCALA_REAL_24_DIAS = [
@@ -106,7 +106,7 @@ const state = {
     calendarView: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     selectedModelId: null,
     simulatorRevision: 0,
-    guide: { step: 0, flow: null, offStart: 6, active: null },
+    guide: { step: 0, flow: null, offStart: 6, active: null, queryMode: "now", restoredActive: false },
     calendarAnimating: false,
     comparison: {
         selections: { a: "model:6x3", b: "model:12x36" },
@@ -359,6 +359,7 @@ function invalidateSimulatorResult() {
     document.body.dataset.resultReady = "false";
     elements.resultTitle.textContent = "Informe o início do ciclo";
     elements.resultDescription.textContent = "A consulta aparecerá depois que você conferir a data real de início.";
+    $("#resultMoment").textContent = "";
     elements.calendarGrid.replaceChildren();
     elements.selectedPeriods.replaceChildren();
     elements.cycleSequence.replaceChildren();
@@ -391,6 +392,8 @@ function selectGuideFlow(flow) {
     const model = PREDEFINED_MODELS.find((item) => item.id === id);
     if (!model || !["admin", "hours", "alternative"].includes(flow)) return;
     state.guide.flow = flow;
+    state.guide.restoredActive = false;
+    state.guide.queryMode = "now";
     applyModelToSimulator(model);
     $("#guideSelectedModel").textContent = flow === "alternative"
         ? "Alternativa ao 6x1 · 5x2" : flow === "admin" ? "5x2 administrativo" : "12x36";
@@ -414,6 +417,7 @@ function readConfirmedSelection() {
             (!Number.isInteger(record.offStart) || record.offStart < 0 || record.offStart > 6)) return null;
         if (record.scale.tipo === TIPO_CICLO_HORAS && record.queryTime != null &&
             !/^([01]\d|2[0-3]):[0-5]\d$/u.test(record.queryTime)) return null;
+        if (record.source != null && !["local", "api"].includes(record.source)) return null;
         const start = record.scale.tipo === TIPO_CICLO_HORAS
             ? parseDateTimeInput(record.start) : parseDateInput(record.start);
         if (!Number.isFinite(start.getTime())) return null;
@@ -428,12 +432,37 @@ function showActiveSummary() {
     summary.textContent = record
         ? `Guardada neste dispositivo: ${record.scale.nome} · início confirmado em ${record.scale.tipo === TIPO_CICLO_HORAS ? formatDateTime(parseDateTimeInput(record.start)) : formatDate(parseDateInput(record.start))}. Você pode corrigir esses dados.`
         : "Nenhuma consulta guardada ainda. Seus cadastros antigos continuam em Minhas escalas.";
+    $("#guideForget").hidden = !record;
+    $("#guideForgetReview").hidden = !record;
+}
+
+function clearActiveSelection() {
+    localStorage.removeItem(ACTIVE_SELECTION_KEY);
+    state.guide.active = null;
+    state.guide.restoredActive = false;
+    state.selectedSavedScaleName = null;
+    showActiveSummary();
+    invalidateSimulatorResult();
+    setGuideStep(0);
+}
+
+function forgetConfirmedSelection() {
+    if (!state.guide.active) return;
+    if (!window.confirm("Remover a consulta guardada deste dispositivo? Os cadastros em Minhas escalas permanecerão.")) return;
+    try {
+        clearActiveSelection();
+        $("#activeActionFeedback").textContent = "Consulta guardada removida. Seus cadastros permanecem disponíveis.";
+    } catch (error) {
+        $("#activeActionFeedback").textContent = `Não foi possível remover a consulta: ${error.message}`;
+    }
 }
 
 function restoreConfirmedSelection() {
     const record = state.guide.active;
     if (!record) { setGuideStep(1); return; }
     state.guide.flow = record.flow;
+    state.guide.restoredActive = true;
+    state.guide.queryMode = "now";
     state.guide.offStart = Number.isInteger(record.offStart) ? record.offStart : 6;
     state.selectedType = record.scale.tipo;
     state.selectedModelId = record.modelId || null;
@@ -445,7 +474,7 @@ function restoreConfirmedSelection() {
         $("#workHours").value = record.scale.horas_trabalho;
         $("#offHours").value = record.scale.horas_folga;
         $("#startDateTime").value = record.start;
-        $("#queryDateTime").value = `${setDefaultDateValues()}T${record.queryTime || "12:00"}`;
+        $("#queryDateTime").value = setDefaultDateTimeValues();
     } else {
         $("#startDate").value = record.start;
         $("#queryDate").value = setDefaultDateValues();
@@ -473,15 +502,15 @@ function saveConfirmedSelection() {
             : { nome: identity.name, tipo: state.selectedType, dias_trabalho: Number($("#workDays").value), dias_folga: Number($("#offDays").value) };
     const record = {
         version: 1, scale, flow: identity.flow, offStart: state.guide.offStart,
+        source: identity.source || null,
         modelId: state.selectedModelId,
-        start: state.selectedType === TIPO_CICLO_HORAS ? $("#startDateTime").value : $("#startDate").value,
-        queryTime: state.selectedType === TIPO_CICLO_HORAS ? $("#queryDateTime").value.split("T")[1] : null
+        start: state.selectedType === TIPO_CICLO_HORAS ? $("#startDateTime").value : $("#startDate").value
     };
     try {
         localStorage.setItem(ACTIVE_SELECTION_KEY, JSON.stringify(record));
         state.guide.active = record;
         showActiveSummary();
-        $("#guideSaveFeedback").textContent = "Consulta guardada neste dispositivo. Confira o início ao voltar. O backup JSON dos cadastros não inclui esta consulta.";
+        $("#guideSaveFeedback").textContent = "Consulta guardada neste dispositivo. Ao voltar, você verá a situação atual; consultas históricas não são retomadas. O backup JSON dos cadastros não inclui esta consulta.";
     } catch (error) {
         $("#guideSaveFeedback").textContent = `Não foi possível guardar neste dispositivo: ${error.message}`;
     }
@@ -683,7 +712,30 @@ function setDefaultDateValues() {
 
 function setDefaultDateTimeValues() {
     const now = new Date();
-    return `${setDefaultDateValues()}T${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    return `${dateInputValue(now)}T${formatTime(now)}`;
+}
+
+function consultNow(moveCalendar = true) {
+    if (!hasSimulator()) return;
+    const now = new Date();
+    state.guide.queryMode = "now";
+    if (state.selectedType === TIPO_CICLO_HORAS) {
+        $("#queryDateTime").value = `${dateInputValue(now)}T${formatTime(now)}`;
+    } else {
+        $("#queryDate").value = dateInputValue(now);
+    }
+    if (moveCalendar) state.calendarView = new Date(now.getFullYear(), now.getMonth(), 1);
+    elements.simulatorForm.requestSubmit();
+}
+
+function refreshLiveQuery() {
+    if (!hasSimulator() || document.hidden || state.guide.queryMode !== "now" ||
+        state.guide.step !== 3 || document.body.dataset.resultReady !== "true") return;
+    const now = new Date();
+    const input = state.selectedType === TIPO_CICLO_HORAS ? $("#queryDateTime") : $("#queryDate");
+    const current = state.selectedType === TIPO_CICLO_HORAS
+        ? `${dateInputValue(now)}T${formatTime(now)}` : dateInputValue(now);
+    if (input.value !== current) consultNow(false);
 }
 
 function renderTurnBuilder(target) {
@@ -752,8 +804,8 @@ function renderDynamicFields() {
                     <input id="startDateTime" type="datetime-local" required>
                 </label>
                 <p class="field-help">No 12x36, começar às 18:00 significa trabalhar até as 06:00 do dia seguinte. Um mesmo dia pode ter trabalho e folga.</p>
-                <label class="field-advanced">
-                    Qual data e hora consultar?
+                <label class="field-advanced field-query">
+                    Consultar situação em qual data e hora?
                     <input id="queryDateTime" type="datetime-local" value="${setDefaultDateTimeValues()}" required>
                 </label>
                 <label class="field-advanced">
@@ -780,8 +832,8 @@ function renderDynamicFields() {
                     Quando começou esse ciclo?
                     <input id="startDate" type="date" required>
                 </label>
-                <label class="field-advanced">
-                    Qual data consultar?
+                <label class="field-advanced field-query">
+                    Consultar situação em qual data?
                     <input id="queryDate" type="date" value="${setDefaultDateValues()}" required>
                 </label>
                 <label class="field-advanced">
@@ -801,8 +853,8 @@ function renderDynamicFields() {
                 Quando começou esse ciclo?
                 <input id="startDate" type="date" required>
             </label>
-            <label class="field-advanced">
-                Qual data consultar?
+            <label class="field-advanced field-query">
+                Consultar situação em qual data?
                 <input id="queryDate" type="date" value="${setDefaultDateValues()}" required>
             </label>
             <label class="field-advanced">
@@ -1077,6 +1129,9 @@ function showResult(title, description, items) {
         document.body.dataset.resultReady = "true";
         const empty = $("#calendarEmpty");
         if (empty) empty.hidden = true;
+        const spec = getSimulatorSpec();
+        const moment = spec.type === TIPO_CICLO_HORAS ? formatDateTime(spec.query) : formatDate(spec.query);
+        $("#resultMoment").textContent = `${state.guide.queryMode === "now" ? "Consulta atual" : "Consulta escolhida"}: ${moment}`;
         renderGuideReview();
         setGuideStep(3);
     }
@@ -1101,8 +1156,8 @@ function renderGuideReview() {
     const name = getConfirmedSimulatorIdentity().name;
     const start = spec.type === TIPO_CICLO_HORAS ? formatDateTime(spec.start) : formatDate(spec.start);
     const query = spec.type === TIPO_CICLO_HORAS ? formatDateTime(spec.query) : formatDate(spec.query);
-    const today = dateInputValue(spec.query) === dateInputValue(new Date()) ? "Hoje, " : "";
-    summary.textContent = `${name} · início confirmado: ${start}. ${today}${query}: ${status}. ${position}. ${next ? `Próxima mudança: ${spec.type === TIPO_CICLO_HORAS ? formatDateTime(next) : formatDate(next)}.` : "Sem mudança na sequência."} Confira os próximos dias e o calendário antes de guardar.`;
+    const context = state.guide.queryMode === "now" ? "Situação atual" : "Consulta escolhida";
+    summary.textContent = `${name} · início confirmado: ${start}. ${context} em ${query}: ${status}. ${position}. ${next ? `Próxima mudança: ${spec.type === TIPO_CICLO_HORAS ? formatDateTime(next) : formatDate(next)}.` : "Sem mudança na sequência."} Confira os próximos dias e o calendário antes de guardar.`;
     const feedback = $("#guideSaveFeedback");
     if (feedback) feedback.textContent = "";
 }
@@ -1299,13 +1354,13 @@ function getSelectedSavedScaleForApi() {
 }
 
 function getConfirmedSimulatorIdentity() {
-    const saved = getSelectedSavedScaleForApi();
-    if (saved) return { flow: "saved", name: saved.nome };
     const active = state.guide.active;
-    if (state.guide.flow === "saved" && active?.flow === "saved" &&
+    if (state.guide.restoredActive && state.guide.flow === "saved" && active?.flow === "saved" &&
         state.selectedSavedScaleName === active.scale.nome && currentSimulatorMatchesScale(active.scale)) {
-        return { flow: "saved", name: active.scale.nome };
+        return { flow: "saved", name: active.scale.nome, source: active.source || null };
     }
+    const saved = getSelectedSavedScaleForApi();
+    if (saved) return { flow: "saved", name: saved.nome, source: state.savedScaleSource };
     const model = getSelectedModelForApi();
     if (model?.id === "5x2" && state.guide.flow === "alternative") {
         return { flow: "alternative", name: "Alternativa 5x2" };
@@ -1890,6 +1945,8 @@ function applySavedScale(index) {
     state.selectedType = scale.tipo;
     state.selectedModelId = null;
     state.guide.flow = "saved";
+    state.guide.restoredActive = false;
+    state.guide.queryMode = "now";
     updateScaleButtons();
     renderDynamicFields();
 
@@ -1927,7 +1984,10 @@ async function deleteSavedScale(index) {
     }
 
     const source = state.savedScaleSource;
-    const confirmed = window.confirm(`Deseja excluir a escala "${scale.nome}" de ${source === "api" ? "API local" : "deste navegador"}?`);
+    const linked = window.ScaleActiveSelection.linkedToScale(state.guide.active, scale, source);
+    const effect = linked ? " A consulta guardada vinculada a ela também será removida deste dispositivo." :
+        " A consulta guardada, se independente desta escala, permanecerá.";
+    const confirmed = window.confirm(`Deseja excluir a escala "${scale.nome}" de ${source === "api" ? "API local" : "deste navegador"}?${effect}`);
 
     if (!confirmed) {
         return;
@@ -1936,18 +1996,15 @@ async function deleteSavedScale(index) {
     try {
         if (source === "api") {
             await apiRequest(`/api/v1/escalas/${encodeURIComponent(scale.nome)}`, { method: "DELETE" });
-            await loadSavedScalesFromApi();
         } else {
-            state.savedScales.splice(index, 1);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state.savedScales));
+            const remaining = state.savedScales.filter((_, position) => position !== index);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(remaining));
+            state.savedScales = remaining;
             renderSavedScales();
         }
-
-        showResult(
-            `Escala excluída de ${source === "api" ? "API local" : "este navegador"}`,
-            `A escala "${scale.nome}" foi removida.`,
-            state.resultItems
-        );
+        if (linked) clearActiveSelection();
+        setSavedScaleFeedback(`Escala "${scale.nome}" excluída de ${source === "api" ? "API local" : "este navegador"}.${linked ? " A consulta guardada vinculada também foi removida." : " A consulta independente permaneceu."}`, "success");
+        if (source === "api") await loadSavedScalesFromApi();
     } catch (error) {
         alert(`Não foi possível excluir a escala: ${error.message}`);
     }
@@ -3183,18 +3240,7 @@ function configureEvents() {
         });
     }
     if (elements.calendarToday) {
-        elements.calendarToday.addEventListener("click", () => {
-            const today = new Date();
-            state.calendarView = new Date(today.getFullYear(), today.getMonth(), 1);
-            if (state.selectedType === TIPO_CICLO_HORAS) {
-                const input = $("#queryDateTime");
-                const time = input.value.split("T")[1] || "06:00";
-                input.value = dateInputValue(today) + "T" + time;
-            } else {
-                $("#queryDate").value = dateInputValue(today);
-            }
-            elements.simulatorForm.requestSubmit();
-        });
+        elements.calendarToday.addEventListener("click", () => consultNow());
     }
     $("#calendarStart")?.addEventListener("click", () => {
         if (!validateSimulatorForm()) return;
@@ -3206,6 +3252,7 @@ function configureEvents() {
         elements.calendarGrid.addEventListener("click", (event) => {
             const dayButton = event.target.closest("[data-calendar-date]");
             if (!dayButton) return;
+            state.guide.queryMode = "manual";
             const selected = dayButton.dataset.calendarDate;
             if (state.selectedType === TIPO_CICLO_HORAS) {
                 const input = $("#queryDateTime");
@@ -3229,6 +3276,8 @@ function configureEvents() {
             state.selectedSavedScaleName = null;
             state.selectedModelId = null;
             state.guide.flow = "custom";
+            state.guide.restoredActive = false;
+            state.guide.queryMode = "now";
             state.selectedType = button.dataset.type;
             updateScaleButtons();
             renderDynamicFields();
@@ -3253,6 +3302,9 @@ function configureEvents() {
     }
 
     $("#guideView")?.addEventListener("click", restoreConfirmedSelection);
+    $("#guideForget")?.addEventListener("click", forgetConfirmedSelection);
+    $("#guideForgetReview")?.addEventListener("click", forgetConfirmedSelection);
+    $("#guideNow")?.addEventListener("click", () => consultNow());
     $("#guideConfigure")?.addEventListener("click", () => { invalidateSimulatorResult(); setGuideStep(1); });
     $("#guideBack")?.addEventListener("click", () => { invalidateSimulatorResult(); setGuideStep(1); });
     $("#guideCorrect")?.addEventListener("click", () => { invalidateSimulatorResult(); setGuideStep(2); });
@@ -3266,10 +3318,14 @@ function configureEvents() {
         elements.simulatorForm.addEventListener("submit", handleSimulatorSubmit);
         elements.simulatorForm.addEventListener("click", handleTurnBuilderClick);
         elements.simulatorForm.addEventListener("input", (event) => {
+            if (event.target.id === "queryDate" || event.target.id === "queryDateTime") {
+                state.guide.queryMode = "manual";
+            }
             if (event.target.matches("input")) invalidateSimulatorResult();
         });
         elements.simulatorForm.addEventListener("change", (event) => {
             if (event.target.id === "queryDate" || event.target.id === "queryDateTime") {
+                state.guide.queryMode = "manual";
                 const query = event.target.id === "queryDateTime" ? parseDateTimeInput(event.target.value) : parseDateInput(event.target.value);
                 if (!Number.isNaN(query.getTime())) {
                     state.calendarView = new Date(query.getFullYear(), query.getMonth(), 1);
@@ -3362,6 +3418,22 @@ function initSimulatorPage() {
         }
         configureActiveNavigation();
     });
+    window.addEventListener("storage", (event) => {
+        if (event.key === STORAGE_KEY && state.savedScaleSource === "local") {
+            state.savedScales = loadSavedScales();
+            renderSavedScales();
+        }
+        if (event.key === ACTIVE_SELECTION_KEY) {
+            state.guide.active = readConfirmedSelection();
+            showActiveSummary();
+            invalidateSimulatorResult();
+            setGuideStep(0);
+            $("#activeActionFeedback").textContent = "A consulta guardada mudou em outra página. Abra-a novamente para conferir a situação atual.";
+        }
+    });
+    window.setInterval(refreshLiveQuery, 30000);
+    window.addEventListener("focus", refreshLiveQuery);
+    document.addEventListener("visibilitychange", refreshLiveQuery);
 }
 
 

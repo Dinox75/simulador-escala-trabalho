@@ -11,6 +11,7 @@
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="stylesheet" href="style.css">
     <script defer src="backup-core.js"></script>
+    <script defer src="active-selection.js"></script>
     <script defer src="pwa.js"></script>
     <script defer src="dados.js"></script>
 </head>
@@ -37,7 +38,7 @@
         <span class="mono-kicker">ARMAZENAMENTO LOCAL</span>
         <h1>Dados neste dispositivo</h1>
         <p>As escalas salvas <strong>neste navegador</strong> ficam neste dispositivo. Elas não são sincronizadas. Limpar os dados do navegador ou desinstalar a PWA pode apagá-las; guarde um backup antes.</p>
-        <p>Escalas da API local são separadas e não entram neste backup. O arquivo v1 guarda as configurações cadastradas, mas não a consulta guardada, sua data e hora de início. Ao mudar de aparelho ou importar um backup antigo, confira e guarde novamente o início do ciclo.</p>
+        <p>Escalas da API local são separadas e não entram neste backup. O arquivo v1 guarda as configurações cadastradas, mas não a consulta guardada nem sua data e hora de início. Ao importar, a consulta guardada ligada a um cadastro removido ou alterado também é removida, após sua confirmação; consultas independentes e consultas ligadas à API local permanecem. Ao mudar de aparelho, confirme novamente o início do ciclo.</p>
         <p>O <strong>protótipo de widget Android</strong> é separado da PWA. Para usá-lo em testes, escolha este backup no aplicativo Android e informe novamente o início do ciclo. Ele não acessa automaticamente os dados do Chrome.</p>
         <p>Leia a <a class="text-link" href="privacidade.html">Política de Privacidade</a> e os <a class="text-link" href="termos.html">Termos de Uso</a> antes de compartilhar um backup. O arquivo baixado fica sob seus cuidados.</p>
         <p class="device-data-count" id="storedCount" role="status" aria-live="polite">Verificando escalas...</p>

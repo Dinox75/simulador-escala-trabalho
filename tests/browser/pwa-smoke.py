@@ -138,7 +138,7 @@ class Chrome:
 
     def navigate(self, url):
         self.call("Page.navigate", {"url": url})
-        self.until("document.readyState === 'complete' && !!document.querySelector('h1')")
+        self.until(f"location.href === {json.dumps(url)} && document.readyState === 'complete' && !!document.querySelector('h1')")
 
     def screenshot(self, filename):
         target = os.environ.get("SIMULADOR_SCREENSHOT_DIR")
@@ -190,7 +190,7 @@ def main():
             for script in scripts:
                 chrome.evaluate("new Function(" + json.dumps(script.read_text(encoding="utf-8")) + "); true")
             print("JAVASCRIPT SYNTAX:", len(scripts), "demo scripts compiled in Chrome")
-            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-3')))")
+            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-4')))")
             scope = chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.scope)")
             assert scope == origin, scope
             install_errors = chrome.call("Page.getInstallabilityErrors").get("installabilityErrors", [])
@@ -273,6 +273,54 @@ def main():
             print("GUIDE: alternative week and confirmed selection restored")
 
             confirmed_record = chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')")
+            clock_script = """(() => {
+                const RealDate = Date;
+                window.__testClock = localStorage.getItem('__simulator_test_clock') || '2026-10-02T06:00:00';
+                window.Date = class extends RealDate {
+                    constructor(...args) { super(...(args.length ? args : [window.__testClock])); }
+                    static now() { return new RealDate(window.__testClock).getTime(); }
+                };
+            })();"""
+            clock_injection = chrome.call("Page.addScriptToEvaluateOnNewDocument", {"source": clock_script})["identifier"]
+            hours_record = {"version": 1, "flow": "hours", "start": "2026-10-01T18:00",
+                            "queryTime": "05:59", "scale": {"nome": "12x36", "tipo": "ciclo_horas",
+                            "horas_trabalho": 12, "horas_folga": 36}}
+            chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(json.dumps(hours_record)) + ")")
+            chrome.navigate(origin + "index.html?browserOnly")
+            chrome.navigate(origin + "simulador.html?browserOnly")
+            chrome.until("document.querySelector('#queryDateTime')?.value === '2026-10-02T06:00' && document.body.dataset.resultReady === 'true'")
+            assert chrome.evaluate("document.querySelector('#resultTitle').textContent.includes('Folga')")
+            moment = chrome.evaluate("document.querySelector('#resultMoment').textContent")
+            assert moment.startswith("Consulta atual: 02/10/2026") and "06:00" in moment, moment
+            chrome.evaluate("document.querySelector('#guideCorrect').click(); document.querySelector('#queryDateTime').value='2026-10-02T05:59'; document.querySelector('#queryDateTime').dispatchEvent(new Event('input',{bubbles:true})); document.querySelector('#queryDateTime').dispatchEvent(new Event('change',{bubbles:true}))")
+            assert chrome.evaluate("getComputedStyle(document.querySelector('#queryDateTime').closest('label')).display !== 'none'")
+            chrome.until("document.querySelector('#resultTitle').textContent.includes('Trabalhando')")
+            chrome.evaluate("window.__testClock='2026-10-03T18:00:00'; refreshLiveQuery()")
+            assert chrome.evaluate("document.querySelector('#queryDateTime').value") == "2026-10-02T05:59"
+            assert chrome.evaluate("state.guide.queryMode") == "manual"
+            chrome.evaluate("document.querySelector('#guideNow').click()")
+            chrome.until("document.querySelector('#queryDateTime').value === '2026-10-03T18:00' && document.querySelector('#resultTitle').textContent.includes('Trabalhando')")
+            chrome.evaluate("window.__testClock='2026-10-04T06:00:00'; refreshLiveQuery()")
+            chrome.until("document.querySelector('#queryDateTime').value === '2026-10-04T06:00' && document.querySelector('#resultTitle').textContent.includes('Folga')")
+            print("LIVE 12x36: reopened at current minute, historical query held, live rollover refreshed")
+
+            chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(confirmed_record) + ")")
+            chrome.evaluate("localStorage.setItem('__simulator_test_clock','2026-10-24T10:00:00')")
+            chrome.navigate(origin + "index.html?browserOnly")
+            chrome.navigate(origin + "simulador.html?browserOnly")
+            chrome.until("document.querySelector('#queryDate')?.value === '2026-10-24' && document.body.dataset.resultReady === 'true'")
+            assert chrome.evaluate("document.querySelector('#resultTitle').textContent.includes('Folga')")
+            chrome.evaluate("document.querySelector('#guideCorrect').click(); document.querySelector('#queryDate').value='2026-10-23'; document.querySelector('#queryDate').dispatchEvent(new Event('input',{bubbles:true})); document.querySelector('#queryDate').dispatchEvent(new Event('change',{bubbles:true}))")
+            assert chrome.evaluate("getComputedStyle(document.querySelector('#queryDate').closest('label')).display !== 'none'")
+            chrome.until("document.querySelector('#resultTitle').textContent.includes('Trabalhando')")
+            chrome.evaluate("window.__testClock='2026-10-25T10:00:00'; refreshLiveQuery()")
+            assert chrome.evaluate("document.querySelector('#queryDate').value") == "2026-10-23"
+            chrome.evaluate("document.querySelector('#guideNow').click()")
+            chrome.until("document.querySelector('#queryDate').value === '2026-10-25' && document.querySelector('#resultTitle').textContent.includes('Folga')")
+            chrome.call("Page.removeScriptToEvaluateOnNewDocument", {"identifier": clock_injection})
+            chrome.evaluate("localStorage.removeItem('__simulator_test_clock')")
+            print("LIVE days: midnight rollover and historical date remain distinct")
+
             chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', JSON.stringify({version:1,flow:'alternative',offStart:99,start:'2026-10-19',scale:{nome:'Invalida',tipo:'ciclo_dias',dias_trabalho:5,dias_folga:2}}))")
             chrome.navigate(origin + "index.html?browserOnly")
             chrome.navigate(origin + "simulador.html?browserOnly")
@@ -301,6 +349,18 @@ def main():
                     chrome.until("document.body.dataset.resultReady === 'true'")
                     assert "Antiga 6x3" in chrome.evaluate("document.querySelector('#guideResultSummary').textContent")
             print("LEGACY: saved 6x3, 4x2 and rotating schedules remain usable")
+            chrome.evaluate("window.confirm=(text)=>{window.lastDeleteConfirmation=text;return true}; deleteSavedScale(0)")
+            assert "consulta guardada vinculada" in chrome.evaluate("window.lastDeleteConfirmation")
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") is None
+            assert chrome.evaluate("state.savedScales.length") == 2
+            assert chrome.evaluate("document.body.dataset.resultReady") == "false"
+            chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(confirmed_record) + "); state.guide.active=readConfirmedSelection(); showActiveSummary(); deleteSavedScale(0)")
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") == confirmed_record
+            assert chrome.evaluate("state.savedScales.length") == 1
+            chrome.evaluate("document.querySelector('#guideForget').click()")
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") is None
+            assert chrome.evaluate("state.savedScales.length") == 1
+            print("DELETE: linked saved consultation removed; independent model consultation preserved")
             chrome.evaluate("localStorage.setItem('simulador_escala_demo_v014_local', JSON.stringify([{nome:'Teste PWA 6x3',tipo:'ciclo_dias',dias_trabalho:6,dias_folga:3}]))")
             chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(confirmed_record) + ")")
             chrome.navigate(origin + "index.html?browserOnly")
@@ -403,6 +463,12 @@ def main():
             invalid.write_text('{"format":"simulador-escalas-backup","version":1,"scales":[{"nome":"Inválida","tipo":"ciclo_dias","dias_trabalho":0,"dias_folga":3}]}', encoding="utf-8")
             valid = base / "valid.json"
             valid.write_text('{"format":"simulador-escalas-backup","version":1,"scales":[{"nome":"Restaurada 12x36","tipo":"ciclo_horas","horas_trabalho":12,"horas_folga":36}]}', encoding="utf-8")
+            changed = base / "changed.json"
+            changed.write_text('{"format":"simulador-escalas-backup","version":1,"scales":[{"nome":"Restaurada 12x36","tipo":"ciclo_horas","horas_trabalho":24,"horas_folga":24}]}', encoding="utf-8")
+            linked_record = {"version": 1, "flow": "saved", "source": "local", "start": "2026-10-01",
+                             "scale": {"nome": "Teste PWA 6x3", "tipo": "ciclo_dias",
+                             "dias_trabalho": 6, "dias_folga": 3}}
+            chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(json.dumps(linked_record)) + ")")
             chrome.call("DOM.enable")
             document = chrome.call("DOM.getDocument")["root"]["nodeId"]
             file_input = chrome.call("DOM.querySelector", {"nodeId": document, "selector": "#importFile"})["nodeId"]
@@ -410,12 +476,36 @@ def main():
             chrome.evaluate("document.querySelector('#importFile').dispatchEvent(new Event('change'))")
             chrome.until("document.querySelector('#dataFeedback').textContent", lambda v: "não importado" in v)
             assert chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Teste PWA 6x3')")
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") == json.dumps(linked_record)
             chrome.call("DOM.setFileInputFiles", {"nodeId": file_input, "files": [str(valid)]})
             chrome.evaluate("document.querySelector('#importFile').dispatchEvent(new Event('change'))")
             chrome.until("!document.querySelector('#confirmImport').disabled")
-            chrome.evaluate("window.confirm=()=>true; document.querySelector('#confirmImport').click()")
+            assert "também será removida" in chrome.evaluate("document.querySelector('#importPreview').textContent")
+            chrome.evaluate("window.confirm=(text)=>{window.lastImportConfirmation=text;return true}; document.querySelector('#confirmImport').click()")
             chrome.until("localStorage.getItem('simulador_escala_demo_v014_local').includes('Restaurada 12x36')")
-            print("BACKUP: invalid preserved data; valid replaced after preview and confirmation")
+            assert "consulta guardada vinculada" in chrome.evaluate("window.lastImportConfirmation")
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") is None
+
+            chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(confirmed_record) + ")")
+            chrome.call("DOM.setFileInputFiles", {"nodeId": file_input, "files": [str(changed)]})
+            chrome.evaluate("document.querySelector('#importFile').dispatchEvent(new Event('change'))")
+            chrome.until("!document.querySelector('#confirmImport').disabled")
+            chrome.evaluate("document.querySelector('#confirmImport').click()")
+            chrome.until("localStorage.getItem('simulador_escala_demo_v014_local').includes('24')")
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") == confirmed_record
+
+            altered_record = {"version": 1, "flow": "saved", "source": "local", "start": "2026-10-01T18:00",
+                              "scale": {"nome": "Restaurada 12x36", "tipo": "ciclo_horas",
+                              "horas_trabalho": 24, "horas_folga": 24}}
+            chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(json.dumps(altered_record)) + ")")
+            chrome.call("DOM.setFileInputFiles", {"nodeId": file_input, "files": [str(valid)]})
+            chrome.evaluate("document.querySelector('#importFile').dispatchEvent(new Event('change'))")
+            chrome.until("!document.querySelector('#confirmImport').disabled")
+            assert "também será removida" in chrome.evaluate("document.querySelector('#importPreview').textContent")
+            chrome.evaluate("document.querySelector('#confirmImport').click()")
+            chrome.until("localStorage.getItem('simulador_escala_demo_v014_local').includes('36')")
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") is None
+            print("BACKUP: invalid preserved data; removed or altered linked consultation cleared; independent model preserved")
 
             chrome.call("Network.emulateNetworkConditions", {
                 "offline": False, "latency": 0, "downloadThroughput": -1, "uploadThroughput": -1
@@ -452,6 +542,12 @@ def main():
                 chrome.evaluate("applySavedScale(0); document.querySelector('#startDate').value='2026-10-01'; document.querySelector('#simulatorForm').requestSubmit()")
                 chrome.until("document.querySelector('#resultDescription').textContent.includes('Escala API de teste')")
                 assert chrome.evaluate("document.body.dataset.resultReady") == "true"
+                chrome.evaluate("document.querySelector('#guideSave').click()")
+                assert chrome.evaluate("JSON.parse(localStorage.getItem('simulador_escala_active_v1')).source") == "api"
+                chrome.evaluate("window.confirm=()=>true; deleteSavedScale(0)")
+                chrome.until("state.savedScales.length === 0")
+                assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") is None
+                assert json.loads((data_dir / "escalas.json").read_text(encoding="utf-8")) == []
                 chrome.evaluate("""(() => {
                     const original = window.apiRequest;
                     window.apiRequest = (...args) => new Promise((resolve, reject) => {
@@ -476,7 +572,7 @@ def main():
             print("ONLINE API off: browser storage restored")
             errors = [event for event in chrome.events if event.get("method") == "Runtime.exceptionThrown"]
             assert not errors, json.dumps(errors[-2:], ensure_ascii=False)
-            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-3", b"pwa-4")
+            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-4", b"pwa-5")
             QuietHandler.worker_override = new_worker
             chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
             chrome.until("navigator.serviceWorker.getRegistration().then(r=>r.waiting?.state==='installed')")
@@ -488,7 +584,7 @@ def main():
         try:
             chrome.navigate(origin + "dados.html?browserOnly")
             chrome.until("navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js')")
-            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-4')))")
+            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-5')))")
             assert chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Restaurada 12x36')"), chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local')")
             print("UPDATE: new shell active after reopening; localStorage preserved")
         finally:

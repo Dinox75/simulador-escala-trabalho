@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="experience.css">
     <script defer src="vendor/lucide-0.468.0.min.js"></script>
     <script defer src="calendar-core.js"></script>
+    <script defer src="active-selection.js"></script>
     <script defer src="script.js"></script>
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -54,6 +55,8 @@
                     <p id="activeScaleSummary" class="active-scale-summary"></p>
                     <button class="button primary full" id="guideView" type="button">Ver minha escala</button>
                     <button class="button quiet full" id="guideConfigure" type="button">Configurar uma escala</button>
+                    <button class="text-button" id="guideForget" type="button" hidden>Remover consulta guardada deste dispositivo</button>
+                    <p id="activeActionFeedback" class="form-feedback" role="status" aria-live="polite"></p>
                     <p class="guide-help">Se você ainda não guardou uma consulta, escolha um modelo e informe quando o ciclo começou.</p>
                 </section>
                 <section class="control-section guide-panel" id="guideModels" hidden>
@@ -64,7 +67,7 @@
                 </section>
                 <section class="control-section cycle-settings guide-panel" id="guideConfig" hidden>
                     <h2 id="guideSelectedModel">Quando começou esse ciclo?</h2>
-                    <p class="guide-help">Use uma data real de referência. O aplicativo não pode deduzi-la pelo nome da escala.</p>
+                    <p class="guide-help">Use uma data real de referência. A consulta começa em hoje e agora; escolha outra data ou hora para conferir o histórico.</p>
                     <div id="alternativeDays" class="alternative-days" hidden>
                         <label>Primeiro dia de folga na semana
                             <select id="alternativeOffStart">
@@ -89,9 +92,11 @@
                     <h2>Confira sua consulta</h2>
                     <p id="guideResultSummary" class="guide-result-summary"></p>
                     <p class="guide-help">O calendário e a lista mostram uma projeção a partir do início informado. Confira se ele corresponde à sua escala real.</p>
+                    <button class="button quiet full" id="guideNow" type="button">Consultar agora</button>
                     <button class="button primary full" id="guideSave" type="button">Guardar esta consulta</button>
                     <p id="guideSaveFeedback" class="form-feedback" role="status" aria-live="polite"></p>
-                    <button class="text-button" id="guideCorrect" type="button">← Corrigir início ou modelo</button>
+                    <button class="text-button" id="guideCorrect" type="button">← Alterar início ou data consultada</button>
+                    <button class="text-button" id="guideForgetReview" type="button" hidden>Remover consulta guardada deste dispositivo</button>
                 </section>
                 <details class="saved-panel advanced-panel" id="advancedControls">
                     <summary>Configuração avançada <small>Ciclos e turnos personalizados</small></summary>
@@ -124,7 +129,7 @@
             </aside>
             <section class="calendar-workspace" aria-label="Resultado e calendário mensal">
                 <div class="selected-day-panel" id="resultCard" aria-live="polite">
-                    <div class="selected-day-mark"><span class="mono-kicker">SITUAÇÃO CONSULTADA</span><h2 id="resultTitle">Escolha uma escala</h2></div>
+                    <div class="selected-day-mark"><span class="mono-kicker">SITUAÇÃO CONSULTADA</span><h2 id="resultTitle">Escolha uma escala</h2><small id="resultMoment"></small></div>
                     <p id="resultDescription">Selecione um modelo e atualize o calendário. Depois, clique em outra data para consultar o ciclo.</p>
                     <div class="selected-periods" id="selectedPeriods" aria-label="Períodos dentro do dia"></div>
                 </div>
@@ -133,7 +138,7 @@
                         <div><span class="mono-kicker">VISÃO MENSAL</span><h2 id="calendarHeading"><span id="calendarMonth">Calendário</span></h2></div>
                         <div class="calendar-nav" aria-label="Navegar pelo calendário">
                             <button class="icon-button" id="calendarPrevious" type="button" aria-label="Mês anterior">‹</button>
-                            <button class="button quiet today-button" id="calendarToday" type="button">Ir para hoje</button>
+                            <button class="button quiet today-button" id="calendarToday" type="button">Consultar agora</button>
                             <button class="button quiet today-button" id="calendarStart" type="button">Ir ao início</button>
                             <button class="icon-button" id="calendarNext" type="button" aria-label="Próximo mês">›</button>
                         </div>

@@ -24,13 +24,14 @@
     font-size: .85rem;
 }
 .guide-result-summary { line-height: 1.55; }
+#resultMoment { display: block; margin-top: 5px; color: var(--muted); font-size: .75rem; font-weight: 650; }
 .guide-panel .model-grid { grid-template-columns: 1fr; gap: 9px; }
 .guide-panel .model-button { min-height: 78px; padding: 12px; }
 .guide-panel .model-button strong { font-size: .94rem; }
 .guide-panel .model-button small { font-size: .76rem; line-height: 1.45; }
 .guide-panel label { font-size: .82rem; }
 .guide-panel input, .guide-panel select { min-height: 46px; font-size: 1rem; }
-.guide-simple .guide-panel .field-advanced { display: none; }
+.guide-simple .guide-panel .field-advanced:not(.field-query) { display: none; }
 .guide-panel .field-grid { grid-template-columns: 1fr; }
 .field-help { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: .78rem; }
 .alternative-days { display: grid; gap: 9px; }
