@@ -26,6 +26,7 @@ function canUseLocalApi() {
 const LEGACY_STORAGE_KEY = "simulador_escala_demo_v09";
 const PREVIOUS_STORAGE_KEY = "simulador_escala_demo_v013";
 const STORAGE_KEY = "simulador_escala_demo_v014_local";
+const ACTIVE_SELECTION_KEY = "simulador_escala_active_v1";
 const THEME_KEY = "simulador_escala_theme";
 
 const ESCALA_REAL_24_DIAS = [
@@ -104,6 +105,8 @@ const state = {
     scrollTicking: false,
     calendarView: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     selectedModelId: null,
+    simulatorRevision: 0,
+    guide: { step: 0, flow: null, offStart: 6, active: null },
     calendarAnimating: false,
     comparison: {
         selections: { a: "model:6x3", b: "model:12x36" },
@@ -290,19 +293,16 @@ function renderModelButtons() {
         return;
     }
 
-    const models = state.availableModels.length ? state.availableModels : PREDEFINED_MODELS;
-
-    elements.modelButtons.innerHTML = models
-        .map((model, index) => `
-            <button class="model-button ${state.selectedModelId === model.id ? "selected" : ""}" type="button" data-model-index="${index}">
-                <span class="model-icon"><i data-lucide="${getModelIcon(model.tipo)}"></i></span>
-                <span>
-                <strong>${escapeHtml(model.nome)}</strong>
-                    <small>${escapeHtml(getTypeName(model.tipo))} · ${escapeHtml(getScaleSummary(model))}</small>
-                </span>
-            </button>
-        `)
-        .join("");
+    const choices = [
+        ["admin", "5x2 administrativo", "Cinco dias de trabalho e dois de folga. Segunda a sexta é apenas um exemplo."],
+        ["hours", "12x36", "Informe a data e a hora reais de início. A situação pode mudar no mesmo dia."],
+        ["alternative", "Alternativa ao 6x1 · 5x2", "Escolha dois dias de folga consecutivos e veja a semana antes de aplicar."]
+    ];
+    elements.modelButtons.innerHTML = choices.map(([flow, title, detail]) => `
+        <button class="model-button ${state.guide.flow === flow ? "selected" : ""}" type="button" data-guide-flow="${flow}" aria-pressed="${state.guide.flow === flow}">
+            <strong>${escapeHtml(title)}</strong><small>${escapeHtml(detail)}</small>
+        </button>
+    `).join("");
 
     configureActiveNavigation();
     configureCodeCopyButtons();
@@ -335,8 +335,155 @@ function applyModelToSimulator(model) {
         $("#offDays").value = model.dias_folga;
     }
 
-    if (validateSimulatorForm()) {
-        elements.simulatorForm.requestSubmit();
+    invalidateSimulatorResult();
+}
+
+const WEEKDAYS = ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"];
+
+function setGuideStep(step) {
+    state.guide.step = step;
+    [["guideEntry", 0], ["guideModels", 1], ["guideConfig", 2], ["guideReview", 3]]
+        .forEach(([id, panelStep]) => {
+            const panel = $(`#${id}`);
+            if (panel) panel.hidden = panelStep !== step;
+        });
+    const progress = $("#guideProgress");
+    if (progress) progress.textContent = step === 0 ? "Comece por aqui"
+        : `Etapa ${step} de 3 · ${["", "Escolher", "Informar início", "Conferir e guardar"][step]}`;
+    document.body.classList.toggle("guide-simple", step === 2 && state.guide.flow !== "custom");
+}
+
+function invalidateSimulatorResult() {
+    if (!hasSimulator()) return;
+    state.simulatorRevision += 1;
+    document.body.dataset.resultReady = "false";
+    elements.resultTitle.textContent = "Informe o início do ciclo";
+    elements.resultDescription.textContent = "A consulta aparecerá depois que você conferir a data real de início.";
+    elements.calendarGrid.replaceChildren();
+    elements.selectedPeriods.replaceChildren();
+    elements.cycleSequence.replaceChildren();
+    elements.timelineList.replaceChildren();
+    const empty = $("#calendarEmpty");
+    if (empty) empty.hidden = false;
+    if (state.guide.step === 3) setGuideStep(2);
+}
+
+function renderAlternativeWeek() {
+    const section = $("#alternativeDays");
+    if (!section) return;
+    section.hidden = state.guide.flow !== "alternative";
+    if (section.hidden) return;
+    const offStart = Number($("#alternativeOffStart").value);
+    state.guide.offStart = offStart;
+    const week = $("#alternativeWeek");
+    week.replaceChildren(...WEEKDAYS.map((day, index) => {
+        const cell = document.createElement("span");
+        const off = index === offStart || index === (offStart + 1) % 7;
+        cell.className = off ? "week-off" : "week-work";
+        cell.textContent = `${day.slice(0, 3)} · ${off ? "Folga" : "Trabalho"}`;
+        return cell;
+    }));
+    $("#alternativeAnchorHelp").textContent = `Para estas folgas, informe uma ${WEEKDAYS[(offStart + 2) % 7]} em que começaram cinco dias de trabalho. Confirme a data real.`;
+}
+
+function selectGuideFlow(flow) {
+    const id = flow === "hours" ? "12x36" : "5x2";
+    const model = PREDEFINED_MODELS.find((item) => item.id === id);
+    if (!model || !["admin", "hours", "alternative"].includes(flow)) return;
+    state.guide.flow = flow;
+    applyModelToSimulator(model);
+    $("#guideSelectedModel").textContent = flow === "alternative"
+        ? "Alternativa ao 6x1 · 5x2" : flow === "admin" ? "5x2 administrativo" : "12x36";
+    renderAlternativeWeek();
+    renderModelButtons();
+    setGuideStep(2);
+    $(flow === "hours" ? "#startDateTime" : "#startDate")?.focus();
+}
+
+function readConfirmedSelection() {
+    const raw = localStorage.getItem(ACTIVE_SELECTION_KEY);
+    if (!raw) return null;
+    try {
+        const record = JSON.parse(raw);
+        if (!record || record.version !== 1 || !record.scale ||
+            ![TIPO_CICLO_DIAS, TIPO_CICLO_HORAS, TIPO_TURNO_ROTATIVO].includes(record.scale.tipo) ||
+            typeof record.scale.nome !== "string" || !record.scale.nome.trim() ||
+            getScaleValidationError(record.scale) || typeof record.start !== "string" ||
+            !["admin", "hours", "alternative", "custom", "saved"].includes(record.flow)) return null;
+        if (record.flow === "alternative" &&
+            (!Number.isInteger(record.offStart) || record.offStart < 0 || record.offStart > 6)) return null;
+        if (record.scale.tipo === TIPO_CICLO_HORAS && record.queryTime != null &&
+            !/^([01]\d|2[0-3]):[0-5]\d$/u.test(record.queryTime)) return null;
+        const start = record.scale.tipo === TIPO_CICLO_HORAS
+            ? parseDateTimeInput(record.start) : parseDateInput(record.start);
+        if (!Number.isFinite(start.getTime())) return null;
+        return record;
+    } catch { return null; }
+}
+
+function showActiveSummary() {
+    const summary = $("#activeScaleSummary");
+    if (!summary) return;
+    const record = state.guide.active;
+    summary.textContent = record
+        ? `Guardada neste dispositivo: ${record.scale.nome} · início confirmado em ${record.scale.tipo === TIPO_CICLO_HORAS ? formatDateTime(parseDateTimeInput(record.start)) : formatDate(parseDateInput(record.start))}. Você pode corrigir esses dados.`
+        : "Nenhuma consulta guardada ainda. Seus cadastros antigos continuam em Minhas escalas.";
+}
+
+function restoreConfirmedSelection() {
+    const record = state.guide.active;
+    if (!record) { setGuideStep(1); return; }
+    state.guide.flow = record.flow;
+    state.guide.offStart = Number.isInteger(record.offStart) ? record.offStart : 6;
+    state.selectedType = record.scale.tipo;
+    state.selectedModelId = record.modelId || null;
+    state.selectedSavedScaleName = record.flow === "saved" ? record.scale.nome : null;
+    if (record.scale.tipo === TIPO_TURNO_ROTATIVO) state.simulatorTurns = normalizeTurns(record.scale.sequencia_turnos);
+    updateScaleButtons();
+    renderDynamicFields();
+    if (record.scale.tipo === TIPO_CICLO_HORAS) {
+        $("#workHours").value = record.scale.horas_trabalho;
+        $("#offHours").value = record.scale.horas_folga;
+        $("#startDateTime").value = record.start;
+        $("#queryDateTime").value = `${setDefaultDateValues()}T${record.queryTime || "12:00"}`;
+    } else {
+        $("#startDate").value = record.start;
+        $("#queryDate").value = setDefaultDateValues();
+        if (record.scale.tipo === TIPO_CICLO_DIAS) {
+            $("#workDays").value = record.scale.dias_trabalho;
+            $("#offDays").value = record.scale.dias_folga;
+        }
+    }
+    const offSelect = $("#alternativeOffStart");
+    if (offSelect) offSelect.value = String(state.guide.offStart);
+    $("#guideSelectedModel").textContent = record.scale.nome;
+    renderAlternativeWeek();
+    renderModelButtons();
+    setGuideStep(2);
+    if (validateSimulatorForm()) elements.simulatorForm.requestSubmit();
+}
+
+function saveConfirmedSelection() {
+    if (!validateSimulatorForm() || document.body.dataset.resultReady !== "true") return;
+    const identity = getConfirmedSimulatorIdentity();
+    const scale = state.selectedType === TIPO_CICLO_HORAS
+        ? { nome: identity.name, tipo: state.selectedType, horas_trabalho: Number($("#workHours").value), horas_folga: Number($("#offHours").value) }
+        : state.selectedType === TIPO_TURNO_ROTATIVO
+            ? { nome: identity.name, tipo: state.selectedType, sequencia_turnos: [...state.simulatorTurns] }
+            : { nome: identity.name, tipo: state.selectedType, dias_trabalho: Number($("#workDays").value), dias_folga: Number($("#offDays").value) };
+    const record = {
+        version: 1, scale, flow: identity.flow, offStart: state.guide.offStart,
+        modelId: state.selectedModelId,
+        start: state.selectedType === TIPO_CICLO_HORAS ? $("#startDateTime").value : $("#startDate").value,
+        queryTime: state.selectedType === TIPO_CICLO_HORAS ? $("#queryDateTime").value.split("T")[1] : null
+    };
+    try {
+        localStorage.setItem(ACTIVE_SELECTION_KEY, JSON.stringify(record));
+        state.guide.active = record;
+        showActiveSummary();
+        $("#guideSaveFeedback").textContent = "Consulta guardada neste dispositivo. Confira o início ao voltar. O backup JSON dos cadastros não inclui esta consulta.";
+    } catch (error) {
+        $("#guideSaveFeedback").textContent = `Não foi possível guardar neste dispositivo: ${error.message}`;
     }
 }
 
@@ -365,7 +512,10 @@ function getSimulatorValidationError() {
     const queryField = state.selectedType === TIPO_CICLO_HORAS ? "queryDateTime" : "queryDate";
     const startValue = $(`#${dateField}`)?.value || "";
     const queryValue = $(`#${queryField}`)?.value || "";
-    if (!startValue || !queryValue) return "Preencha a data inicial e a data consultada.";
+    if (!startValue) return state.selectedType === TIPO_CICLO_HORAS
+        ? "Informe a data e a hora reais em que começou esse ciclo."
+        : "Informe a data real em que começou esse ciclo.";
+    if (!queryValue) return "Informe a data que você quer consultar.";
 
     const start = state.selectedType === TIPO_CICLO_HORAS ? parseDateTimeInput(startValue) : parseDateInput(startValue);
     const query = state.selectedType === TIPO_CICLO_HORAS ? parseDateTimeInput(queryValue) : parseDateInput(queryValue);
@@ -373,6 +523,10 @@ function getSimulatorValidationError() {
         return state.selectedType === TIPO_CICLO_HORAS
             ? "Informe datas e horários válidos para o início e a consulta."
             : "Informe datas válidas para o início e a consulta.";
+    }
+    if (state.guide.flow === "alternative" && state.selectedType === TIPO_CICLO_DIAS &&
+        start.getDay() !== (state.guide.offStart + 2) % 7) {
+        return `Para estas folgas, escolha uma ${WEEKDAYS[(state.guide.offStart + 2) % 7]} em que começou o bloco de cinco dias de trabalho.`;
     }
 
     const quantityField = state.selectedType === TIPO_CICLO_HORAS ? "quantityPeriods" : "quantityDays";
@@ -528,7 +682,8 @@ function setDefaultDateValues() {
 }
 
 function setDefaultDateTimeValues() {
-    return `${setDefaultDateValues()}T06:00`;
+    const now = new Date();
+    return `${setDefaultDateValues()}T${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 }
 
 function renderTurnBuilder(target) {
@@ -593,22 +748,23 @@ function renderDynamicFields() {
         elements.dynamicFields.innerHTML = `
             <div class="field-grid">
                 <label>
-                    Início da escala
-                    <input id="startDateTime" type="datetime-local" value="${setDefaultDateTimeValues()}" required>
+                    Quando começou esse ciclo? Data e hora
+                    <input id="startDateTime" type="datetime-local" required>
                 </label>
-                <label>
-                    Data consultada
+                <p class="field-help">No 12x36, começar às 18:00 significa trabalhar até as 06:00 do dia seguinte. Um mesmo dia pode ter trabalho e folga.</p>
+                <label class="field-advanced">
+                    Qual data e hora consultar?
                     <input id="queryDateTime" type="datetime-local" value="${setDefaultDateTimeValues()}" required>
                 </label>
-                <label>
+                <label class="field-advanced">
                     Horas trabalhadas
                     <input id="workHours" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="12" required>
                 </label>
-                <label>
+                <label class="field-advanced">
                     Horas de folga
                     <input id="offHours" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="36" required>
                 </label>
-                <label>
+                <label class="field-advanced">
                     Dias para visualizar
                     <input id="quantityPeriods" type="number" min="1" max="${MAX_VISIBLE_DAYS}" value="6" required>
                 </label>
@@ -621,14 +777,14 @@ function renderDynamicFields() {
         elements.dynamicFields.innerHTML = `
             <div class="field-grid">
                 <label>
-                    Início do ciclo
-                    <input id="startDate" type="date" value="${setDefaultDateValues()}" required>
+                    Quando começou esse ciclo?
+                    <input id="startDate" type="date" required>
                 </label>
-                <label>
-                    Data consultada
+                <label class="field-advanced">
+                    Qual data consultar?
                     <input id="queryDate" type="date" value="${setDefaultDateValues()}" required>
                 </label>
-                <label>
+                <label class="field-advanced">
                     Dias para visualizar
                     <input id="quantityDays" type="number" min="1" max="${MAX_VISIBLE_DAYS}" value="14" required>
                 </label>
@@ -642,22 +798,22 @@ function renderDynamicFields() {
     elements.dynamicFields.innerHTML = `
         <div class="field-grid">
             <label>
-                Início da escala
-                <input id="startDate" type="date" value="${setDefaultDateValues()}" required>
+                Quando começou esse ciclo?
+                <input id="startDate" type="date" required>
             </label>
-            <label>
-                Data consultada
+            <label class="field-advanced">
+                Qual data consultar?
                 <input id="queryDate" type="date" value="${setDefaultDateValues()}" required>
             </label>
-            <label>
+            <label class="field-advanced">
                 Dias trabalhados
-                <input id="workDays" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="6" required>
+                <input id="workDays" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="5" required>
             </label>
-            <label>
+            <label class="field-advanced">
                 Dias de folga
-                <input id="offDays" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="3" required>
+                <input id="offDays" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="2" required>
             </label>
-            <label>
+            <label class="field-advanced">
                 Dias para visualizar
                 <input id="quantityDays" type="number" min="1" max="${MAX_VISIBLE_DAYS}" value="14" required>
             </label>
@@ -737,8 +893,8 @@ function getSimulatorSpec() {
     if (state.selectedType === TIPO_CICLO_HORAS) {
         return { type: state.selectedType, start: parseDateTimeInput($("#startDateTime")?.value || ""), query: parseDateTimeInput($("#queryDateTime")?.value || ""), work: Number($("#workHours")?.value || 0), off: Number($("#offHours")?.value || 0) };
     }
-    const start = parseDateInput($("#startDate")?.value || setDefaultDateValues());
-    const query = parseDateInput($("#queryDate")?.value || setDefaultDateValues());
+    const start = parseDateInput($("#startDate")?.value || "");
+    const query = parseDateInput($("#queryDate")?.value || "");
     if (state.selectedType === TIPO_TURNO_ROTATIVO) return { type: state.selectedType, start, query, turns: normalizeTurns(state.simulatorTurns) };
     return { type: state.selectedType, start, query, work: Number($("#workDays")?.value || 0), off: Number($("#offDays")?.value || 0) };
 }
@@ -917,10 +1073,38 @@ function showResult(title, description, items) {
     elements.resultDescription.textContent = description;
     state.resultItems = items;
 
+    if (/^(Status|Turno):/u.test(title)) {
+        document.body.dataset.resultReady = "true";
+        const empty = $("#calendarEmpty");
+        if (empty) empty.hidden = true;
+        renderGuideReview();
+        setGuideStep(3);
+    }
+
     renderTimeline(items);
     renderCalendar();
     renderCycleSequence();
     animateSimulationUpdate();
+}
+
+function renderGuideReview() {
+    const summary = $("#guideResultSummary");
+    if (!summary) return;
+    const spec = getSimulatorSpec();
+    const status = statusForDate(spec, spec.query);
+    const next = window.ScaleCalendarCore.nextChange(spec, spec.query);
+    const position = spec.type === TIPO_CICLO_HORAS
+        ? `Fase ${window.ScaleCalendarCore.cycleHoursPosition(spec.start, spec.query, spec.work, spec.off) < spec.work ? "de trabalho" : "de folga"}`
+        : spec.type === TIPO_TURNO_ROTATIVO
+            ? `Posição ${window.ScaleCalendarCore.rotativePosition(spec.start, spec.query, spec.turns.length) + 1} de ${spec.turns.length}`
+            : `Dia ${window.ScaleCalendarCore.cycleDaysPosition(spec.start, spec.query, spec.work, spec.off) + 1} de ${spec.work + spec.off}`;
+    const name = getConfirmedSimulatorIdentity().name;
+    const start = spec.type === TIPO_CICLO_HORAS ? formatDateTime(spec.start) : formatDate(spec.start);
+    const query = spec.type === TIPO_CICLO_HORAS ? formatDateTime(spec.query) : formatDate(spec.query);
+    const today = dateInputValue(spec.query) === dateInputValue(new Date()) ? "Hoje, " : "";
+    summary.textContent = `${name} · início confirmado: ${start}. ${today}${query}: ${status}. ${position}. ${next ? `Próxima mudança: ${spec.type === TIPO_CICLO_HORAS ? formatDateTime(next) : formatDate(next)}.` : "Sem mudança na sequência."} Confira os próximos dias e o calendário antes de guardar.`;
+    const feedback = $("#guideSaveFeedback");
+    if (feedback) feedback.textContent = "";
 }
 
 function formatTime(date) {
@@ -1114,7 +1298,29 @@ function getSelectedSavedScaleForApi() {
     return scale;
 }
 
-async function simulateSavedScaleByApi(scale) {
+function getConfirmedSimulatorIdentity() {
+    const saved = getSelectedSavedScaleForApi();
+    if (saved) return { flow: "saved", name: saved.nome };
+    const active = state.guide.active;
+    if (state.guide.flow === "saved" && active?.flow === "saved" &&
+        state.selectedSavedScaleName === active.scale.nome && currentSimulatorMatchesScale(active.scale)) {
+        return { flow: "saved", name: active.scale.nome };
+    }
+    const model = getSelectedModelForApi();
+    if (model?.id === "5x2" && state.guide.flow === "alternative") {
+        return { flow: "alternative", name: "Alternativa 5x2" };
+    }
+    if (model?.id === "5x2" && state.guide.flow === "admin") {
+        return { flow: "admin", name: "5x2 administrativo" };
+    }
+    if (model?.id === "12x36" && state.guide.flow === "hours") {
+        return { flow: "hours", name: "12x36" };
+    }
+    return { flow: "custom", name: state.selectedType === TIPO_TURNO_ROTATIVO
+        ? "Minha sequência" : "Minha escala personalizada" };
+}
+
+async function simulateSavedScaleByApi(scale, revision) {
     if (!scale || !scale.nome) {
         throw new Error("Escala salva inválida para simulação.");
     }
@@ -1145,12 +1351,14 @@ async function simulateSavedScaleByApi(scale) {
             method: "POST",
             body: JSON.stringify(statusPayload)
         });
+        if (state.simulatorRevision !== revision) return;
         assertApiStatusMatchesCalendar(statusData.status);
 
         const nextDaysData = await apiRequest(`/api/v1/escalas/${encodedName}/simulacao/proximos-dias`, {
             method: "POST",
             body: JSON.stringify(nextDaysPayload)
         });
+        if (state.simulatorRevision !== revision) return;
 
         const items = nextDaysData.dias.map((dia) => createTimelineItem(
             dia.data,
@@ -1192,12 +1400,14 @@ async function simulateSavedScaleByApi(scale) {
         method: "POST",
         body: JSON.stringify(statusPayload)
     });
+    if (state.simulatorRevision !== revision) return;
     assertApiStatusMatchesCalendar(statusData.status);
 
     const nextDaysData = await apiRequest(`/api/v1/escalas/${encodedName}/simulacao/proximos-dias`, {
         method: "POST",
         body: JSON.stringify(nextDaysPayload)
     });
+    if (state.simulatorRevision !== revision) return;
 
     const items = nextDaysData.dias.map((dia, index) => createTimelineItem(
         dia.data,
@@ -1227,6 +1437,7 @@ async function handleSimulatorSubmit(event) {
     if (!validateSimulatorForm()) {
         return;
     }
+    const revision = ++state.simulatorRevision;
 
     if (!canUseLocalApi()) {
         simulateLocally("Simulação feita neste navegador; a origem pública não usa a API local.");
@@ -1242,8 +1453,9 @@ async function handleSimulatorSubmit(event) {
             return;
         }
         try {
-            await simulateSavedScaleByApi(selectedSavedScale);
+            await simulateSavedScaleByApi(selectedSavedScale, revision);
         } catch (error) {
+            if (state.simulatorRevision !== revision) return;
             console.warn("Não foi possível simular a escala salva pela API. Usando cálculo local.", error);
 
             simulateLocally(
@@ -1291,12 +1503,14 @@ async function handleSimulatorSubmit(event) {
                 method: "POST",
                 body: JSON.stringify(statusPayload)
             });
+            if (state.simulatorRevision !== revision) return;
             assertApiStatusMatchesCalendar(statusData.status);
 
             const nextDaysData = await apiRequest("/api/v1/simulacao/proximos-dias", {
                 method: "POST",
                 body: JSON.stringify(nextDaysPayload)
             });
+            if (state.simulatorRevision !== revision) return;
 
             const items = nextDaysData.dias.map((dia) => createTimelineItem(
                 dia.data,
@@ -1339,12 +1553,14 @@ async function handleSimulatorSubmit(event) {
             method: "POST",
             body: JSON.stringify(statusPayload)
         });
+        if (state.simulatorRevision !== revision) return;
         assertApiStatusMatchesCalendar(statusData.status);
 
         const nextDaysData = await apiRequest("/api/v1/simulacao/proximos-dias", {
             method: "POST",
             body: JSON.stringify(nextDaysPayload)
         });
+        if (state.simulatorRevision !== revision) return;
 
         const items = nextDaysData.dias.map((dia, index) => createTimelineItem(
             dia.data,
@@ -1365,6 +1581,7 @@ async function handleSimulatorSubmit(event) {
             nextDaysData
         });
     } catch (error) {
+        if (state.simulatorRevision !== revision) return;
         console.warn("Não foi possível simular pela API. Usando cálculo local.", error);
 
         simulateLocally(
@@ -1672,6 +1889,7 @@ function applySavedScale(index) {
 
     state.selectedType = scale.tipo;
     state.selectedModelId = null;
+    state.guide.flow = "saved";
     updateScaleButtons();
     renderDynamicFields();
 
@@ -1688,9 +1906,11 @@ function applySavedScale(index) {
 
     state.selectedSavedScaleName = scale.nome;
 
-    if (validateSimulatorForm()) {
-        elements.simulatorForm.requestSubmit();
-    }
+    $("#guideSelectedModel").textContent = scale.nome;
+    renderAlternativeWeek();
+    setGuideStep(2);
+    invalidateSimulatorResult();
+    setSimulatorFeedback("Informe quando começou esta escala para consultar. O cadastro não contém essa data.", "info");
 
     const simulator = document.querySelector("#simulador");
 
@@ -2976,6 +3196,12 @@ function configureEvents() {
             elements.simulatorForm.requestSubmit();
         });
     }
+    $("#calendarStart")?.addEventListener("click", () => {
+        if (!validateSimulatorForm()) return;
+        const start = getSimulatorSpec().start;
+        state.calendarView = new Date(start.getFullYear(), start.getMonth(), 1);
+        renderCalendar();
+    });
     if (elements.calendarGrid) {
         elements.calendarGrid.addEventListener("click", (event) => {
             const dayButton = event.target.closest("[data-calendar-date]");
@@ -3002,39 +3228,46 @@ function configureEvents() {
 
             state.selectedSavedScaleName = null;
             state.selectedModelId = null;
+            state.guide.flow = "custom";
             state.selectedType = button.dataset.type;
             updateScaleButtons();
             renderDynamicFields();
-            state.calendarView = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-            renderCalendar();
+            $("#guideSelectedModel").textContent = "Escala personalizada";
+            renderAlternativeWeek();
+            setGuideStep(2);
+            invalidateSimulatorResult();
             createLucideIcons();
         });
     }
 
     if (elements.modelButtons) {
         elements.modelButtons.addEventListener("click", (event) => {
-            const button = event.target.closest("[data-model-index]");
+            const button = event.target.closest("[data-guide-flow]");
 
             if (!button) {
                 return;
             }
 
-            const models = state.availableModels.length ? state.availableModels : PREDEFINED_MODELS;
-            const model = models[Number(button.dataset.modelIndex)];
-
-            applyModelToSimulator(cloneScale(model));
-
-            const simulator = document.querySelector("#simulador");
-
-            if (simulator) {
-                simulator.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
+            selectGuideFlow(button.dataset.guideFlow);
         });
     }
+
+    $("#guideView")?.addEventListener("click", restoreConfirmedSelection);
+    $("#guideConfigure")?.addEventListener("click", () => { invalidateSimulatorResult(); setGuideStep(1); });
+    $("#guideBack")?.addEventListener("click", () => { invalidateSimulatorResult(); setGuideStep(1); });
+    $("#guideCorrect")?.addEventListener("click", () => { invalidateSimulatorResult(); setGuideStep(2); });
+    $("#guideSave")?.addEventListener("click", saveConfirmedSelection);
+    $("#alternativeOffStart")?.addEventListener("change", () => {
+        renderAlternativeWeek();
+        invalidateSimulatorResult();
+    });
 
     if (elements.simulatorForm) {
         elements.simulatorForm.addEventListener("submit", handleSimulatorSubmit);
         elements.simulatorForm.addEventListener("click", handleTurnBuilderClick);
+        elements.simulatorForm.addEventListener("input", (event) => {
+            if (event.target.matches("input")) invalidateSimulatorResult();
+        });
         elements.simulatorForm.addEventListener("change", (event) => {
             if (event.target.id === "queryDate" || event.target.id === "queryDateTime") {
                 const query = event.target.id === "queryDateTime" ? parseDateTimeInput(event.target.value) : parseDateInput(event.target.value);
@@ -3082,21 +3315,6 @@ function configureEvents() {
     }
 }
 
-function bootInitialSimulation() {
-    if (!hasSimulator()) {
-        return;
-    }
-
-    const start = parseDateInput(setDefaultDateValues());
-    const items = generateCycleDaysItems(start, 14, 6, 3);
-
-    showResult(
-        "Exemplo: Trabalhando",
-        "Este é um exemplo automático usando o modelo 6x3. Modelos prontos e escalas salvas agora podem ser calculados pela API.",
-        items
-    );
-}
-
 function createLucideIcons() {
     if (window.lucide) {
         window.lucide.createIcons();
@@ -3115,7 +3333,35 @@ function initSimulatorPage() {
     renderModelButtons();
     renderSavedDynamicFields();
     renderSavedScales();
-    bootInitialSimulation();
+    state.guide.active = readConfirmedSelection();
+    showActiveSummary();
+    invalidateSimulatorResult();
+    const hash = window.location.hash;
+    const requestedFlow = new URLSearchParams(window.location.search).get("flow");
+    if (hash === "#minhas-escalas") {
+        elements.savedScalesList.closest("details").open = true;
+        setGuideStep(0);
+    } else if (hash === "#configurar") {
+        if (["admin", "hours", "alternative"].includes(requestedFlow)) selectGuideFlow(requestedFlow);
+        else if (requestedFlow === "custom") {
+            $("#advancedControls").open = true;
+            state.guide.flow = "custom";
+            $("#guideSelectedModel").textContent = "Escala personalizada";
+            setGuideStep(2);
+        } else setGuideStep(1);
+    } else if (state.guide.active) restoreConfirmedSelection();
+    else setGuideStep(0);
+    window.addEventListener("hashchange", () => {
+        if (window.location.hash === "#minhas-escalas") {
+            elements.savedScalesList.closest("details").open = true;
+        } else if (window.location.hash === "#configurar") {
+            setGuideStep(1);
+        } else if (window.location.hash === "#consultar") {
+            if (state.guide.active) restoreConfirmedSelection();
+            else setGuideStep(0);
+        }
+        configureActiveNavigation();
+    });
 }
 
 
@@ -3173,8 +3419,9 @@ function configureActiveNavigation() {
     const currentPage = window.location.pathname.split("/").pop() || "index.html";
 
     $$(".nav-links a").forEach((link) => {
-        const linkPage = link.getAttribute("href");
-        const isCurrent = linkPage === currentPage;
+        const [linkPage, linkHash] = link.getAttribute("href").split("#");
+        const isCurrent = linkPage === currentPage &&
+            (!linkHash || (window.location.hash || "#consultar") === `#${linkHash}`);
         link.classList.toggle("active", isCurrent);
         if (isCurrent) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");

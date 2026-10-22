@@ -1,0 +1,76 @@
+/* First-use journey. The planning calendar keeps the existing color language. */
+[hidden] { display: none !important; }
+
+.guide-progress {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    color: var(--primary);
+    font-size: .75rem;
+    font-weight: 750;
+    letter-spacing: .03em;
+}
+.guide-panel { display: grid; gap: 12px; }
+.guide-panel h2 { font-size: 1.1rem; }
+.guide-panel > p { margin: 0; }
+.guide-panel .button { min-height: 48px; justify-content: center; }
+.guide-help { color: var(--muted); font-size: .79rem; line-height: 1.5; }
+.guide-help a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.active-scale-summary, .guide-result-summary {
+    padding: 12px;
+    border-left: 3px solid var(--primary);
+    border-radius: 4px;
+    background: var(--surface-muted);
+    color: var(--text);
+    font-size: .85rem;
+}
+.guide-result-summary { line-height: 1.55; }
+.guide-panel .model-grid { grid-template-columns: 1fr; gap: 9px; }
+.guide-panel .model-button { min-height: 78px; padding: 12px; }
+.guide-panel .model-button strong { font-size: .94rem; }
+.guide-panel .model-button small { font-size: .76rem; line-height: 1.45; }
+.guide-panel label { font-size: .82rem; }
+.guide-panel input, .guide-panel select { min-height: 46px; font-size: 1rem; }
+.guide-simple .guide-panel .field-advanced { display: none; }
+.guide-panel .field-grid { grid-template-columns: 1fr; }
+.field-help { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: .78rem; }
+.alternative-days { display: grid; gap: 9px; }
+.alternative-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+.alternative-week span { min-width: 0; padding: 6px 3px; border-radius: 4px; text-align: center; font-size: .62rem; line-height: 1.3; }
+.alternative-week .week-work { background: var(--work-bg); color: var(--work-ink); }
+.alternative-week .week-off { background: var(--off-bg); color: var(--off-ink); }
+.advanced-panel > summary small { color: var(--muted); font-size: .66rem; font-weight: 500; }
+.calendar-empty-guide { margin: 12px 0; padding: 18px; border: 1px dashed var(--line); border-radius: 8px; text-align: center; font-size: .85rem; }
+.model-showcase-section { padding-top: 12px; }
+.model-showcase-section .model-showcase-card { cursor: default; }
+.model-showcase-section .model-showcase-card:hover { border-color: var(--line); }
+.simulator-page[data-result-ready="false"] .calendar-grid,
+.simulator-page[data-result-ready="false"] .shift-legend,
+.simulator-page[data-result-ready="false"] .cycle-strip,
+.simulator-page[data-result-ready="false"] .timeline-disclosure { display: none; }
+.simulator-page[data-result-ready="false"] .calendar-nav { visibility: hidden; }
+
+@media (min-width: 1181px) {
+    .site-header { width: min(1540px, calc(100% - 48px)); gap: 14px; }
+    .nav-links { gap: clamp(7px, .8vw, 14px); font-size: .76rem; }
+}
+@media (max-width: 860px) {
+    .planner-workspace { grid-template-columns: minmax(0, 1fr); }
+    .calendar-workspace { order: 1; }
+    .planner-sidebar { order: 0; }
+}
+@media (max-width: 680px) {
+    .calendar-workspace { order: 1; }
+    .planner-sidebar { order: 0; }
+    .guide-panel { gap: 10px; }
+    .alternative-week { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .calendar-toolbar { align-items: flex-start; flex-direction: column; }
+    .calendar-nav { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+    .calendar-nav .today-button { min-height: 44px; }
+    .landing-hero { gap: 16px; }
+    .landing-copy h1 { max-width: 18ch; }
+    .hero-actions .button { min-height: 48px; }
+}
+@media (max-width: 360px) {
+    .alternative-week span { font-size: .58rem; }
+    .calendar-nav .today-button { font-size: .65rem; }
+}

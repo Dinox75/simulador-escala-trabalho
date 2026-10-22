@@ -26,6 +26,18 @@
         const dayTwo = core.cycleHoursSegments(clock("2026-01-01T18:00"), date("2026-01-02"), 12, 36);
         assert("12x36 exposes partial work and rest periods", dayTwo.length === 2 && dayTwo[0].startMinute === 0 && dayTwo[0].endMinute === 360 && dayTwo[0].status === "Trabalhando" && dayTwo[1].startMinute === 360 && dayTwo[1].endMinute === 1440 && dayTwo[1].status === "Folga");
         assert("12x36 query uses the selected clock time", core.cycleHoursStatus(clock("2026-01-01T18:00"), clock("2026-01-02T05:59"), 12, 36) === "Trabalhando" && core.cycleHoursStatus(clock("2026-01-01T18:00"), clock("2026-01-02T06:00"), 12, 36) === "Folga");
+        assert("12x36 next change crosses midnight at 06:00", core.nextChange(
+            { type: "ciclo_horas", start: clock("2026-01-01T18:00"), work: 12, off: 36 },
+            clock("2026-01-02T05:59")
+        ).getTime() === clock("2026-01-02T06:00").getTime());
+        assert("5x2 next change follows its confirmed date", core.nextChange(
+            { type: "ciclo_dias", start: date("2026-10-19"), work: 5, off: 2 },
+            date("2026-10-23")
+        ).getTime() === date("2026-10-24").getTime());
+        assert("rotating next change works before the anchor", core.nextChange(
+            { type: "turno_rotativo", start: date("2026-10-01"), turns: ["Manhã", "Tarde", "Folga"] },
+            date("2026-09-30")
+        ).getTime() === date("2026-10-01").getTime());
         const beforeAnchor = core.compareDay(
             { type: "ciclo_dias", start: date("2026-02-01"), work: 6, off: 3 },
             { type: "ciclo_dias", start: date("2026-02-01"), work: 5, off: 2 },

@@ -88,6 +88,33 @@
         return sequence[rotativePosition(start, query, sequence.length)];
     }
 
+    function nextChange(schedule, query) {
+        validateComparisonSchedule(schedule);
+        if (!isValidDate(query)) throw new RangeError("Informe uma data consultada válida.");
+        if (schedule.type === "ciclo_horas") {
+            const phase = cycleHoursPosition(schedule.start, query, schedule.work, schedule.off);
+            const remaining = phase < schedule.work
+                ? schedule.work - phase : schedule.work + schedule.off - phase;
+            const wall = wallClockMilliseconds(query) + Math.round(remaining * 3600000);
+            const date = new Date(wall);
+            return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),
+                date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds());
+        }
+        const status = schedule.type === "turno_rotativo"
+            ? rotativeStatus(schedule.start, query, schedule.turns)
+            : cycleDaysStatus(schedule.start, query, schedule.work, schedule.off);
+        const limit = schedule.type === "turno_rotativo"
+            ? schedule.turns.length : schedule.work + schedule.off;
+        for (let offset = 1; offset <= limit; offset += 1) {
+            const day = new Date(query.getFullYear(), query.getMonth(), query.getDate() + offset);
+            const next = schedule.type === "turno_rotativo"
+                ? rotativeStatus(schedule.start, day, schedule.turns)
+                : cycleDaysStatus(schedule.start, day, schedule.work, schedule.off);
+            if (next !== status) return day;
+        }
+        return null;
+    }
+
     function cycleHoursSegments(start, day, workHours, offHours) {
         const workMinutes = workHours * 60;
         const cycleMinutes = (workHours + offHours) * 60;
@@ -234,6 +261,7 @@
         cycleHoursPosition,
         cycleHoursStatus,
         cycleHoursSegments,
+        nextChange,
         compareDay,
         compareMonth,
         monthCells,

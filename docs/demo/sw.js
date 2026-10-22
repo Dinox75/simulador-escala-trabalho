@@ -1,10 +1,10 @@
 /* Bump this name whenever a cached page or asset changes. Keep each shell complete. */
 const CACHE_PREFIX = "simulador-demo-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}pwa-2`;
+const CACHE_NAME = `${CACHE_PREFIX}pwa-3`;
 const SHELL = [
     "./", "index.html", "simulador.html", "comparador.html", "relatorio.html",
     "dados.html", "modelos.html", "documentacao.html", "sobre.html",
-    "roadmap.html", "termos.html", "privacidade.html", "style.css", "script.js",
+    "roadmap.html", "termos.html", "privacidade.html", "style.css", "experience.css", "script.js",
     "calendar-core.js", "report-core.js", "report-xlsx.js",
     "backup-core.js", "dados.js", "pwa.js", "manifest.webmanifest",
     "icons/icon-192.png", "icons/icon-512.png",

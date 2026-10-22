@@ -22,15 +22,12 @@
         </a>
         <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
             <a href="index.html">Início</a>
-            <a href="simulador.html">Simulador</a>
-            <a href="comparador.html">Comparador</a>
+            <a href="simulador.html#consultar">Ver minha escala</a>
+            <a href="simulador.html#configurar">Configurar</a>
+            <a href="simulador.html#minhas-escalas">Minhas escalas</a>
+            <a href="comparador.html">Comparar</a>
             <a href="relatorio.html">Relatório</a>
-            <a href="dados.html" aria-current="page">Dados locais</a>
-            <a href="modelos.html">Modelos</a>
-            <a href="documentacao.html">Documentação</a>
-            <a href="sobre.html">Sobre</a>
-            <a href="termos.html">Termos</a>
-            <a href="privacidade.html">Privacidade</a>
+            <a href="dados.html">Dados locais</a>
         </nav>
         <div class="header-actions">
             <button class="icon-button mobile-only" id="mobileMenuButton" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button>
@@ -40,7 +37,7 @@
         <span class="mono-kicker">ARMAZENAMENTO LOCAL</span>
         <h1>Dados neste dispositivo</h1>
         <p>As escalas salvas <strong>neste navegador</strong> ficam neste dispositivo. Elas não são sincronizadas. Limpar os dados do navegador ou desinstalar a PWA pode apagá-las; guarde um backup antes.</p>
-        <p>Escalas da API local são separadas e não entram neste backup. O arquivo guarda a configuração das escalas, mas não as datas e horas de início usadas nas simulações.</p>
+        <p>Escalas da API local são separadas e não entram neste backup. O arquivo v1 guarda as configurações cadastradas, mas não a consulta guardada, sua data e hora de início. Ao mudar de aparelho ou importar um backup antigo, confira e guarde novamente o início do ciclo.</p>
         <p>O <strong>protótipo de widget Android</strong> é separado da PWA. Para usá-lo em testes, escolha este backup no aplicativo Android e informe novamente o início do ciclo. Ele não acessa automaticamente os dados do Chrome.</p>
         <p>Leia a <a class="text-link" href="privacidade.html">Política de Privacidade</a> e os <a class="text-link" href="termos.html">Termos de Uso</a> antes de compartilhar um backup. O arquivo baixado fica sob seus cuidados.</p>
         <p class="device-data-count" id="storedCount" role="status" aria-live="polite">Verificando escalas...</p>

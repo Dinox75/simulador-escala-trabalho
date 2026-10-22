@@ -99,9 +99,12 @@ class Chrome:
         number = self.number
         payload = json.dumps({"id": number, "method": method, "params": params or {}}).encode()
         mask = os.urandom(4)
-        header = bytes([129, 128 | (len(payload) if len(payload) < 126 else 126)])
-        if len(payload) >= 126:
+        size = len(payload)
+        header = bytes([129, 128 | (size if size < 126 else 126 if size < 65536 else 127)])
+        if 126 <= size < 65536:
             header += struct.pack("!H", len(payload))
+        elif size >= 65536:
+            header += struct.pack("!Q", len(payload))
         self.sock.sendall(header + mask + bytes(char ^ mask[index % 4] for index, char in enumerate(payload)))
         while True:
             a, b = receive(self.sock, 2)
@@ -183,7 +186,11 @@ def main():
         chrome = Chrome(debug_port, base / "profile")
         try:
             chrome.navigate(origin + "simulador.html?browserOnly")
-            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-2')))")
+            scripts = sorted((ROOT / "docs" / "demo").glob("*.js"))
+            for script in scripts:
+                chrome.evaluate("new Function(" + json.dumps(script.read_text(encoding="utf-8")) + "); true")
+            print("JAVASCRIPT SYNTAX:", len(scripts), "demo scripts compiled in Chrome")
+            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-3')))")
             scope = chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.scope)")
             assert scope == origin, scope
             install_errors = chrome.call("Page.getInstallabilityErrors").get("installabilityErrors", [])
@@ -211,6 +218,95 @@ def main():
             print("CALCULATION: web results match", len(fixtures), "shared native fixture cases")
             print("ONLINE no API: shell installed and browser-only mode")
 
+            assert chrome.evaluate("document.body.dataset.resultReady") == "false"
+            assert chrome.evaluate("document.querySelector('#startDate')?.value") == ""
+            chrome.screenshot("first-visit-simulador.png")
+            chrome.evaluate("document.querySelector('#guideConfigure').click(); document.querySelector('[data-guide-flow=admin]').click()")
+            assert chrome.evaluate("document.querySelector('#startDate').value") == ""
+            chrome.screenshot("first-visit-5x2.png")
+            chrome.evaluate("document.querySelector('#simulatorForm').requestSubmit()")
+            assert chrome.evaluate("document.body.dataset.resultReady") == "false"
+            assert "data real" in chrome.evaluate("document.querySelector('#simulatorFeedback').textContent")
+            chrome.evaluate("document.querySelector('#startDate').value='2026-10-19'; document.querySelector('#startDate').dispatchEvent(new Event('input',{bubbles:true})); document.querySelector('#simulatorForm').requestSubmit()")
+            chrome.until("document.body.dataset.resultReady === 'true'")
+            assert "Dia" in chrome.evaluate("document.querySelector('#guideResultSummary').textContent")
+            chrome.evaluate("document.querySelector('#guideSave').click()")
+            assert chrome.evaluate("JSON.parse(localStorage.getItem('simulador_escala_active_v1')).start") == "2026-10-19"
+            print("GUIDE: explicit 5x2 anchor, preview and local confirmed selection")
+
+            chrome.evaluate("selectGuideFlow('hours'); document.querySelector('#startDateTime').value='2026-10-01T18:00'; document.querySelector('#queryDateTime').value='2026-10-02T05:59'; document.querySelector('#simulatorForm').requestSubmit()")
+            chrome.until("document.body.dataset.resultReady === 'true'")
+            assert "Trabalhando" in chrome.evaluate("document.querySelector('#guideResultSummary').textContent")
+            assert "06:00" in chrome.evaluate("document.querySelector('#guideResultSummary').textContent")
+            chrome.evaluate("document.querySelector('#queryDateTime').value='2026-10-02T06:00'; document.querySelector('#simulatorForm').requestSubmit()")
+            chrome.until("document.querySelector('#guideResultSummary').textContent.includes('Folga')")
+            print("GUIDE: 12x36 changes at 06:00")
+
+            chrome.evaluate("selectGuideFlow('alternative')")
+            assert chrome.evaluate("document.querySelectorAll('#alternativeWeek .week-off').length") == 2
+            chrome.evaluate("document.querySelector('#alternativeOffStart').focus()")
+            assert chrome.evaluate("document.activeElement.id") == "alternativeOffStart"
+            chrome.call("Input.dispatchKeyEvent", {"type": "keyDown", "key": "ArrowUp", "code": "ArrowUp", "windowsVirtualKeyCode": 38})
+            chrome.call("Input.dispatchKeyEvent", {"type": "keyUp", "key": "ArrowUp", "code": "ArrowUp", "windowsVirtualKeyCode": 38})
+            assert chrome.evaluate("document.querySelector('#alternativeOffStart').value") == "5"
+            assert chrome.evaluate("[...document.querySelectorAll('#alternativeWeek .week-off')].map(x=>x.textContent.slice(0,3))") == ["sex", "sáb"]
+            chrome.call("Input.dispatchKeyEvent", {"type": "keyDown", "key": "ArrowDown", "code": "ArrowDown", "windowsVirtualKeyCode": 40})
+            chrome.call("Input.dispatchKeyEvent", {"type": "keyUp", "key": "ArrowDown", "code": "ArrowDown", "windowsVirtualKeyCode": 40})
+            assert chrome.evaluate("document.querySelector('#alternativeOffStart').value") == "6"
+            assert chrome.evaluate("[...document.querySelectorAll('#alternativeWeek .week-off')].map(x=>x.textContent.slice(0,3))") == ["dom", "sáb"]
+            chrome.evaluate("document.querySelector('#alternativeOffStart').scrollIntoView({block:'center'})")
+            select_point = chrome.evaluate("(() => { const r=document.querySelector('#alternativeOffStart').getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; })()")
+            chrome.call("Input.dispatchMouseEvent", {"type": "mousePressed", "button": "left", "clickCount": 1, **select_point})
+            chrome.call("Input.dispatchMouseEvent", {"type": "mouseReleased", "button": "left", "clickCount": 1, **select_point})
+            chrome.screenshot("alternative-select-open.png")
+            chrome.call("Input.dispatchKeyEvent", {"type": "keyDown", "key": "Escape", "code": "Escape", "windowsVirtualKeyCode": 27})
+            chrome.call("Input.dispatchKeyEvent", {"type": "keyUp", "key": "Escape", "code": "Escape", "windowsVirtualKeyCode": 27})
+            chrome.evaluate("document.querySelector('#startDate').value='2026-10-06'; document.querySelector('#simulatorForm').requestSubmit()")
+            assert "segunda-feira" in chrome.evaluate("document.querySelector('#simulatorFeedback').textContent")
+            assert chrome.evaluate("document.body.dataset.resultReady") == "false"
+            chrome.evaluate("document.querySelector('#startDate').value='2026-10-05'; document.querySelector('#simulatorForm').requestSubmit()")
+            chrome.until("document.body.dataset.resultReady === 'true'")
+            assert chrome.evaluate("document.querySelector('#alternativeAnchorHelp').textContent.includes('segunda-feira')")
+            chrome.navigate(origin + "simulador.html?browserOnly")
+            chrome.until("document.body.dataset.resultReady === 'true'")
+            assert chrome.evaluate("document.querySelector('#startDate').value") == "2026-10-19"
+            print("GUIDE: alternative week and confirmed selection restored")
+
+            confirmed_record = chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')")
+            chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', JSON.stringify({version:1,flow:'alternative',offStart:99,start:'2026-10-19',scale:{nome:'Invalida',tipo:'ciclo_dias',dias_trabalho:5,dias_folga:2}}))")
+            chrome.navigate(origin + "index.html?browserOnly")
+            chrome.navigate(origin + "simulador.html?browserOnly")
+            chrome.until("document.body.dataset.resultReady === 'false'")
+            assert chrome.evaluate("document.querySelector('#activeScaleSummary').textContent.includes('Nenhuma consulta')")
+            print("GUIDE: invalid confirmed record cannot produce a result")
+            chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(confirmed_record) + ")")
+
+            legacy = [
+                {"nome": "Antiga 6x3", "tipo": "ciclo_dias", "dias_trabalho": 6, "dias_folga": 3},
+                {"nome": "Antiga 4x2", "tipo": "ciclo_dias", "dias_trabalho": 4, "dias_folga": 2},
+                {"nome": "Antiga rotativa", "tipo": "turno_rotativo", "sequencia_turnos": ["Manhã", "Tarde", "Folga"]},
+            ]
+            chrome.evaluate("localStorage.setItem('simulador_escala_demo_v014_local', " + json.dumps(json.dumps(legacy)) + ")")
+            chrome.navigate(origin + "index.html?browserOnly")
+            chrome.navigate(origin + "simulador.html?browserOnly#minhas-escalas")
+            chrome.until("state.savedScales.length === 3")
+            for index in range(3):
+                chrome.evaluate(f"applySavedScale({index}); document.querySelector('#startDate').value='2026-10-01'; document.querySelector('#simulatorForm').requestSubmit()")
+                chrome.until("document.body.dataset.resultReady === 'true'")
+                if index == 0:
+                    chrome.evaluate("document.querySelector('#guideSave').click()")
+                    assert chrome.evaluate("JSON.parse(localStorage.getItem('simulador_escala_active_v1')).scale.nome") == "Antiga 6x3"
+                    chrome.navigate(origin + "index.html?browserOnly")
+                    chrome.navigate(origin + "simulador.html?browserOnly")
+                    chrome.until("document.body.dataset.resultReady === 'true'")
+                    assert "Antiga 6x3" in chrome.evaluate("document.querySelector('#guideResultSummary').textContent")
+            print("LEGACY: saved 6x3, 4x2 and rotating schedules remain usable")
+            chrome.evaluate("localStorage.setItem('simulador_escala_demo_v014_local', JSON.stringify([{nome:'Teste PWA 6x3',tipo:'ciclo_dias',dias_trabalho:6,dias_folga:3}]))")
+            chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(confirmed_record) + ")")
+            chrome.navigate(origin + "index.html?browserOnly")
+            chrome.navigate(origin + "simulador.html?browserOnly")
+            chrome.until("document.body.dataset.resultReady === 'true'")
+
             chrome.call("Network.emulateNetworkConditions", {
                 "offline": True, "latency": 0, "downloadThroughput": 0, "uploadThroughput": 0
             })
@@ -228,6 +324,25 @@ def main():
                     chrome.until(f"document.querySelectorAll('{selector}').length", lambda value: value > 0)
                 chrome.screenshot(f"mobile-{page}.png")
                 print("OFFLINE 390px:", page, chrome.evaluate("document.querySelector('h1').textContent.trim()"))
+            for width, mobile in ((320, True), (1280, False)):
+                chrome.call("Emulation.setDeviceMetricsOverride", {
+                    "width": width, "height": 844, "deviceScaleFactor": 1, "mobile": mobile
+                })
+                for page in ("index.html", "simulador.html", "modelos.html"):
+                    chrome.navigate(origin + page + "?browserOnly")
+                    assert chrome.evaluate("document.documentElement.scrollWidth <= innerWidth"), (width, page)
+                    chrome.screenshot(f"{width}-{page}.png")
+                    if page == "simulador.html":
+                        chrome.evaluate("document.querySelector('#calendarGrid').scrollIntoView()")
+                        chrome.screenshot(f"{width}-calendar.png")
+                chrome.navigate(origin + "simulador.html?browserOnly")
+                assert chrome.evaluate("document.documentElement.scrollWidth <= innerWidth")
+                chrome.evaluate("document.documentElement.style.fontSize='20px'")
+                assert chrome.evaluate("document.documentElement.scrollWidth <= innerWidth"), (width, "larger text")
+                print("RESPONSIVE:", width, "px, larger text, no horizontal overflow")
+            chrome.call("Emulation.setDeviceMetricsOverride", {
+                "width": 390, "height": 844, "deviceScaleFactor": 1, "mobile": True
+            })
             for page in ("privacidade.html", "termos.html"):
                 chrome.navigate(origin + page + "?browserOnly")
                 assert chrome.evaluate("navigator.serviceWorker.controller !== null")
@@ -332,7 +447,27 @@ def main():
                     print("REQUESTS", [e.get("params", {}).get("request", {}).get("url") for e in chrome.events if e.get("method") == "Network.requestWillBeSent"][-12:])
                     raise
                 assert chrome.evaluate("state.savedScales.some(x=>x.nome==='Escala API de teste')")
-                print("ONLINE local API: temporary JSON scale listed")
+                chrome.evaluate("selectGuideFlow('admin'); document.querySelector('#startDate').value='2026-10-19'; document.querySelector('#simulatorForm').requestSubmit()")
+                chrome.until("document.querySelector('#resultDescription').textContent.includes('Status consultado na API')")
+                chrome.evaluate("applySavedScale(0); document.querySelector('#startDate').value='2026-10-01'; document.querySelector('#simulatorForm').requestSubmit()")
+                chrome.until("document.querySelector('#resultDescription').textContent.includes('Escala API de teste')")
+                assert chrome.evaluate("document.body.dataset.resultReady") == "true"
+                chrome.evaluate("""(() => {
+                    const original = window.apiRequest;
+                    window.apiRequest = (...args) => new Promise((resolve, reject) => {
+                        window.finishDelayedRequest = () => original(...args)
+                            .then(resolve, reject).finally(() => { window.delayedRequestFinished = true; });
+                    });
+                    window.restoreApiRequest = () => { window.apiRequest = original; };
+                })()""")
+                chrome.evaluate("selectGuideFlow('admin'); document.querySelector('#startDate').value='2026-10-19'; document.querySelector('#simulatorForm').requestSubmit()")
+                chrome.until("typeof window.finishDelayedRequest === 'function'")
+                chrome.evaluate("document.querySelector('#startDate').value=''; document.querySelector('#startDate').dispatchEvent(new Event('input',{bubbles:true})); window.finishDelayedRequest()")
+                chrome.until("window.delayedRequestFinished === true")
+                time.sleep(.1)
+                assert chrome.evaluate("document.body.dataset.resultReady") == "false"
+                chrome.evaluate("window.restoreApiRequest()")
+                print("ONLINE local API: temporary JSON scale listed and simulated")
             finally:
                 api.terminate()
                 api.wait(timeout=10)
@@ -341,7 +476,7 @@ def main():
             print("ONLINE API off: browser storage restored")
             errors = [event for event in chrome.events if event.get("method") == "Runtime.exceptionThrown"]
             assert not errors, json.dumps(errors[-2:], ensure_ascii=False)
-            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-2", b"pwa-3")
+            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-3", b"pwa-4")
             QuietHandler.worker_override = new_worker
             chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
             chrome.until("navigator.serviceWorker.getRegistration().then(r=>r.waiting?.state==='installed')")
@@ -353,7 +488,7 @@ def main():
         try:
             chrome.navigate(origin + "dados.html?browserOnly")
             chrome.until("navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js')")
-            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-3')))")
+            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-4')))")
             assert chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Restaurada 12x36')"), chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local')")
             print("UPDATE: new shell active after reopening; localStorage preserved")
         finally:

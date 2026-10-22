@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Modelos de escala do Simulador de Escala de Trabalho: 6x3, 5x2, 4x2, 12x36, turnos rotativos e escala real de 24 dias.">
+    <meta name="description" content="Três caminhos simples para começar: 5x2, 12x36 e uma alternativa com duas folgas.">
     <title>Modelos | Simulador de Escala v0.14.0</title>
 
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="experience.css">
     <script defer src="vendor/lucide-0.468.0.min.js"></script>
     <script defer src="script.js"></script>
     <link rel="manifest" href="manifest.webmanifest">
@@ -30,16 +31,12 @@
 
         <nav class="nav-links" id="navLinks" aria-label="Navegação principal">
             <a href="index.html">Início</a>
-            <a href="simulador.html">Simulador</a>
-            <a href="comparador.html">Comparador</a>
+            <a href="simulador.html#consultar">Ver minha escala</a>
+            <a href="simulador.html#configurar">Configurar</a>
+            <a href="simulador.html#minhas-escalas">Minhas escalas</a>
+            <a href="comparador.html">Comparar</a>
             <a href="relatorio.html">Relatório</a>
             <a href="dados.html">Dados locais</a>
-            <a href="modelos.html">Modelos</a>
-            <a href="roadmap.html">Roadmap</a>
-            <a href="documentacao.html">Documentação</a>
-            <a href="sobre.html">Sobre</a>
-            <a href="termos.html">Termos</a>
-            <a href="privacidade.html">Privacidade</a>
         </nav>
 
         <div class="header-actions">
@@ -55,136 +52,35 @@
 
     <main id="topo">
         <section class="section page-hero">
-            <div class="section-heading reveal">
-                <span class="eyebrow">
-                    <i data-lucide="layers-3"></i>
-                    Modelos de escala
-                </span>
-
-                <h1>Escolha um modelo e entenda a lógica antes de simular.</h1>
-
-                <p>
-                    Esta página apresenta os modelos prontos do projeto de forma visual, explicando quando cada um faz sentido
-                    e como a API usa esses modelos para calcular trabalho, folga ou turno.
-                </p>
+            <div class="section-heading">
+                <span class="eyebrow">ESCOLHA UM PONTO DE PARTIDA</span>
+                <h1>Três maneiras simples de começar.</h1>
+                <p>O modelo descreve o padrão. O calendário só fica correto depois que você confirma quando seu ciclo realmente começou.</p>
             </div>
         </section>
-
         <section class="section model-showcase-section">
             <div class="model-showcase-grid">
-                <article class="model-showcase-card reveal tilt-card" data-model-demo="6x3">
-                    <i data-lucide="calendar-days"></i>
-                    <span>Ciclo por dias</span>
-                    <h3>Escala 6x3</h3>
-                    <p>Seis dias trabalhando e três dias de folga. Boa para testar ciclos longos e virada de mês.</p>
-                    <button class="tiny-button" type="button">Ver detalhe</button>
+                <article class="model-showcase-card">
+                    <span>Ciclo por dias</span><h2>5x2 administrativo</h2>
+                    <p>Cinco dias de trabalho, dois de folga. Segunda a sexta é um exemplo, não uma data presumida para seu início.</p>
+                    <a class="button primary" href="simulador.html?flow=admin#configurar">Configurar 5x2</a>
                 </article>
-
-                <article class="model-showcase-card reveal tilt-card" data-model-demo="5x2">
-                    <i data-lucide="briefcase-business"></i>
-                    <span>Ciclo por dias</span>
-                    <h3>Escala 5x2</h3>
-                    <p>Cinco dias de trabalho e dois dias de folga. Representa uma rotina administrativa comum.</p>
-                    <button class="tiny-button" type="button">Ver detalhe</button>
+                <article class="model-showcase-card">
+                    <span>Ciclo por horas</span><h2>12x36</h2>
+                    <p>Informe data e hora reais de início. O trabalho pode acabar às 06:00 e a folga começar no mesmo dia.</p>
+                    <a class="button primary" href="simulador.html?flow=hours#configurar">Configurar 12x36</a>
                 </article>
-
-                <article class="model-showcase-card reveal tilt-card" data-model-demo="4x2">
-                    <i data-lucide="calendar-range"></i>
-                    <span>Ciclo por dias</span>
-                    <h3>Escala 4x2</h3>
-                    <p>Quatro dias trabalhando e dois dias de folga. Ajuda a demonstrar ciclos menores e repetitivos.</p>
-                    <button class="tiny-button" type="button">Ver detalhe</button>
-                </article>
-
-                <article class="model-showcase-card reveal tilt-card" data-model-demo="12x36">
-                    <i data-lucide="clock"></i>
-                    <span>Ciclo por horas</span>
-                    <h3>Escala 12x36</h3>
-                    <p>Doze horas de trabalho e trinta e seis horas de folga. Usa data e hora no cálculo.</p>
-                    <button class="tiny-button" type="button">Ver detalhe</button>
-                </article>
-
-                <article class="model-showcase-card reveal tilt-card" data-model-demo="turno">
-                    <i data-lucide="repeat-2"></i>
-                    <span>Turno rotativo</span>
-                    <h3>Turno simples</h3>
-                    <p>Sequência de manhã, tarde, noite e folga para simular alternância de turnos.</p>
-                    <button class="tiny-button" type="button">Ver detalhe</button>
-                </article>
-
-                <article class="model-showcase-card reveal tilt-card" data-model-demo="real24">
-                    <i data-lucide="route"></i>
-                    <span>Turno rotativo</span>
-                    <h3>Escala real 24 dias</h3>
-                    <p>Sequência maior com tarde, noite, manhã e folgas, útil para testar cenários mais realistas.</p>
-                    <button class="tiny-button" type="button">Ver detalhe</button>
+                <article class="model-showcase-card">
+                    <span>Exploração de duas folgas</span><h2>Alternativa ao 6x1</h2>
+                    <p>Escolha dois dias de folga consecutivos e confira uma semana ilustrativa. Usa o mesmo ciclo matemático 5+2, sem criar outro cadastro igual.</p>
+                    <a class="button primary" href="simulador.html?flow=alternative#configurar">Explorar folgas</a>
                 </article>
             </div>
+            <p class="guide-help">A alternativa é apenas uma simulação. O calendário não verifica horas, acordos coletivos, regimes diferenciados ou a transição da <a href="https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc141.htm" target="_blank" rel="noopener noreferrer">EC 141/2026</a>.</p>
         </section>
-
         <section class="section">
-            <div class="model-detail-card glass-card reveal" id="modelDetailCard">
-                <span class="eyebrow">
-                    <i data-lucide="mouse-pointer-click"></i>
-                    Explorador de modelos
-                </span>
-
-                <h2 id="modelDetailTitle">Clique em um modelo acima.</h2>
-
-                <p id="modelDetailDescription">
-                    Ao selecionar um cartão, esta área mostra o resumo da regra, o tipo de cálculo e uma sugestão de teste.
-                </p>
-
-                <div class="model-detail-grid">
-                    <div>
-                        <small>Tipo</small>
-                        <strong id="modelDetailType">Aguardando seleção</strong>
-                    </div>
-
-                    <div>
-                        <small>Configuração</small>
-                        <strong id="modelDetailConfig">---</strong>
-                    </div>
-
-                    <div>
-                        <small>Teste sugerido</small>
-                        <strong id="modelDetailTest">Abra o simulador</strong>
-                    </div>
-                </div>
-
-                <div class="hero-actions">
-                    <a class="button primary" href="simulador.html">
-                        Simular modelo
-                        <i data-lucide="arrow-right"></i>
-                    </a>
-                    <a class="button ghost" href="documentacao.html">
-                        Ver regra técnica
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <section class="section cta-section">
-            <div class="glass-card cta-card reveal">
-                <span class="eyebrow">
-                    <i data-lucide="sparkles"></i>
-                    Dica de uso
-                </span>
-
-                <h2>Para testar bem, aumente a quantidade de dias visualizados.</h2>
-
-                <p>
-                    Quando você simula 30, 45 ou 60 dias em ciclos por dias, o calendário agora pode exibir mais de um mês,
-                    deixando a visualização muito melhor para planejamento.
-                </p>
-
-                <div class="hero-actions">
-                    <a class="button primary" href="simulador.html">
-                        Testar calendário
-                        <i data-lucide="arrow-right"></i>
-                    </a>
-                </div>
-            </div>
+            <h2>Já tenho outra escala</h2>
+            <p>Escalas 6x3, 4x2 e rotativas continuam acessíveis em <a class="text-link" href="simulador.html#minhas-escalas">Minhas escalas</a> e em backups antigos. Para montar um ciclo diferente, abra a <a class="text-link" href="simulador.html?flow=custom#configurar">configuração avançada</a>. Comparador e relatório continuam aceitando esses tipos.</p>
         </section>
     </main>
 
