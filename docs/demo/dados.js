@@ -150,8 +150,5 @@
             message("Os dados mudaram em outra página. Selecione o backup novamente antes de importar.");
         }
     });
-    document.addEventListener("pwa-update-ready", () => {
-        document.querySelector("#updateNote").hidden = false;
-    });
     refreshCurrent();
 }());

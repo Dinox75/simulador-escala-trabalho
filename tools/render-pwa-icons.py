@@ -21,8 +21,8 @@ def main():
             port = probe.getsockname()[1]
         chrome = Chrome(port, profile)
         try:
-            for source, name in (("escala-source.svg", "icon"),
-                                 ("escala-maskable-source.svg", "icon-maskable")):
+            for source, name in (("escala-source.svg", "icon-v2"),
+                                 ("escala-maskable-source.svg", "icon-maskable-v2")):
                 for size in (192, 512):
                     chrome.call("Emulation.setDeviceMetricsOverride", {
                         "width": size, "height": size, "deviceScaleFactor": 1,

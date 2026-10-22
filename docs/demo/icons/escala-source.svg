@@ -2,8 +2,8 @@
   <title id="title">Simulador de Escala de Trabalho</title>
   <desc id="desc">Calendário de nove posições: seis azuis de trabalho e três âmbar de folga.</desc>
   <rect width="512" height="512" fill="#12171f"/>
-  <rect x="78" y="78" width="356" height="356" rx="68" fill="#1e2b3a" stroke="#47698b" stroke-width="8"/>
-  <path d="M82 158h348" stroke="#47698b" stroke-width="8"/>
+  <rect x="78" y="78" width="356" height="356" rx="68" fill="#1e2b3a" stroke="#47698b" stroke-width="10"/>
+  <path d="M82 158h348" stroke="#47698b" stroke-width="10"/>
   <rect x="148" y="54" width="34" height="76" rx="17" fill="#60a5fa"/>
   <rect x="330" y="54" width="34" height="76" rx="17" fill="#60a5fa"/>
   <g fill="#60a5fa">

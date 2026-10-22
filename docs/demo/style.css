@@ -741,6 +741,24 @@ select option:hover { background: #dbeafa; color: #162638; }
 }
 /* Installed app and local data management */
 .pwa-install-button { min-height: 40px; padding-inline: 10px; font-size: .75rem; white-space: nowrap; }
+.pwa-update-banner {
+    position: fixed;
+    z-index: 100;
+    right: 16px;
+    bottom: 16px;
+    display: grid;
+    gap: 7px;
+    width: min(410px, calc(100% - 32px));
+    padding: 15px;
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+.pwa-update-banner strong { color: var(--text); }
+.pwa-update-banner span { color: var(--muted); font-size: .88rem; }
+.pwa-update-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.pwa-update-actions .button { min-height: 44px; }
 .device-data-main { width: min(760px, calc(100% - 32px)); margin: 38px auto 0; }
 .device-data-main h1 { margin: 10px 0 16px; font-size: clamp(2rem, 6vw, 3rem); }
 .device-data-main > p { line-height: 1.6; }
@@ -755,16 +773,17 @@ select option:hover { background: #dbeafa; color: #162638; }
 .device-import-preview { margin: 14px 0; padding: 15px; border: 1px solid var(--primary); border-radius: 7px; background: var(--primary-soft); }
 .device-import-preview h3 { margin-bottom: 8px; }
 .device-import-preview p:last-child { margin-bottom: 0; }
-.device-data-feedback, .device-update-note { min-height: 24px; overflow-wrap: anywhere; }
+.device-data-feedback { min-height: 24px; overflow-wrap: anywhere; }
 .device-data-feedback[data-feedback-type="error"] { color: var(--danger); }
 .device-data-feedback[data-feedback-type="success"] { color: var(--success); }
-.device-update-note { padding: 12px; border-left: 3px solid var(--primary); background: var(--surface); }
 .device-install-help { margin: 20px 0; padding: 15px; border: 1px solid var(--line); border-radius: 8px; }
 .device-install-help summary { color: var(--primary); cursor: pointer; font-weight: 700; }
 .device-install-help p { margin: 12px 0 0; }
 [hidden] { display: none !important; }
 @media (max-width: 680px) {
     .pwa-install-button { min-height: 44px; padding-inline: 8px; }
+    .pwa-update-banner { right: 12px; bottom: 12px; width: calc(100% - 24px); }
+    .pwa-update-actions .button { flex: 1 1 120px; }
     .device-data-main { width: calc(100% - 24px); margin-top: 22px; }
     .device-data-panel { padding: 16px; }
     .device-data-panel .button { width: 100%; }
@@ -777,7 +796,7 @@ select option:hover { background: #dbeafa; color: #162638; }
 @media print {
     @page { size: A4 landscape; margin: 6mm; }
     html, body { min-width: 0; min-height: 0; overflow: visible; background: #fff !important; color: #111 !important; font: 10pt/1.3 Arial, sans-serif; }
-    .no-print, .site-header, .site-footer, .scroll-progress { display: none !important; }
+    .no-print, .site-header, .site-footer, .scroll-progress, .pwa-update-banner { display: none !important; }
     .report-workbench { width: 100%; margin: 0; padding: 0; }
     .report-sheet { margin: 0; padding: 0; border: 0; border-radius: 0; background: #fff; box-shadow: none; color: #111; }
     .report-print-heading { margin-bottom: 4pt; padding-bottom: 3pt; border-color: #2678c9; }

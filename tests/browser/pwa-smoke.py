@@ -26,13 +26,25 @@ BROWSER = os.environ.get("SIMULADOR_BROWSER", r"C:\Program Files\Google\Chrome\A
 
 class QuietHandler(SimpleHTTPRequestHandler):
     worker_override = None
+    pwa_override = None
 
     def log_message(self, *_args):
         pass
 
     def do_GET(self):
-        if self.path.split("?", 1)[0] == "/docs/demo/sw.js" and self.worker_override:
+        path = self.path.split("?", 1)[0]
+        if path == "/docs/demo/sw.js" and self.worker_override:
             body = self.worker_override
+
+            self.send_response(200)
+            self.send_header("Content-Type", "text/javascript; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if path == "/docs/demo/pwa.js" and self.pwa_override:
+            body = self.pwa_override
             self.send_response(200)
             self.send_header("Content-Type", "text/javascript; charset=utf-8")
             self.send_header("Cache-Control", "no-store")
@@ -94,10 +106,13 @@ class Chrome:
             "width": 390, "height": 844, "deviceScaleFactor": 1, "mobile": True
         })
 
-    def call(self, method, params=None):
+    def call(self, method, params=None, session_id=None):
         self.number += 1
         number = self.number
-        payload = json.dumps({"id": number, "method": method, "params": params or {}}).encode()
+        command = {"id": number, "method": method, "params": params or {}}
+        if session_id:
+            command["sessionId"] = session_id
+        payload = json.dumps(command).encode()
         mask = os.urandom(4)
         size = len(payload)
         header = bytes([129, 128 | (size if size < 126 else 126 if size < 65536 else 127)])
@@ -120,25 +135,34 @@ class Chrome:
                 return message.get("result", {})
             self.events.append(message)
 
-    def evaluate(self, expression):
+    def evaluate(self, expression, session_id=None):
         result = self.call("Runtime.evaluate", {
             "expression": expression, "returnByValue": True, "awaitPromise": True
-        }).get("result", {})
+        }, session_id=session_id).get("result", {})
         if "exceptionDetails" in result:
             raise RuntimeError(result["exceptionDetails"])
         return result.get("value")
 
-    def until(self, expression, expected=lambda value: bool(value)):
+    def until(self, expression, expected=lambda value: bool(value), session_id=None):
         for _ in range(100):
-            value = self.evaluate(expression)
+            value = self.evaluate(expression, session_id=session_id)
             if expected(value):
                 return value
             time.sleep(.1)
         raise AssertionError(f"Timed out: {expression}; last value: {value!r}")
 
-    def navigate(self, url):
-        self.call("Page.navigate", {"url": url})
-        self.until(f"location.href === {json.dumps(url)} && document.readyState === 'complete' && !!document.querySelector('h1')")
+    def navigate(self, url, session_id=None):
+        self.call("Page.navigate", {"url": url}, session_id=session_id)
+        self.until(f"location.href === {json.dumps(url)} && document.readyState === 'complete' && !!document.querySelector('h1')", session_id=session_id)
+
+    def open_tab(self, url):
+        target_id = self.call("Target.createTarget", {"url": "about:blank"})["targetId"]
+        session_id = self.call("Target.attachToTarget", {"targetId": target_id, "flatten": True})["sessionId"]
+        self.call("Page.enable", session_id=session_id)
+        self.call("Runtime.enable", session_id=session_id)
+        self.call("Network.enable", session_id=session_id)
+        self.navigate(url, session_id=session_id)
+        return session_id
 
     def screenshot(self, filename):
         target = os.environ.get("SIMULADOR_SCREENSHOT_DIR")
@@ -163,7 +187,7 @@ class Chrome:
 
 def main():
     assert pathlib.Path(BROWSER).is_file(), f"Personal Chrome unavailable: {BROWSER}"
-    for name in ("icon", "icon-maskable"):
+    for name in ("icon-v2", "icon-maskable-v2"):
         for size in (192, 512):
             png = (ROOT / "docs" / "demo" / "icons" / f"{name}-{size}.png").read_bytes()
             assert png[:8] == b"\x89PNG\r\n\x1a\n"
@@ -190,7 +214,7 @@ def main():
             for script in scripts:
                 chrome.evaluate("new Function(" + json.dumps(script.read_text(encoding="utf-8")) + "); true")
             print("JAVASCRIPT SYNTAX:", len(scripts), "demo scripts compiled in Chrome")
-            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-4')))")
+            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-5')))")
             scope = chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.scope)")
             assert scope == origin, scope
             install_errors = chrome.call("Page.getInstallabilityErrors").get("installabilityErrors", [])
@@ -372,6 +396,7 @@ def main():
             })
             for page in ("simulador.html", "comparador.html", "relatorio.html", "dados.html"):
                 chrome.navigate(origin + page + "?browserOnly")
+                assert chrome.evaluate("document.querySelector('#pwaUpdateBanner')?.hidden")
                 assert chrome.evaluate("navigator.serviceWorker.controller !== null")
                 assert chrome.evaluate("document.documentElement.scrollWidth <= innerWidth"), page
                 assert chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Teste PWA 6x3')")
@@ -420,9 +445,8 @@ def main():
             assert [icon["purpose"] for icon in manifest["icons"]] == [
                 "any", "any", "maskable", "maskable"
             ]
-            assert chrome.evaluate("Promise.all(['icon-192.png', 'icon-512.png', "
-                                   "'icon-maskable-192.png', 'icon-maskable-512.png']"
-                                   ".map(n=>fetch('icons/'+n).then(r=>r.ok))).then(x=>x.every(Boolean))")
+            assert chrome.evaluate("Promise.all(" + json.dumps([icon["src"] for icon in manifest["icons"]]) +
+                                   ".map(path=>fetch(path).then(r=>r.ok))).then(x=>x.every(Boolean))")
             assert not [event for event in chrome.events if event.get("method") == "Network.requestWillBeSent"
                         and "127.0.0.1:8000" in event.get("params", {}).get("request", {}).get("url", "")]
             chrome.call("Emulation.setDeviceMetricsOverride", {
@@ -572,21 +596,113 @@ def main():
             print("ONLINE API off: browser storage restored")
             errors = [event for event in chrome.events if event.get("method") == "Runtime.exceptionThrown"]
             assert not errors, json.dumps(errors[-2:], ensure_ascii=False)
-            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-4", b"pwa-5")
+            chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(confirmed_record) + ")")
+            second_tab = chrome.open_tab(origin + "comparador.html?browserOnly")
+            chrome.until("!!document.querySelector('#pwaUpdateBanner')", session_id=second_tab)
+            chrome.evaluate("window.__keepMarker = 'second tab stayed open'", session_id=second_tab)
+            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-5", b"pwa-6")
             QuietHandler.worker_override = new_worker
+            assert chrome.evaluate("fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>t.includes('pwa-6'))")
             chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
             chrome.until("navigator.serviceWorker.getRegistration().then(r=>r.waiting?.state==='installed')")
-            assert chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Restaurada 12x36')")
-            print("UPDATE: new shell waits while old page is open")
-        finally:
-            chrome.close()
-        chrome = Chrome(debug_port, base / "profile")
-        try:
+            chrome.until("document.querySelector('#pwaUpdateBanner')?.hidden === false")
+            chrome.until("document.querySelector('#pwaUpdateBanner')?.hidden === false", session_id=second_tab)
+            assert chrome.evaluate("document.documentElement.scrollWidth <= innerWidth")
+            chrome.screenshot("update-banner-mobile.png")
+            chrome.call("Network.emulateNetworkConditions", {
+                "offline": True, "latency": 0, "downloadThroughput": 0, "uploadThroughput": 0
+            })
+            chrome.until("navigator.onLine === false && document.querySelector('#pwaUpdateBanner').hidden")
+            chrome.call("Network.emulateNetworkConditions", {
+                "offline": False, "latency": 0, "downloadThroughput": -1, "uploadThroughput": -1
+            })
+            chrome.call("Page.bringToFront")
+            chrome.until("navigator.onLine === true && document.querySelector('#pwaUpdateBanner').hidden === false")
+            check_time = chrome.evaluate("sessionStorage.getItem('simulador_pwa_last_update_check')")
+            assert check_time
+            for page in sorted(path.name for path in (ROOT / "docs" / "demo").glob("*.html")):
+                chrome.navigate(origin + page + "?browserOnly")
+                chrome.until("document.querySelector('#pwaUpdateBanner')?.hidden === false")
+                assert "Atualização disponível" in chrome.evaluate("document.querySelector('#pwaUpdateBanner').textContent")
+                assert chrome.evaluate("document.documentElement.scrollWidth <= innerWidth"), page
+                assert chrome.evaluate("sessionStorage.getItem('simulador_pwa_last_update_check')") == check_time
+            chrome.navigate(origin + "simulador.html?browserOnly")
+            chrome.until("document.querySelector('#pwaUpdateBanner')?.hidden === false")
+            chrome.evaluate("document.querySelector('#pwaUpdateBanner .button.quiet').click()")
+            assert chrome.evaluate("document.querySelector('#pwaUpdateBanner').hidden")
             chrome.navigate(origin + "dados.html?browserOnly")
-            chrome.until("navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js')")
-            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-5')))")
-            assert chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Restaurada 12x36')"), chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local')")
-            print("UPDATE: new shell active after reopening; localStorage preserved")
+            assert chrome.evaluate("document.querySelector('#pwaUpdateBanner')?.hidden")
+            chrome.evaluate("window.dispatchEvent(new Event('focus'))")
+            assert chrome.evaluate("document.querySelector('#pwaUpdateBanner').hidden")
+            assert chrome.evaluate("sessionStorage.getItem('simulador_pwa_last_update_check')") == check_time
+            chrome.evaluate("sessionStorage.removeItem('simulador_pwa_update_postponed_until')")
+            chrome.navigate(origin + "simulador.html?browserOnly&resume")
+            chrome.until("document.querySelector('#pwaUpdateBanner')?.hidden === false")
+            chrome.call("Page.bringToFront")
+            chrome.evaluate("document.querySelector('#savedScalesList').closest('details').open=true; document.querySelector('#savedName').focus()")
+            chrome.call("Input.insertText", {"text": "Rascunho não salvo"})
+            assert chrome.evaluate("document.querySelector('#savedName').value") == "Rascunho não salvo"
+            chrome.evaluate("window.confirm=(message)=>{window.updateConfirm=message;return false}; document.querySelector('#pwaUpdateBanner .button.primary').click()")
+            assert "campos alterados" in chrome.evaluate("window.updateConfirm")
+            assert chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>!!r.waiting)")
+            chrome.evaluate("window.addEventListener('beforeunload',()=>sessionStorage.setItem('__update_reload_count',String(Number(sessionStorage.getItem('__update_reload_count')||0)+1))); window.confirm=()=>true; document.querySelector('#pwaUpdateBanner .button.primary').click()")
+            time.sleep(.5)
+            chrome.until("sessionStorage.getItem('__update_reload_count') === '1' && performance.getEntriesByType('navigation')[0]?.type === 'reload'")
+            assert chrome.evaluate("window.__keepMarker", session_id=second_tab) == "second tab stayed open"
+            chrome.until("document.querySelector('#pwaUpdateBanner')?.hidden === false", session_id=second_tab)
+            chrome.evaluate("document.querySelector('#pwaUpdateBanner .button.primary').click()", session_id=second_tab)
+            time.sleep(.5)
+            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-6')))", session_id=second_tab)
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Restaurada 12x36')")
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") == confirmed_record
+            print("UPDATE: all pages notified; dirty form protected; chosen tab reloaded once; second tab waited")
+            chrome.call("Network.emulateNetworkConditions", {
+                "offline": True, "latency": 0, "downloadThroughput": 0, "uploadThroughput": 0
+            })
+            for page in ("simulador.html", "comparador.html", "relatorio.html", "dados.html"):
+                chrome.navigate(origin + page + "?browserOnly")
+                assert chrome.evaluate("document.querySelector('h1') !== null"), page
+                assert chrome.evaluate("document.querySelector('#pwaUpdateBanner')?.hidden"), page
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") == confirmed_record
+            errors = [event for event in chrome.events if event.get("method") == "Runtime.exceptionThrown"]
+            assert not errors, json.dumps(errors[-2:], ensure_ascii=False)
+            print("UPDATED OFFLINE: simulator, comparator, report and local data opened without losing scales")
+
+            legacy_script = ("window.__legacyPwa=true; window.addEventListener('load',()=>"
+                             "navigator.serviceWorker.register('sw.js',{scope:'./',updateViaCache:'none'}));").encode()
+            QuietHandler.worker_override = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-5", b"pwa-4")
+            QuietHandler.pwa_override = legacy_script
+            with socket.socket() as legacy_port_socket:
+                legacy_port_socket.bind(("127.0.0.1", 0))
+                legacy_port = legacy_port_socket.getsockname()[1]
+            legacy = Chrome(legacy_port, base / "legacy-profile")
+            try:
+                legacy.navigate(origin + "simulador.html?browserOnly")
+                legacy.until("navigator.serviceWorker.controller && caches.keys().then(x=>x.some(y=>y.endsWith('pwa-4')))")
+                assert legacy.evaluate("window.__legacyPwa === true && !document.querySelector('#pwaUpdateBanner')")
+                legacy.evaluate("localStorage.setItem('simulador_escala_demo_v014_local', JSON.stringify([{nome:'Escala anterior',tipo:'ciclo_dias',dias_trabalho:6,dias_folga:3}]))")
+                legacy.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(confirmed_record) + ")")
+                legacy.open_tab(origin + "dados.html?browserOnly")
+                QuietHandler.pwa_override = None
+                QuietHandler.worker_override = (ROOT / "docs" / "demo" / "sw.js").read_bytes()
+                assert legacy.evaluate("fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>t.includes('pwa-5'))")
+                legacy.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
+                legacy.until("navigator.serviceWorker.getRegistration().then(r=>r.waiting?.state==='installed')")
+                assert legacy.evaluate("!document.querySelector('#pwaUpdateBanner')")
+            finally:
+                legacy.close()
+            legacy = Chrome(legacy_port, base / "legacy-profile")
+            try:
+                legacy.navigate(origin + "simulador.html?browserOnly")
+                legacy.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-5')))")
+                legacy.until("!!document.querySelector('#pwaUpdateBanner')")
+                assert legacy.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Escala anterior')")
+                assert legacy.evaluate("localStorage.getItem('simulador_escala_active_v1')") == confirmed_record
+                errors = [event for event in legacy.events if event.get("method") == "Runtime.exceptionThrown"]
+                assert not errors, json.dumps(errors[-2:], ensure_ascii=False)
+                print("LEGACY UPDATE: closing old tabs activated the new shell; scales and confirmed query remained")
+            finally:
+                legacy.close()
         finally:
             chrome.close()
             server.shutdown()

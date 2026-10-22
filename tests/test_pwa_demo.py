@@ -28,6 +28,13 @@ def test_manifest_is_scoped_to_demo_and_has_real_png_icons() -> None:
         assert urljoin(manifest_url, manifest["start_url"]) == urljoin(base, "simulador.html")
         assert urljoin(manifest_url, manifest["scope"]) == base
     assert manifest["display"] == "standalone"
+    assert manifest["id"] == "./simulador.html"
+    assert manifest["start_url"] == "./simulador.html"
+    assert manifest["scope"] == "./"
+    assert {icon["src"] for icon in manifest["icons"]} == {
+        "icons/icon-v2-192.png", "icons/icon-v2-512.png",
+        "icons/icon-maskable-v2-192.png", "icons/icon-maskable-v2-512.png",
+    }
     for icon in manifest["icons"]:
         width, height = map(int, icon["sizes"].split("x"))
         content = (DEMO / icon["src"]).read_bytes()
@@ -54,7 +61,10 @@ def test_every_demo_page_has_only_local_runtime_assets_in_precache() -> None:
             assert not resource.startswith("http")
             assert (DEMO / resource).is_file(), resource
             assert resource in precached, resource
-    assert "skipWaiting" not in worker.replace("// Do not skipWaiting", "")
+    install = worker.split('self.addEventListener("install"', 1)[1].split('self.addEventListener("message"', 1)[0]
+    assert "skipWaiting" not in install
+    assert 'event.data?.type === "SKIP_WAITING"' in worker
+    assert "event.waitUntil(self.skipWaiting())" in worker
     assert "url.origin !== self.location.origin" in worker
 
 

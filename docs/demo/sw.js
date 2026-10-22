@@ -1,6 +1,6 @@
 /* Bump this name whenever a cached page or asset changes. Keep each shell complete. */
 const CACHE_PREFIX = "simulador-demo-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}pwa-4`;
+const CACHE_NAME = `${CACHE_PREFIX}pwa-5`;
 const SHELL = [
     "./", "index.html", "simulador.html", "comparador.html", "relatorio.html",
     "dados.html", "modelos.html", "documentacao.html", "sobre.html",
@@ -9,6 +9,8 @@ const SHELL = [
     "backup-core.js", "dados.js", "pwa.js", "manifest.webmanifest",
     "icons/icon-192.png", "icons/icon-512.png",
     "icons/icon-maskable-192.png", "icons/icon-maskable-512.png",
+    "icons/icon-v2-192.png", "icons/icon-v2-512.png",
+    "icons/icon-maskable-v2-192.png", "icons/icon-maskable-v2-512.png",
     "vendor/lucide-0.468.0.min.js"
 ];
 const shellUrls = new Set(SHELL.map((file) => new URL(file, self.registration.scope).href));
@@ -24,8 +26,12 @@ self.addEventListener("install", (event) => {
             await caches.delete(CACHE_NAME);
             throw error;
         }
-        // Do not skipWaiting: open pages keep their matching shell until closed.
+        // An update waits for a user's action, or for every old client to close.
     })());
+});
+
+self.addEventListener("message", (event) => {
+    if (event.data?.type === "SKIP_WAITING") event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener("activate", (event) => {
