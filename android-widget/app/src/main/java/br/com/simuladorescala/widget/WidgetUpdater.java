@@ -59,10 +59,12 @@ public final class WidgetUpdater {
                 views.setTextViewText(R.id.widget_next,
                         invalid ? "Toque para importar novamente" : "Toque para importar um backup");
                 views.setTextViewText(R.id.widget_status, invalid ? "Dados inválidos" : "Sem escala");
+                views.setTextViewText(R.id.widget_position, "");
                 views.setTextColor(R.id.widget_status, Color.rgb(243, 189, 102));
             } else {
                 views.setTextViewText(R.id.widget_name, selection.scale.name);
                 views.setTextViewText(R.id.widget_status, displayStatus(snapshot.status));
+                views.setTextViewText(R.id.widget_position, snapshot.position);
                 views.setTextColor(R.id.widget_status, "Folga".equals(snapshot.status)
                         ? Color.rgb(243, 189, 102) : Color.rgb(95, 164, 245));
                 views.setTextViewText(R.id.widget_next,

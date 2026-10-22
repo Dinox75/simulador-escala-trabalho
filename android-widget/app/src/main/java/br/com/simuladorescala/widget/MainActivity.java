@@ -5,7 +5,9 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
@@ -20,7 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Collections;
@@ -34,6 +38,11 @@ public final class MainActivity extends Activity {
     private EditText startTime;
     private TextView feedback;
     private TextView preview;
+    private TextView calculationPreview;
+    private Button apply;
+    private ScheduleEngine.Selection confirmedSelection;
+    private static final DateTimeFormatter MOMENT =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm");
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -47,7 +56,8 @@ public final class MainActivity extends Activity {
         label(content, "Escala na tela inicial", 26, Color.rgb(18, 23, 31));
         label(content, "1. Na PWA, abra Dados locais e baixe o backup JSON.\n"
                 + "2. Importe o arquivo aqui, escolha uma escala e informe o início do ciclo.\n"
-                + "3. Toque em Aplicar ao widget. O backup não traz a data de início.", 15,
+                + "3. Confira o status e a próxima mudança antes de aplicar. "
+                + "O backup não traz a data de início.", 15,
                 Color.rgb(48, 58, 71));
         label(content, "Os dados ficam neste dispositivo. Não há sincronização com o Chrome, "
                 + "com a API ou entre aparelhos.", 14, Color.rgb(48, 58, 71));
@@ -65,14 +75,25 @@ public final class MainActivity extends Activity {
         });
         content.addView(choices);
         label(content, "Início do ciclo (AAAA-MM-DD)", 15, Color.rgb(18, 23, 31));
-        startDate = entry(content, LocalDate.now().toString(),
+        label(content, "Digite a mesma data de início usada ao simular esta escala na PWA. "
+                + "Ela não vem no backup e não é necessariamente hoje.", 13,
+                Color.rgb(48, 58, 71));
+        startDate = entry(content, "",
                 InputType.TYPE_CLASS_DATETIME | InputType.TYPE_DATETIME_VARIATION_DATE);
+        startDate.setHint("AAAA-MM-DD");
         label(content, "Hora do início para ciclos por horas (HH:mm)", 15, Color.rgb(18, 23, 31));
-        startTime = entry(content, "00:00",
+        startTime = entry(content, "",
                 InputType.TYPE_CLASS_DATETIME | InputType.TYPE_DATETIME_VARIATION_TIME);
+        startTime.setHint("HH:mm");
         label(content, "Para ciclos por dias e turnos, a hora não altera o status.", 13,
                 Color.rgb(48, 58, 71));
-        Button apply = button(content, "Aplicar ao widget");
+        Button check = button(content, "Conferir situação agora");
+        check.setOnClickListener(view -> checkSelection());
+        calculationPreview = label(content,
+                "Informe a âncora e confira a situação antes de aplicar.", 14,
+                Color.rgb(48, 58, 71));
+        apply = button(content, "Aplicar ao widget");
+        apply.setEnabled(false);
         apply.setOnClickListener(view -> applySelection());
         Button clear = button(content, "Remover escala do widget");
         clear.setOnClickListener(view -> new AlertDialog.Builder(this)
@@ -81,17 +102,25 @@ public final class MainActivity extends Activity {
                 .setPositiveButton("Remover", (dialog, which) -> {
                     WidgetState.clear(this);
                     WidgetUpdater.refresh(this);
+                    invalidatePreview();
                     show("Seleção removida. O backup no navegador não foi alterado.", false);
                 }).show());
         feedback = label(content, "", 14, Color.rgb(18, 23, 31));
+        TextWatcher invalidateOnEdit = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence text, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence text, int start, int before, int count) {
+                invalidatePreview();
+            }
+            @Override public void afterTextChanged(Editable text) {}
+        };
+        startDate.addTextChangedListener(invalidateOnEdit);
+        startTime.addTextChangedListener(invalidateOnEdit);
         setContentView(scroll);
         try {
             ScheduleEngine.Selection existing = WidgetState.read(this);
             if (existing != null) {
                 show("Ativa: " + existing.scale.name + ", início " + existing.startDate
                         + " " + existing.startTime + ". Importe de novo para trocar.", false);
-                startDate.setText(existing.startDate.toString());
-                startTime.setText(existing.startTime.toString());
             }
         } catch (IOException error) {
             show("A seleção anterior está inválida. Importe um backup novamente.", true);
@@ -132,18 +161,20 @@ public final class MainActivity extends Activity {
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             choices.setAdapter(adapter);
             updatePreview();
-            show("Backup válido. Confira a escala e toque em Aplicar ao widget.", false);
+            show("Backup válido. Confira a escala e a situação antes de aplicar.", false);
         } catch (IOException | IllegalArgumentException | SecurityException error) {
             // Discard only the uncommitted preview; keep the active widget intact.
             pending = Collections.emptyList();
             choices.setAdapter(null);
             preview.setText("Nenhum backup válido selecionado.");
+            invalidatePreview();
             show("Importação recusada: " + error.getMessage()
                     + " A escala anterior permanece no widget.", true);
         }
     }
 
     private void updatePreview() {
+        invalidatePreview();
         if (pending.isEmpty() || choices.getSelectedItemPosition() < 0) return;
         ScheduleEngine.Scale scale = pending.get(choices.getSelectedItemPosition());
         String detail = "turno_rotativo".equals(scale.type)
@@ -151,28 +182,70 @@ public final class MainActivity extends Activity {
                 : ("ciclo_horas".equals(scale.type) ? "Horas" : "Dias")
                     + ": " + scale.work + " de trabalho / " + scale.off + " de folga";
         preview.setText(pending.size() + " escala(s) validadas. Escolhida: " + scale.name
-                + ". " + detail + ". Confira o início do ciclo e toque em Aplicar. "
+                + ". " + detail + ". Confira o início do ciclo e a situação atual. "
                 + "Nada foi salvo ainda.");
     }
 
-    private void applySelection() {
+    private void invalidatePreview() {
+        confirmedSelection = null;
+        if (apply != null) apply.setEnabled(false);
+        if (calculationPreview != null) {
+            calculationPreview.setText("Confira a situação novamente antes de aplicar.");
+        }
+    }
+
+    private ScheduleEngine.Selection enteredSelection() {
         if (pending.isEmpty() || choices.getSelectedItemPosition() < 0) {
-            show("Escolha primeiro um backup com pelo menos uma escala.", true);
+            throw new IllegalArgumentException("Escolha primeiro um backup com pelo menos uma escala.");
+        }
+        String dateText = startDate.getText().toString().trim();
+        if (dateText.isEmpty()) {
+            throw new IllegalArgumentException("Informe explicitamente o início do ciclo usado na PWA.");
+        }
+        ScheduleEngine.Scale scale = pending.get(choices.getSelectedItemPosition());
+        String timeText = startTime.getText().toString().trim();
+        if ("ciclo_horas".equals(scale.type) && timeText.isEmpty()) {
+            throw new IllegalArgumentException("Informe a hora de início do ciclo por horas.");
+        }
+        LocalDate date = LocalDate.parse(dateText);
+        LocalTime time = "ciclo_horas".equals(scale.type)
+                ? LocalTime.parse(timeText) : LocalTime.MIDNIGHT;
+        return new ScheduleEngine.Selection(scale, date, time);
+    }
+
+    private void checkSelection() {
+        invalidatePreview();
+        try {
+            ScheduleEngine.Selection selection = enteredSelection();
+            LocalDateTime now = LocalDateTime.now();
+            ScheduleEngine.Snapshot snapshot = ScheduleEngine.snapshot(selection, now);
+            calculationPreview.setText("Prévia para " + now.format(MOMENT) + ": "
+                    + snapshot.status + " · " + snapshot.position + ". "
+                    + (snapshot.nextChange == null ? "Sem mudança na sequência."
+                    : "Próxima mudança: " + snapshot.nextChange.format(MOMENT) + ".")
+                    + " Confirme a âncora antes de aplicar.");
+            confirmedSelection = selection;
+            apply.setEnabled(true);
+            show("Prévia pronta. Confira a data e a hora de início e toque em Aplicar ao widget.", false);
+        } catch (DateTimeParseException error) {
+            show("Informe início válido: data AAAA-MM-DD e, para ciclos por horas, hora HH:mm.", true);
+        } catch (IllegalArgumentException error) {
+            show(error.getMessage(), true);
+        }
+    }
+
+    private void applySelection() {
+        if (confirmedSelection == null) {
+            show("Confira a situação e a âncora antes de aplicar.", true);
             return;
         }
         try {
-            ScheduleEngine.Scale scale = pending.get(choices.getSelectedItemPosition());
-            LocalDate date = LocalDate.parse(startDate.getText().toString().trim());
-            LocalTime time = "ciclo_horas".equals(scale.type)
-                    ? LocalTime.parse(startTime.getText().toString().trim())
-                    : LocalTime.MIDNIGHT;
-            ScheduleEngine.Selection selection = new ScheduleEngine.Selection(scale, date, time);
+            ScheduleEngine.Selection selection = confirmedSelection;
             WidgetState.write(this, selection);
             WidgetUpdater.refresh(this);
-            show("Widget atualizado: " + scale.name + ". O arquivo e as escalas no navegador "
+            invalidatePreview();
+            show("Widget atualizado: " + selection.scale.name + ". O arquivo e as escalas no navegador "
                     + "não foram modificados.", false);
-        } catch (DateTimeParseException error) {
-            show("Informe início válido: data AAAA-MM-DD e hora HH:mm.", true);
         } catch (IOException error) {
             show("Não foi possível salvar a seleção: " + error.getMessage(), true);
         }

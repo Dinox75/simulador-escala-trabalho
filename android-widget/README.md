@@ -26,11 +26,18 @@ Android, sem servidor ou permissão de rede.
    versão 1, até 512 KB e 200 escalas, com tipos, campos e limites do backup
    web. Uma seleção inválida não substitui a configuração ativa.
 3. Escolha uma escala e informe **Início do ciclo** no formato AAAA-MM-DD.
-   Para ciclos por horas, informe também HH:mm. A âncora não vem no backup
-   web. Toque em **Aplicar ao widget**; só então a seleção é salva.
+   Digite a mesma âncora usada na simulação da PWA: o campo começa vazio,
+   pois a âncora não vem no backup web. Para ciclos por horas, informe também
+   HH:mm. Toque em **Conferir situação agora** e verifique status, posição no
+   ciclo e próxima mudança. **Aplicar ao widget** só fica disponível após
+   essa conferência; qualquer mudança de escala, data ou hora exige nova
+   prévia. A seleção ativa só é substituída ao aplicar.
 4. Na tela inicial do Android, adicione **Escalas · widget** em tamanho
    compacto ou expandido. Ambos mostram a situação no horário atual do
-   aparelho e a próxima mudança calculada. Toque para reconfigurar.
+   aparelho, a posição no ciclo e a próxima mudança calculada. Ciclos por
+   dias mostram, por exemplo, **Dia 4 de 9**; por horas mostram a fase e a
+   hora dentro dela; turnos rotativos mostram a posição na sequência. Toque
+   para reconfigurar.
 
 O arquivo escolhido é lido uma vez; o app não recebe atualizações automáticas
 das escalas do navegador. Ele não tem permissão de internet nem acesso ao

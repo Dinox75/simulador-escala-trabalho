@@ -2,6 +2,7 @@ package br.com.simuladorescala.widget;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
 
@@ -113,5 +114,40 @@ public class ScheduleEngineTest {
     @Test(expected = IllegalArgumentException.class)
     public void invalidCycleCannotBeSelected() {
         new ScheduleEngine.Scale("Inválida", "ciclo_dias", 0, 3, null);
+    }
+
+    @Test public void extremePeriodsAreRejectedWithoutIntegerOverflow() {
+        for (String type : new String[]{"ciclo_dias", "ciclo_horas"}) {
+            assertThrows(IllegalArgumentException.class,
+                    () -> new ScheduleEngine.Scale("Extrema", type, Integer.MAX_VALUE, 2, null));
+            assertThrows(IllegalArgumentException.class,
+                    () -> new ScheduleEngine.Scale("Extrema", type, 2, Integer.MAX_VALUE, null));
+        }
+        new ScheduleEngine.Scale("Limite", "ciclo_dias", 119, 1, null);
+    }
+
+    @Test public void cyclePositionsBeforeAnchorAndAcrossMonth() {
+        ScheduleEngine.Selection days = days("2026-10-01");
+        assertEquals("Dia 9 de 9", ScheduleEngine.position(
+                days, LocalDateTime.parse("2026-09-30T10:00")));
+        assertEquals("Dia 4 de 9", ScheduleEngine.position(
+                days, LocalDateTime.parse("2026-10-31T10:00")));
+        ScheduleEngine.Selection hours = new ScheduleEngine.Selection(
+                new ScheduleEngine.Scale("12x36", "ciclo_horas", 12, 36, null),
+                LocalDate.parse("2024-02-29"), LocalTime.parse("18:00"));
+        assertEquals("Trabalho · hora 12 de 12", ScheduleEngine.position(
+                hours, LocalDateTime.parse("2024-03-01T05:59")));
+        assertEquals("Folga · hora 1 de 36", ScheduleEngine.position(
+                hours, LocalDateTime.parse("2024-03-01T06:00")));
+        assertEquals("Folga · hora 12 de 36", ScheduleEngine.position(
+                hours, LocalDateTime.parse("2024-02-28T17:00")));
+        ScheduleEngine.Selection rotation = new ScheduleEngine.Selection(
+                new ScheduleEngine.Scale("Rotativa", "turno_rotativo", 0, 0,
+                        Arrays.asList("Manhã", "Tarde", "Folga")),
+                LocalDate.parse("2026-10-01"), LocalTime.MIDNIGHT);
+        assertEquals("Turno 3 de 3", ScheduleEngine.position(
+                rotation, LocalDateTime.parse("2026-09-30T10:00")));
+        assertEquals("Turno 1 de 3", ScheduleEngine.snapshot(
+                rotation, LocalDateTime.parse("2026-10-31T10:00")).position);
     }
 }

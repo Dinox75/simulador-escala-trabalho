@@ -49,11 +49,14 @@ public final class ScheduleEngine {
 
     public static final class Snapshot {
         public final String status;
+        public final String position;
         public final LocalDateTime nextChange;
         public final List<String> following;
 
-        Snapshot(String status, LocalDateTime nextChange, List<String> following) {
+        Snapshot(String status, String position, LocalDateTime nextChange,
+                 List<String> following) {
             this.status = status;
+            this.position = position;
             this.nextChange = nextChange;
             this.following = Collections.unmodifiableList(new ArrayList<>(following));
         }
@@ -65,7 +68,8 @@ public final class ScheduleEngine {
             throw new IllegalArgumentException("Nome da escala inválido.");
         }
         if ("ciclo_dias".equals(scale.type) || "ciclo_horas".equals(scale.type)) {
-            if (scale.work < 1 || scale.off < 1 || scale.work + scale.off > 120
+            if (scale.work < 1 || scale.off < 1 || scale.work > 120
+                    || scale.off > 120 - scale.work
                     || !scale.turns.isEmpty()) {
                 throw new IllegalArgumentException("Ciclo inválido: períodos positivos e soma até 120.");
             }
@@ -137,6 +141,29 @@ public final class ScheduleEngine {
             LocalDateTime sample = query.toLocalDate().plusDays(offset).atTime(query.toLocalTime());
             following.add(status(selection, sample));
         }
-        return new Snapshot(current, nextChange(selection, query), following);
+        return new Snapshot(current, position(selection, query),
+                nextChange(selection, query), following);
+    }
+
+    public static String position(Selection selection, LocalDateTime query) {
+        Scale scale = selection.scale;
+        if ("ciclo_horas".equals(scale.type)) {
+            long elapsed = ChronoUnit.MILLIS.between(
+                    LocalDateTime.of(selection.startDate, selection.startTime), query);
+            long phase = Math.floorMod(elapsed, ((long) scale.work + scale.off) * 3600000);
+            long workMillis = (long) scale.work * 3600000;
+            if (phase < workMillis) {
+                return "Trabalho · hora " + (phase / 3600000 + 1) + " de " + scale.work;
+            }
+            return "Folga · hora " + ((phase - workMillis) / 3600000 + 1)
+                    + " de " + scale.off;
+        }
+        long days = ChronoUnit.DAYS.between(selection.startDate, query.toLocalDate());
+        if ("ciclo_dias".equals(scale.type)) {
+            return "Dia " + (Math.floorMod(days, scale.work + scale.off) + 1)
+                    + " de " + (scale.work + scale.off);
+        }
+        return "Turno " + (Math.floorMod(days, scale.turns.size()) + 1)
+                + " de " + scale.turns.size();
     }
 }

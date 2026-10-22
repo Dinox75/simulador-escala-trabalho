@@ -73,4 +73,31 @@ public class BackupParserTest {
         assertEquals("Ativa", WidgetState.read(context).scale.name);
         WidgetState.clear(context);
     }
+
+    @Test public void integerOverflowInEitherPeriodCannotReplaceActiveSelection() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        ScheduleEngine.Selection active = new ScheduleEngine.Selection(
+                new ScheduleEngine.Scale("Ativa", "ciclo_dias", 6, 3, null),
+                LocalDate.parse("2026-10-01"), LocalTime.MIDNIGHT);
+        WidgetState.write(context, active);
+        try {
+            for (String type : new String[]{"ciclo_dias", "ciclo_horas"}) {
+                String workKey = "ciclo_dias".equals(type) ? "dias_trabalho" : "horas_trabalho";
+                String offKey = "ciclo_dias".equals(type) ? "dias_folga" : "horas_folga";
+                for (String periods : new String[]{
+                        "\"" + workKey + "\":" + Integer.MAX_VALUE + ",\"" + offKey + "\":2",
+                        "\"" + workKey + "\":2,\"" + offKey + "\":" + Integer.MAX_VALUE}) {
+                    String scale = "[{\"nome\":\"Extrema\",\"tipo\":\"" + type
+                            + "\"," + periods + "}]";
+                    assertThrows(IllegalArgumentException.class,
+                            () -> BackupParser.parse(json(document(scale))));
+                    ScheduleEngine.Selection preserved = WidgetState.read(context);
+                    assertEquals("Ativa", preserved.scale.name);
+                    assertEquals(LocalDate.parse("2026-10-01"), preserved.startDate);
+                }
+            }
+        } finally {
+            WidgetState.clear(context);
+        }
+    }
 }

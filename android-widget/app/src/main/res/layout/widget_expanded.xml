@@ -15,6 +15,10 @@
         android:layout_marginTop="8dp" android:maxLines="1"
         android:textColor="#5FA4F5" android:textSize="24sp"
         android:textStyle="bold" />
+    <TextView android:id="@+id/widget_position"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="4dp" android:maxLines="1"
+        android:textColor="#DDE7F3" android:textSize="13sp" />
     <TextView android:id="@+id/widget_now"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
