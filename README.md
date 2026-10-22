@@ -119,6 +119,14 @@ A origem pública do GitHub Pages funciona exclusivamente no navegador: ela não
 
 ### PWA para testes
 
+A <a href="docs/demo/privacidade.html">Política de Privacidade</a> e os <a href="docs/demo/termos.html">Termos de Uso</a> estão disponíveis na demo. A página pública guarda as configurações salvas neste navegador; o GitHub Pages processa dados técnicos da visita conforme sua própria política. O backup JSON não inclui as datas e horas de início de cada simulação.
+
+O novo ícone de calendário foi desenhado para o projeto. As fontes SVG editáveis estão em `docs/demo/icons/`, com PNGs de 192 e 512 px para ícone comum e maskable. Execute `.\.venv\Scripts\python.exe tools\render-pwa-icons.py` se alterar as fontes; o renderizador usa Chrome pessoal em perfil temporário.
+
+Há um [protótipo de widget Android nativo](android-widget/README.md) separado da PWA, ainda sem APK publicado. Ele importa manualmente um backup validado, pede a âncora do ciclo e mostra a situação atual e a próxima mudança. A instalação da PWA não instala o widget e os dois aplicativos não sincronizam dados.
+
+O [inventário de dados e plano de evolução](docs/DADOS-E-EVOLUCAO.md) descreve os fluxos atuais, limites de privacidade e o que seria necessário antes de oferecer contas, sincronização ou distribuição na Play Store.
+
 A demo pode ser instalada e, depois de uma primeira visita online completa, abrir **simulador, comparador e relatório** sem conexão. No Android, abra a demo no Chrome e escolha **Instalar** quando o navegador oferecer a opção, ou use **Instalar app** no menu. No iPhone, abra no Safari e use **Compartilhar → Adicionar à Tela de Início**. A instalação pode variar conforme o navegador e o sistema.
 
 As escalas criadas no modo navegador ficam somente no `localStorage` deste dispositivo e **não são sincronizadas**. Antes de limpar dados do navegador, trocar de celular ou desinstalar, abra [Dados neste dispositivo](docs/demo/dados.html) e baixe o backup JSON. Nessa mesma tela, selecione um backup para ver uma prévia e confirme a substituição. O arquivo deve ter até 512 KB, no máximo 200 escalas e configurações dentro dos limites do simulador. Arquivos inválidos não substituem os dados existentes. Escalas da API local são separadas e não entram nesse backup.

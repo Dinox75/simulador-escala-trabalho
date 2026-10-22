@@ -5,6 +5,7 @@ to point at a personal Chrome installation. No project JSON is written.
 """
 
 import base64
+import csv
 import json
 import os
 import pathlib
@@ -159,6 +160,11 @@ class Chrome:
 
 def main():
     assert pathlib.Path(BROWSER).is_file(), f"Personal Chrome unavailable: {BROWSER}"
+    for name in ("icon", "icon-maskable"):
+        for size in (192, 512):
+            png = (ROOT / "docs" / "demo" / "icons" / f"{name}-{size}.png").read_bytes()
+            assert png[:8] == b"\x89PNG\r\n\x1a\n"
+            assert struct.unpack(">II", png[16:24]) == (size, size)
     with socket.socket() as port_check:
         try:
             port_check.bind(("127.0.0.1", 8000))
@@ -177,13 +183,32 @@ def main():
         chrome = Chrome(debug_port, base / "profile")
         try:
             chrome.navigate(origin + "simulador.html?browserOnly")
-            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-1')))")
+            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-2')))")
             scope = chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.scope)")
             assert scope == origin, scope
             install_errors = chrome.call("Page.getInstallabilityErrors").get("installabilityErrors", [])
             assert not install_errors, install_errors
             chrome.evaluate("localStorage.setItem('simulador_escala_demo_v014_local', JSON.stringify([{nome:'Teste PWA 6x3',tipo:'ciclo_dias',dias_trabalho:6,dias_folga:3}]))")
             assert chrome.evaluate("getOperationMode()") == "browser-only"
+            fixture_file = ROOT / "android-widget" / "app" / "src" / "test" / "resources" / "parity-cases.tsv"
+            with fixture_file.open(encoding="utf-8", newline="") as stream:
+                fixtures = list(csv.DictReader(stream, delimiter="\t"))
+            fixture_json = json.dumps(fixtures, ensure_ascii=True)
+            parity = chrome.evaluate("""(() => {
+                const core = ScaleCalendarCore;
+                const fixtures = """ + fixture_json + """;
+                return fixtures.map(c => {
+                    const anchor = new Date(c.anchor_date + 'T' + c.anchor_time + ':00');
+                    const query = new Date(c.query);
+                    if (c.type === 'ciclo_dias') return core.cycleDaysStatus(
+                        anchor, query, Number(c.work), Number(c.off));
+                    if (c.type === 'ciclo_horas') return core.cycleHoursStatus(
+                        anchor, query, Number(c.work), Number(c.off));
+                    return core.rotativeStatus(anchor, query, c.turns.split('|'));
+                });
+            })()""")
+            assert parity == [case["expected"] for case in fixtures], parity
+            print("CALCULATION: web results match", len(fixtures), "shared native fixture cases")
             print("ONLINE no API: shell installed and browser-only mode")
 
             chrome.call("Network.emulateNetworkConditions", {
@@ -203,15 +228,44 @@ def main():
                     chrome.until(f"document.querySelectorAll('{selector}').length", lambda value: value > 0)
                 chrome.screenshot(f"mobile-{page}.png")
                 print("OFFLINE 390px:", page, chrome.evaluate("document.querySelector('h1').textContent.trim()"))
+            for page in ("privacidade.html", "termos.html"):
+                chrome.navigate(origin + page + "?browserOnly")
+                assert chrome.evaluate("navigator.serviceWorker.controller !== null")
+                assert chrome.evaluate("document.documentElement.scrollWidth <= innerWidth"), page
+                assert chrome.evaluate("document.querySelector('main h1').textContent.trim()")
+                chrome.screenshot(f"mobile-{page}.png")
+                print("OFFLINE legal page:", page)
+            chrome.navigate(origin + "dados.html?browserOnly")
+            chrome.evaluate("document.querySelector('main a[href=\"privacidade.html\"]').click()")
+            chrome.until("location.pathname.endsWith('/privacidade.html')")
+            chrome.evaluate("document.querySelector('a[href=\"termos.html\"]').click()")
+            chrome.until("location.pathname.endsWith('/termos.html')")
+            print("OFFLINE navigation: Dados locais > Privacidade > Termos")
+            manifest = chrome.evaluate("fetch('manifest.webmanifest').then(r=>r.json())")
+            assert [icon["purpose"] for icon in manifest["icons"]] == [
+                "any", "any", "maskable", "maskable"
+            ]
+            assert chrome.evaluate("Promise.all(['icon-192.png', 'icon-512.png', "
+                                   "'icon-maskable-192.png', 'icon-maskable-512.png']"
+                                   ".map(n=>fetch('icons/'+n).then(r=>r.ok))).then(x=>x.every(Boolean))")
             assert not [event for event in chrome.events if event.get("method") == "Network.requestWillBeSent"
                         and "127.0.0.1:8000" in event.get("params", {}).get("request", {}).get("url", "")]
             chrome.call("Emulation.setDeviceMetricsOverride", {
                 "width": 1280, "height": 800, "deviceScaleFactor": 1, "mobile": False
             })
+            for page in ("privacidade.html", "termos.html"):
+                chrome.navigate(origin + page + "?browserOnly")
+                assert chrome.evaluate("document.documentElement.scrollWidth <= innerWidth"), page
+                chrome.screenshot(f"desktop-{page}.png")
             chrome.navigate(origin + "comparador.html?browserOnly")
             assert chrome.evaluate("document.documentElement.scrollWidth <= innerWidth")
             chrome.screenshot("desktop-comparador.png")
             print("OFFLINE desktop: comparator without horizontal overflow")
+            chrome.call("Emulation.setDeviceMetricsOverride", {
+                "width": 1024, "height": 768, "deviceScaleFactor": 1, "mobile": False
+            })
+            assert chrome.evaluate("document.documentElement.scrollWidth <= innerWidth")
+            chrome.screenshot("tablet-comparador.png")
             chrome.call("Emulation.setDeviceMetricsOverride", {
                 "width": 390, "height": 844, "deviceScaleFactor": 1, "mobile": True
             })
@@ -287,7 +341,7 @@ def main():
             print("ONLINE API off: browser storage restored")
             errors = [event for event in chrome.events if event.get("method") == "Runtime.exceptionThrown"]
             assert not errors, json.dumps(errors[-2:], ensure_ascii=False)
-            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-1", b"pwa-2")
+            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-2", b"pwa-3")
             QuietHandler.worker_override = new_worker
             chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
             chrome.until("navigator.serviceWorker.getRegistration().then(r=>r.waiting?.state==='installed')")
@@ -299,7 +353,7 @@ def main():
         try:
             chrome.navigate(origin + "dados.html?browserOnly")
             chrome.until("navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js')")
-            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-2')))")
+            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-3')))")
             assert chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Restaurada 12x36')"), chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local')")
             print("UPDATE: new shell active after reopening; localStorage preserved")
         finally:
