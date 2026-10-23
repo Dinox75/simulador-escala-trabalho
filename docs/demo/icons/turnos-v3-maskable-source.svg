@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Turnos — versão adaptável</title>
+  <desc id="desc">Relógio e três arcos de turnos dentro da área segura do ícone Android.</desc>
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#19344D"/>
+      <stop offset="1" stop-color="#0B182B"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#243F59"/>
+      <stop offset="1" stop-color="#15283E"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#tile)"/>
+  <g transform="translate(56 56) scale(.78125)">
+    <circle cx="256" cy="256" r="150" fill="none" stroke="#31506B" stroke-width="37" opacity=".45"/>
+    <g fill="none" stroke-width="37" stroke-linecap="round">
+      <circle cx="256" cy="256" r="150" stroke="#63D4EB" stroke-dasharray="244 699" transform="rotate(-86 256 256)"/>
+      <circle cx="256" cy="256" r="150" stroke="#5E8DF8" stroke-dasharray="244 699" transform="rotate(34 256 256)"/>
+      <circle cx="256" cy="256" r="150" stroke="#FFBE69" stroke-dasharray="244 699" transform="rotate(154 256 256)"/>
+    </g>
+    <circle cx="256" cy="256" r="98" fill="url(#face)" stroke="#42627D" stroke-width="3"/>
+    <path d="M256 198v59l49 31" fill="none" stroke="#F6FAFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="256" cy="256" r="12" fill="#FFBE69"/>
+  </g>
+</svg>
