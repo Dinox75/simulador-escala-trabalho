@@ -83,4 +83,4 @@ def test_backup_core_accepts_valid_scales_and_rejects_bad_data_in_chrome() -> No
         result = subprocess.run(args, capture_output=True, text=True, timeout=60, check=False)
     assert result.returncode == 0, result.stderr[-2000:]
     error = re.search(r'data-test-error="([^"]+)"', result.stdout)
-    assert "PASS 12:" in result.stdout, html.unescape(error.group(1)) if error else result.stdout[-2000:]
+    assert "PASS 20:" in result.stdout, html.unescape(error.group(1)) if error else result.stdout[-2000:]

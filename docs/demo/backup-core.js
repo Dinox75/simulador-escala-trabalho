@@ -82,26 +82,47 @@
         return { key: STORAGE_KEY, scales: [] };
     }
 
-    function parseBackup(text) {
+    function parseEnvelope(text) {
         if (typeof text !== "string" || new TextEncoder().encode(text).length > MAX_FILE_BYTES) {
             throw new Error("O arquivo excede 512 KB.");
         }
         let value;
         try { value = JSON.parse(text.replace(/^\uFEFF/u, "")); }
         catch { throw new Error("O arquivo não contém JSON válido."); }
-        if (!plainObject(value) || value.format !== FORMAT || value.version !== 1 ||
-            Object.keys(value).some((key) => !["format", "version", "exported_at", "scales"].includes(key))) {
+        if (!plainObject(value) || value.format !== FORMAT || ![1, 2].includes(value.version) ||
+            Object.keys(value).some((key) => !["format", "version", "exported_at", "scales", "references"].includes(key)) ||
+            (value.version === 1 && "references" in value) ||
+            (value.version === 2 && !Array.isArray(value.references))) {
             throw new Error("O arquivo não é um backup compatível do Simulador.");
         }
-        return validateScales(value.scales);
+        const scales = validateScales(value.scales);
+        const references = value.version === 2
+            ? global.ScaleReferences.mergeImport([], value.references, scales, 2) : [];
+        return { version: value.version, scales, references };
     }
 
-    function createBackup(scales, exportedAt = new Date().toISOString()) {
-        return JSON.stringify({ format: FORMAT, version: 1, exported_at: exportedAt,
+    function parseBackup(text) {
+        return parseEnvelope(text).scales;
+    }
+
+    function createBackup(scales, references = [], exportedAt = new Date().toISOString()) {
+        const validScales = validateScales(scales);
+        const validReferences = global.ScaleReferences.mergeImport([], references, validScales, 2);
+        const text = JSON.stringify({ format: FORMAT, version: 2, exported_at: exportedAt,
+            scales: validScales, references: validReferences }, null, 2);
+        if (new TextEncoder().encode(text).length > MAX_FILE_BYTES) throw new Error("O backup excede 512 KB.");
+        return text;
+    }
+
+    function createWidgetBackup(scales, exportedAt = new Date().toISOString()) {
+        const text = JSON.stringify({ format: FORMAT, version: 1, exported_at: exportedAt,
             scales: validateScales(scales) }, null, 2);
+        if (new TextEncoder().encode(text).length > MAX_FILE_BYTES) throw new Error("O backup excede 512 KB.");
+        return text;
     }
 
     global.ScaleBackup = Object.freeze({
-        STORAGE_KEY, MAX_FILE_BYTES, MAX_SCALES, validateScales, readStored, parseBackup, createBackup
+        STORAGE_KEY, MAX_FILE_BYTES, MAX_SCALES, validateScales, readStored, parseEnvelope, parseBackup,
+        createBackup, createWidgetBackup
     });
 }(window));

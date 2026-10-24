@@ -20,14 +20,14 @@ Android, sem servidor ou permissão de rede.
 
 ## Teste com uma escala
 
-1. Na PWA, salve uma escala fictícia e abra **Dados locais → Baixar backup JSON**.
+1. Na PWA, salve uma escala fictícia e abra **Dados locais → Baixar JSON v1 para widget**. O backup v2 da PWA preserva referências, mas o protótipo Android ainda importa somente o formato v1.
 2. Abra o aplicativo Android, toque em **Escolher backup JSON** e selecione
    esse arquivo pelo seletor do sistema. O app aceita somente UTF-8/JSON
    versão 1, até 512 KB e 200 escalas, com tipos, campos e limites do backup
    web. Uma seleção inválida não substitui a configuração ativa.
 3. Escolha uma escala e informe **Início do ciclo** no formato AAAA-MM-DD.
    Digite a mesma âncora usada na simulação da PWA: o campo começa vazio,
-   pois a âncora não vem no backup web. Para ciclos por horas, informe também
+   pois a âncora não vem no backup v1 para widget. Para ciclos por horas, informe também
    HH:mm. Toque em **Conferir situação agora** e verifique status, posição no
    ciclo e próxima mudança. **Aplicar ao widget** só fica disponível após
    essa conferência; qualquer mudança de escala, data ou hora exige nova

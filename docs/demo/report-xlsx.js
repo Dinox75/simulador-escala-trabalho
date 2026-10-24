@@ -56,9 +56,10 @@
         const observation = report.usesTime ? `às ${report.time}` : "por data";
         rows.push(row(1, [cell(1, 1, `Relatório mensal · ${report.monthLabel}`, 1)], 30));
         rows.push(row(2, [cell(2, 1, `Período: ${report.periodStart} a ${report.periodEnd} · Consulta ${observation}`, 2)], 23));
-        rows.push(row(3, [cell(3, 1, report.usesTime
+        rows.push(row(3, [cell(3, 1, (report.usesTime
             ? `Status observado às ${report.time} em cada data; não representa dias inteiros nem horas trabalhadas.`
-            : "Status por data; não representa horas trabalhadas.", 11)], 30));
+            : "Status por data; não representa horas trabalhadas.") +
+            (report.summary.aBefore || report.summary.bBefore ? " Datas anteriores ao início são projeções fora dos totais." : ""), 11)], 30));
         rows.push(row(5, [cell(5, 1, `Escala A · ${report.scaleA.name}`, 3)], 24));
         rows.push(row(6, [cell(6, 1, `${report.scaleA.parameters} · Início do ciclo: ${report.scaleA.anchor} · ${report.scaleA.origin}`, 2)], 30));
         if (report.mode === "compare") {
@@ -70,6 +71,9 @@
             ? [["A em trabalho", report.summary.aWorking], ["B em trabalho", report.summary.bWorking], ["Ambas em folga", report.summary.bothOff]]
             : [["A em trabalho", report.summary.aWorking], ["A em folga", report.summary.aOff]];
         rows.push(row(11, summary.flatMap(([label, value], index) => [cell(11, index * 2 + 1, label, 4), cell(11, index * 2 + 2, value, 12)]), 24));
+        if (report.summary.aBefore || report.summary.bBefore) {
+            rows.push(row(12, [cell(12, 1, `Fora dos totais: A ${report.summary.aBefore}${report.mode === "compare" ? ` · B ${report.summary.bBefore}` : ""} data(s) anteriores ao início.`, 11)], 23));
+        }
         rows.push(row(14, [cell(14, 1, "Calendário mensal", 3)], 24));
         rows.push(row(15, [cell(15, 1, "Legenda: Trabalho · Folga · Manhã · Tarde · Noite. Cada célula traz o status da A e, quando houver, da B. Folgas coincidentes são destacadas.", 11)], 30));
         rows.push(row(16, weekdays.map((day, index) => cell(16, index + 1, day, 4)), 23));
@@ -81,9 +85,9 @@
             for (let day = 0; day < 7; day += 1) {
                 const record = report.rows[week * 7 + day - leading];
                 if (!record) continue;
-                const bothOff = report.mode === "compare" && record.statusA === "Folga" && record.statusB === "Folga";
-                const details = [record.dateLabel, `A · ${record.statusA}`];
-                if (report.mode === "compare") details.push(`B · ${record.statusB}`);
+                const bothOff = report.mode === "compare" && !record.beforeA && !record.beforeB && record.statusA === "Folga" && record.statusB === "Folga";
+                const details = [record.dateLabel, `A · ${global.ScaleReportCore.displayedStatus(record.statusA, record.beforeA)}`];
+                if (report.mode === "compare") details.push(`B · ${global.ScaleReportCore.displayedStatus(record.statusB, record.beforeB)}`);
                 if (record.transitionA || record.transitionB) details.push("Transição na data");
                 cells.push(cell(index, day + 1, details.join("\n"), bothOff ? 10 : statusStyle(record.statusA)));
             }
@@ -104,8 +108,8 @@
         rows.push(row(5, ["Data", "Dia da semana", `Escala A${suffix}`].concat(report.mode === "compare" ? [`Escala B${suffix}`] : []).map((value, index) => cell(5, index + 1, value, 4)), 25));
         report.rows.forEach((record, index) => {
             const number = index + 6;
-            const cells = [cell(number, 1, record.dateLabel), cell(number, 2, record.weekday), cell(number, 3, record.statusA, statusStyle(record.statusA))];
-            if (report.mode === "compare") cells.push(cell(number, 4, record.statusB, statusStyle(record.statusB)));
+            const cells = [cell(number, 1, record.dateLabel), cell(number, 2, record.weekday), cell(number, 3, global.ScaleReportCore.displayedStatus(record.statusA, record.beforeA), statusStyle(record.statusA))];
+            if (report.mode === "compare") cells.push(cell(number, 4, global.ScaleReportCore.displayedStatus(record.statusB, record.beforeB), statusStyle(record.statusB)));
             rows.push(row(number, cells, 22));
         });
         return worksheet(rows, report.mode === "compare" ? [16, 22, 25, 25] : [16, 22, 25], [`A1:${end}1`, `A2:${end}2`, `A3:${end}3`]);

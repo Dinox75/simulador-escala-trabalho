@@ -10,6 +10,7 @@
     <link rel="icon" type="image/png" href="icons/icon-v2-192.png">
     <link rel="apple-touch-icon" href="icons/icon-v2-192.png">
     <link rel="stylesheet" href="style.css">
+    <script defer src="reference-core.js"></script>
     <script defer src="backup-core.js"></script>
     <script defer src="active-selection.js"></script>
     <script defer src="pwa.js"></script>
@@ -38,15 +39,16 @@
         <span class="mono-kicker">ARMAZENAMENTO LOCAL</span>
         <h1>Dados neste dispositivo</h1>
         <p>As escalas salvas <strong>neste navegador</strong> ficam neste dispositivo. Elas não são sincronizadas. Limpar os dados do navegador ou desinstalar a PWA pode apagá-las; guarde um backup antes.</p>
-        <p>Escalas da API local são separadas e não entram neste backup. O arquivo v1 guarda as configurações cadastradas, mas não a consulta guardada nem sua data e hora de início. Ao importar, a consulta guardada ligada a um cadastro removido ou alterado também é removida, após sua confirmação; consultas independentes e consultas ligadas à API local permanecem. Ao mudar de aparelho, confirme novamente o início do ciclo.</p>
-        <p>O <strong>protótipo de widget Android</strong> é separado da PWA. Para usá-lo em testes, escolha este backup no aplicativo Android e informe novamente o início do ciclo. Ele não acessa automaticamente os dados do Chrome.</p>
+        <p>O backup v2 guarda as escalas deste navegador e as referências de início confirmadas neste dispositivo, inclusive as usadas com modelos e escalas da API local. Cada referência leva nome, tipo e parâmetros para ser associada à configuração certa; o arquivo não copia o catálogo completo da API nem a consulta ativa. Ao importar, mostramos o efeito sobre as referências e a consulta guardada antes de substituir. Backups v1 continuam aceitos; se uma escala antiga não tiver referência, será preciso informá-la uma vez.</p>
+        <p>O <strong>protótipo de widget Android</strong> ainda lê o formato v1. Use o botão de exportação compatível e informe a mesma data de início manualmente no Android. Ele não acessa automaticamente os dados do Chrome.</p>
         <p>Leia a <a class="text-link" href="privacidade.html">Política de Privacidade</a> e os <a class="text-link" href="termos.html">Termos de Uso</a> antes de compartilhar um backup. O arquivo baixado fica sob seus cuidados.</p>
         <p class="device-data-count" id="storedCount" role="status" aria-live="polite">Verificando escalas...</p>
 
         <section class="device-data-panel" aria-labelledby="backupTitle">
             <h2 id="backupTitle">Exportar backup</h2>
-            <p>Baixe um arquivo JSON com as escalas deste navegador para guardá-lo fora do aplicativo.</p>
-            <button class="button primary" id="exportBackup" type="button">Baixar backup JSON</button>
+            <p>Baixe o formato v2 para restaurar escalas e referências confirmadas. A opção v1 serve somente para o protótipo de widget e não inclui referências.</p>
+            <button class="button primary" id="exportBackup" type="button">Baixar backup v2 com referências</button>
+            <button class="button quiet" id="exportWidgetBackup" type="button">Baixar JSON v1 para widget</button>
         </section>
 
         <section class="device-data-panel" aria-labelledby="importTitle">

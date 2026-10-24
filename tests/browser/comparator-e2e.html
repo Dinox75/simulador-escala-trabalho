@@ -42,12 +42,18 @@
     };
 
     async function run() {
+        const baseReferences = [
+            { source: "model", scale: { nome: "Escala 6x3", tipo: "ciclo_dias", dias_trabalho: 6, dias_folga: 3 }, start: "2026-01-01" },
+            { source: "model", scale: { nome: "Escala 12x36", tipo: "ciclo_horas", horas_trabalho: 12, horas_folga: 36 }, start: "2026-01-01T18:00" }
+        ];
         if (scenario !== "api") {
             localStorage.setItem("simulador_escala_demo_v014_local", JSON.stringify([
                 { nome: "Escala comparável local", tipo: "ciclo_dias", dias_trabalho: 4, dias_folga: 2 },
                 { nome: "<img src=x onerror=alert(1)>", tipo: "turno_rotativo", sequencia_turnos: ["Manhã", "Folga"] }
             ]));
+            baseReferences.push({ source: "local", scale: { nome: "Escala comparável local", tipo: "ciclo_dias", dias_trabalho: 4, dias_folga: 2 }, start: "2026-01-01" });
         }
+        localStorage.setItem("simulador_escala_references_v1", JSON.stringify(baseReferences));
         frame.src = `/docs/demo/comparador.html${scenario === "public" ? "?browserOnly" : ""}`;
         await new Promise((resolve, reject) => {
             frame.addEventListener("load", resolve, { once: true });

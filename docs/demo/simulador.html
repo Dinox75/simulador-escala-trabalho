@@ -10,6 +10,7 @@
     <script defer src="vendor/lucide-0.468.0.min.js"></script>
     <script defer src="calendar-core.js"></script>
     <script defer src="active-selection.js"></script>
+    <script defer src="reference-core.js"></script>
     <script defer src="script.js"></script>
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/png" href="icons/icon-v2-192.png">
@@ -66,8 +67,8 @@
                     <p class="guide-help">Já tem uma escala personalizada? Abra <a href="#minhas-escalas">Minhas escalas</a> ou use os controles avançados abaixo.</p>
                 </section>
                 <section class="control-section cycle-settings guide-panel" id="guideConfig" hidden>
-                    <h2 id="guideSelectedModel">Quando começou esse ciclo?</h2>
-                    <p class="guide-help">Use uma data real de referência. A consulta começa em hoje e agora; escolha outra data ou hora para conferir o histórico.</p>
+                    <h2 id="guideSelectedModel">Configure sua escala</h2>
+                    <p class="guide-help">Na data de início da sequência acontece o primeiro turno mostrado abaixo. A sequência se repete a partir dela. A data consultada serve apenas para ver o resultado.</p>
                     <div id="alternativeDays" class="alternative-days" hidden>
                         <label>Primeiro dia de folga na semana
                             <select id="alternativeOffStart">
@@ -95,7 +96,7 @@
                     <button class="button quiet full" id="guideNow" type="button">Consultar agora</button>
                     <button class="button primary full" id="guideSave" type="button">Guardar esta consulta</button>
                     <p id="guideSaveFeedback" class="form-feedback" role="status" aria-live="polite"></p>
-                    <button class="text-button" id="guideCorrect" type="button">← Alterar início ou data consultada</button>
+                    <button class="text-button" id="guideCorrect" type="button">← Corrigir data de início ou consulta</button>
                     <button class="text-button" id="guideForgetReview" type="button" hidden>Remover consulta guardada deste dispositivo</button>
                 </section>
                 <details class="saved-panel advanced-panel" id="advancedControls">
@@ -119,9 +120,12 @@
                             <h3>Nova escala</h3>
                             <label>Nome da escala<input id="savedName" type="text" placeholder="Ex.: Turno noturno A" required maxlength="80"></label>
                             <label>Tipo<select id="savedType"><option value="ciclo_dias">Ciclo por dias</option><option value="ciclo_horas">Ciclo por horas</option><option value="turno_rotativo">Turno rotativo</option></select></label>
+                            <p class="guide-help">Neste dia acontece o primeiro turno mostrado abaixo. A sequência se repete a partir dele. Confira a prévia antes de salvar.</p>
                             <div id="savedDynamicFields"></div>
+                            <button class="button quiet full" id="previewSavedScale" type="button">Conferir próximos dias</button>
+                            <div class="saved-reference-preview" id="savedReferencePreview" role="status" aria-live="polite"></div>
                             <p class="form-feedback" id="savedScaleFeedback" aria-live="polite">Preencha os dados e salve a escala.</p>
-                            <button class="button quiet full" id="savedScaleSubmitButton" data-save-scale-button type="submit">Salvar escala</button>
+                            <button class="button quiet full" id="savedScaleSubmitButton" data-save-scale-button type="submit" disabled>Confirmar e salvar escala</button>
                         </form>
                         <button class="text-button" id="resetScalesButton" type="button">Atualizar lista da API local</button>
                     </div>

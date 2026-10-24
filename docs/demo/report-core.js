@@ -17,6 +17,10 @@
         return `"${text.replace(/"/g, '""')}"`;
     }
 
+    function displayedStatus(status, before) {
+        return `${status}${before ? " (projeção anterior ao início, não confirmada)" : ""}`;
+    }
+
     function createMonthlyReport({ mode, month, time, scaleA, scaleB = null }) {
         if (mode !== "single" && mode !== "compare") {
             throw new RangeError("Selecione um relatório de uma escala ou de duas escalas.");
@@ -43,6 +47,8 @@
             weekday: weekdayName(day.date),
             statusA: day.statusA,
             statusB: mode === "compare" ? day.statusB : null,
+            beforeA: day.beforeA,
+            beforeB: mode === "compare" && day.beforeB,
             transitionA: Boolean(day.intervalsA && day.intervalsA.length > 1),
             transitionB: mode === "compare" && Boolean(day.intervalsB && day.intervalsB.length > 1)
         }));
@@ -59,7 +65,9 @@
             scaleA,
             scaleB: mode === "compare" ? scaleB : null,
             summary: mode === "single"
-                ? { aWorking: comparison.summary.aWorking, aOff: rows.length - comparison.summary.aWorking }
+                ? { aWorking: comparison.summary.aWorking,
+                    aOff: rows.length - comparison.summary.aWorking - comparison.summary.aBefore,
+                    aBefore: comparison.summary.aBefore }
                 : comparison.summary,
             rows
         };
@@ -77,6 +85,7 @@
             ["Regra da amostra", report.usesTime
                 ? `Status observado às ${report.time}; não representa dias inteiros nem horas trabalhadas.`
                 : "Status por data; não representa horas trabalhadas."],
+            ["Datas anteriores ao início", "Status apenas projetado; datas anteriores ficam fora dos totais."],
             ["Escala A", report.scaleA.name],
             ["Parâmetros da Escala A", report.scaleA.parameters],
             ["Data inicial da Escala A", report.scaleA.anchor],
@@ -105,14 +114,19 @@
             );
         }
 
+        if (report.summary.aBefore || report.summary.bBefore) {
+            lines.push(["Projeções anteriores ao início, fora dos totais",
+                `Escala A: ${report.summary.aBefore}${report.mode === "compare" ? `; Escala B: ${report.summary.bBefore}` : ""}`]);
+        }
+
         const suffix = report.usesTime ? ` às ${report.time}` : "";
         const headers = ["Data", "Dia da semana", `Situação da Escala A${suffix}`];
         if (report.mode === "compare") headers.push(`Situação da Escala B${suffix}`);
         lines.push([], headers);
 
         report.rows.forEach((row) => {
-            const values = [row.dateLabel, row.weekday, row.statusA];
-            if (report.mode === "compare") values.push(row.statusB);
+            const values = [row.dateLabel, row.weekday, displayedStatus(row.statusA, row.beforeA)];
+            if (report.mode === "compare") values.push(displayedStatus(row.statusB, row.beforeB));
             lines.push(values);
         });
 
@@ -122,6 +136,7 @@
     global.ScaleReportCore = Object.freeze({
         createMonthlyReport,
         createCsv,
-        csvCell
+        csvCell,
+        displayedStatus
     });
 }(window));

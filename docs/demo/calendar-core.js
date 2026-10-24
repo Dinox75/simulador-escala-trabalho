@@ -211,6 +211,17 @@
         return cycleDaysStatus(schedule.start, day, schedule.work, schedule.off);
     }
 
+    function beforeStart(schedule, day, time) {
+        validateComparisonSchedule(schedule);
+        if (!isValidDate(day)) throw new RangeError("Informe uma data consultada válida.");
+        if (schedule.type === "ciclo_horas") {
+            const [hours, minutes] = timeParts(time);
+            return wallClockMilliseconds(new Date(day.getFullYear(), day.getMonth(), day.getDate(), hours, minutes))
+                < wallClockMilliseconds(schedule.start);
+        }
+        return dayMilliseconds(day) < dayMilliseconds(schedule.start);
+    }
+
     function compareDay(scheduleA, scheduleB, day, time) {
         const statusA = comparisonStatus(scheduleA, day, time);
         const statusB = comparisonStatus(scheduleB, day, time);
@@ -218,6 +229,8 @@
             date: new Date(day.getFullYear(), day.getMonth(), day.getDate()),
             statusA,
             statusB,
+            beforeA: beforeStart(scheduleA, day, time),
+            beforeB: beforeStart(scheduleB, day, time),
             intervalsA: scheduleA.type === "ciclo_horas"
                 ? cycleHoursSegments(scheduleA.start, day, scheduleA.work, scheduleA.off)
                 : null,
@@ -237,7 +250,7 @@
         const monthIndex = month.getMonth();
         const dayCount = new Date(year, monthIndex + 1, 0).getDate();
         const days = [];
-        const summary = { aWorking: 0, bWorking: 0, bothOff: 0 };
+        const summary = { aWorking: 0, bWorking: 0, bothOff: 0, aBefore: 0, bBefore: 0 };
         for (let day = 1; day <= dayCount; day += 1) {
             const result = compareDay(
                 scheduleA,
@@ -247,9 +260,11 @@
             );
             const aWorking = result.statusA !== "Folga";
             const bWorking = result.statusB !== "Folga";
-            if (aWorking) summary.aWorking += 1;
-            if (bWorking) summary.bWorking += 1;
-            if (!aWorking && !bWorking) summary.bothOff += 1;
+            if (result.beforeA) summary.aBefore += 1;
+            else if (aWorking) summary.aWorking += 1;
+            if (result.beforeB) summary.bBefore += 1;
+            else if (bWorking) summary.bWorking += 1;
+            if (!result.beforeA && !result.beforeB && !aWorking && !bWorking) summary.bothOff += 1;
             days.push(result);
         }
         return { year, month: monthIndex, time, days, summary };
@@ -262,8 +277,10 @@
         cycleHoursStatus,
         cycleHoursSegments,
         nextChange,
+        comparisonStatus,
         compareDay,
         compareMonth,
+        beforeStart,
         monthCells,
         moveMonth,
         rotativePosition,

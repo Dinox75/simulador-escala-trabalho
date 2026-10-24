@@ -214,7 +214,7 @@ def main():
             for script in scripts:
                 chrome.evaluate("new Function(" + json.dumps(script.read_text(encoding="utf-8")) + "); true")
             print("JAVASCRIPT SYNTAX:", len(scripts), "demo scripts compiled in Chrome")
-            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-5')))")
+            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-6')))")
             scope = chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.scope)")
             assert scope == origin, scope
             install_errors = chrome.call("Page.getInstallabilityErrors").get("installabilityErrors", [])
@@ -353,6 +353,56 @@ def main():
             print("GUIDE: invalid confirmed record cannot produce a result")
             chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(confirmed_record) + ")")
 
+            rotating = ["Folga"] * 3 + ["Tarde"] * 3 + ["Noite"] * 3 + ["Folga"] * 2 + ["Manhã"] * 6 + ["Folga"] + ["Tarde"] * 3 + ["Noite"] * 3
+            assert len(rotating) == 24
+            chrome.evaluate("document.querySelector('#savedName').value='Rotativa 24 dias'; document.querySelector('#savedType').value='turno_rotativo'; state.savedTurns=" + json.dumps(rotating, ensure_ascii=False) + "; renderSavedDynamicFields(); document.querySelector('#savedStart').value='2026-10-24'; previewSavedScale()")
+            assert chrome.evaluate("document.querySelector('#savedScaleSubmitButton').disabled === false"), chrome.evaluate("document.querySelector('#savedScaleFeedback').textContent")
+            assert chrome.evaluate("[...document.querySelectorAll('#savedReferencePreview li')].map(x=>x.textContent.split(': ').pop()).join(',')") == "Folga,Folga,Folga,Tarde,Tarde,Tarde"
+            chrome.evaluate("document.querySelector('#savedScalesDisclosure').open=true; document.querySelector('#savedReferencePreview').scrollIntoView({block:'start'}); window.scrollBy(0,-180)")
+            chrome.screenshot("saved-reference-preview.png")
+            chrome.evaluate("saveScaleFromForm()")
+            chrome.until("state.savedScales.some(x=>x.nome==='Rotativa 24 dias')")
+            assert chrome.evaluate("ScaleReferences.find(ScaleReferences.read(localStorage),state.savedScales.find(x=>x.nome==='Rotativa 24 dias'),'local')") == "2026-10-24"
+            chrome.evaluate("applySavedScale(state.savedScales.findIndex(x=>x.nome==='Rotativa 24 dias'))")
+            assert chrome.evaluate("document.querySelector('#startDate').value") == "2026-10-24", chrome.evaluate("({start:document.querySelector('#startDate').value,scales:state.savedScales,feedback:document.querySelector('#simulatorFeedback').textContent})")
+            for day, expected in (("2026-10-24", "Folga"), ("2026-10-26", "Folga"), ("2026-10-27", "Tarde"), ("2026-11-17", "Folga")):
+                chrome.evaluate("document.querySelector('#queryDate').value=" + json.dumps(day) + "; document.querySelector('#simulatorForm').requestSubmit()")
+                chrome.until("document.querySelector('#resultTitle').textContent.includes(" + json.dumps(expected) + ")")
+                assert chrome.evaluate("document.querySelector('#startDate').value") == "2026-10-24"
+            chrome.evaluate("document.querySelector('#calendarGrid [data-calendar-date=\"2026-10-30\"]').click()")
+            assert chrome.evaluate("document.querySelector('#queryDate').value") == "2026-10-30"
+            assert chrome.evaluate("document.querySelector('#startDate').value") == "2026-10-24"
+            chrome.evaluate("document.querySelector('#queryDate').value='2026-10-23'; document.querySelector('#simulatorForm').requestSubmit()")
+            assert "projeção não confirmada" in chrome.evaluate("document.querySelector('#resultDescription').textContent")
+            chrome.evaluate("document.querySelector('#startDate').value='2026-10-25'; document.querySelector('#queryDate').value='2026-10-25'; document.querySelector('#simulatorForm').requestSubmit(); document.querySelector('#guideSave').click()")
+            assert chrome.evaluate("ScaleReferences.find(ScaleReferences.read(localStorage),state.savedScales.find(x=>x.nome==='Rotativa 24 dias'),'local')") == "2026-10-25"
+            chrome.navigate(origin + "simulador.html?browserOnly")
+            chrome.until("document.querySelector('#startDate')?.value === '2026-10-25'")
+            chrome.evaluate("applySavedScale(state.savedScales.findIndex(x=>x.nome==='Rotativa 24 dias'))")
+            assert chrome.evaluate("document.querySelector('#startDate').value") == "2026-10-25"
+            chrome.evaluate("document.querySelector('#calendarNext').click(); document.querySelector('#calendarToday').click()")
+            assert chrome.evaluate("document.querySelector('#startDate').value") == "2026-10-25"
+            chrome.navigate(origin + "comparador.html?browserOnly")
+            chrome.until("state.comparison.catalog.has('saved:local:Rotativa%2024%20dias')")
+            chrome.evaluate("selectComparisonScale('a','saved:local:Rotativa%2024%20dias')")
+            assert chrome.evaluate("document.querySelector('#comparison-a-anchor').value") == "2026-10-25"
+            chrome.navigate(origin + "relatorio.html?browserOnly")
+            chrome.until("state.report.catalog.has('saved:local:Rotativa%2024%20dias')")
+            chrome.evaluate("selectReportScale('a','saved:local:Rotativa%2024%20dias')")
+            assert chrome.evaluate("document.querySelector('#report-a-anchor').value") == "2026-10-25"
+            chrome.navigate(origin + "simulador.html?browserOnly")
+            chrome.evaluate("document.querySelector('#savedName').value='Plantão 12x36'; document.querySelector('#savedType').value='ciclo_horas'; renderSavedDynamicFields(); document.querySelector('#savedStart').value='2026-10-01T18:00'; previewSavedScale()")
+            assert chrome.evaluate("document.querySelector('#savedScaleSubmitButton').disabled === false")
+            chrome.evaluate("saveScaleFromForm()")
+            chrome.until("state.savedScales.some(x=>x.nome==='Plantão 12x36')")
+            chrome.evaluate("applySavedScale(state.savedScales.findIndex(x=>x.nome==='Plantão 12x36'))")
+            assert chrome.evaluate("document.querySelector('#startDateTime').value") == "2026-10-01T18:00"
+            for instant, expected in (("2026-10-02T05:59", "Trabalhando"), ("2026-10-02T06:00", "Folga")):
+                chrome.evaluate("document.querySelector('#queryDateTime').value=" + json.dumps(instant) + "; document.querySelector('#simulatorForm').requestSubmit()")
+                chrome.until("document.querySelector('#resultTitle').textContent.includes(" + json.dumps(expected) + ")")
+                assert chrome.evaluate("document.querySelector('#startDateTime').value") == "2026-10-01T18:00"
+            print("REFERENCE: 24-day rotation, year/month rollover, correction, reopening and historical warning")
+
             legacy = [
                 {"nome": "Antiga 6x3", "tipo": "ciclo_dias", "dias_trabalho": 6, "dias_folga": 3},
                 {"nome": "Antiga 4x2", "tipo": "ciclo_dias", "dias_trabalho": 4, "dias_folga": 2},
@@ -363,6 +413,9 @@ def main():
             chrome.navigate(origin + "simulador.html?browserOnly#minhas-escalas")
             chrome.until("state.savedScales.length === 3")
             for index in range(3):
+                if index == 0:
+                    chrome.evaluate("applySavedScale(0)")
+                    assert chrome.evaluate("document.querySelector('#startDate').value") == ""
                 chrome.evaluate(f"applySavedScale({index}); document.querySelector('#startDate').value='2026-10-01'; document.querySelector('#simulatorForm').requestSubmit()")
                 chrome.until("document.body.dataset.resultReady === 'true'")
                 if index == 0:
@@ -390,6 +443,7 @@ def main():
             chrome.navigate(origin + "index.html?browserOnly")
             chrome.navigate(origin + "simulador.html?browserOnly")
             chrome.until("document.body.dataset.resultReady === 'true'")
+            chrome.evaluate("ScaleReferences.set(localStorage,{nome:'Teste PWA 6x3',tipo:'ciclo_dias',dias_trabalho:6,dias_folga:3},'local','2026-10-01'); ScaleReferences.set(localStorage,PREDEFINED_MODELS.find(x=>x.id==='6x3'),'model','2026-10-01'); ScaleReferences.set(localStorage,PREDEFINED_MODELS.find(x=>x.id==='12x36'),'model','2026-10-01T18:00')")
 
             chrome.call("Network.emulateNetworkConditions", {
                 "offline": True, "latency": 0, "downloadThroughput": 0, "uploadThroughput": 0
@@ -529,7 +583,27 @@ def main():
             chrome.evaluate("document.querySelector('#confirmImport').click()")
             chrome.until("localStorage.getItem('simulador_escala_demo_v014_local').includes('36')")
             assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") is None
-            print("BACKUP: invalid preserved data; removed or altered linked consultation cleared; independent model preserved")
+            restored_scale = {"nome": "Restaurada 12x36", "tipo": "ciclo_horas", "horas_trabalho": 12, "horas_folga": 36}
+            v2_file = base / "valid-v2.json"
+            v2_file.write_text(json.dumps({"format": "simulador-escalas-backup", "version": 2,
+                "scales": [restored_scale], "references": [{"source": "local", "scale": restored_scale,
+                "start": "2026-10-01T18:00"}]}, ensure_ascii=False), encoding="utf-8")
+            invalid_v2 = base / "invalid-v2.json"
+            invalid_v2.write_text(v2_file.read_text(encoding="utf-8").replace("2026-10-01T18:00", "2026-02-30T18:00"), encoding="utf-8")
+            chrome.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(json.dumps({**altered_record,
+                "scale": restored_scale, "start": "2026-10-02T18:00"})) + ")")
+            chrome.call("DOM.setFileInputFiles", {"nodeId": file_input, "files": [str(invalid_v2)]})
+            chrome.evaluate("document.querySelector('#importFile').dispatchEvent(new Event('change'))")
+            chrome.until("document.querySelector('#dataFeedback').textContent", lambda v: "não importado" in v)
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1').includes('2026-10-02T18:00')")
+            chrome.call("DOM.setFileInputFiles", {"nodeId": file_input, "files": [str(v2_file)]})
+            chrome.evaluate("document.querySelector('#importFile').dispatchEvent(new Event('change'))")
+            chrome.until("!document.querySelector('#confirmImport').disabled")
+            assert "referência" in chrome.evaluate("document.querySelector('#importPreview').textContent")
+            chrome.evaluate("document.querySelector('#confirmImport').click()")
+            chrome.until("JSON.parse(localStorage.getItem('simulador_escala_active_v1')).start === '2026-10-01T18:00'")
+            assert chrome.evaluate("ScaleReferences.find(ScaleReferences.read(localStorage),JSON.parse(localStorage.getItem('simulador_escala_demo_v014_local'))[0],'local')") == "2026-10-01T18:00"
+            print("BACKUP: v1 compatible; v2 restores reference and updates consultation; invalid files preserve data")
 
             chrome.call("Network.emulateNetworkConditions", {
                 "offline": False, "latency": 0, "downloadThroughput": -1, "uploadThroughput": -1
@@ -568,9 +642,12 @@ def main():
                 assert chrome.evaluate("document.body.dataset.resultReady") == "true"
                 chrome.evaluate("document.querySelector('#guideSave').click()")
                 assert chrome.evaluate("JSON.parse(localStorage.getItem('simulador_escala_active_v1')).source") == "api"
+                assert chrome.evaluate("ScaleReferences.find(ScaleReferences.read(localStorage),state.savedScales[0],'api')") == "2026-10-01"
+                assert "2026-10-01" not in (data_dir / "escalas.json").read_text(encoding="utf-8")
                 chrome.evaluate("window.confirm=()=>true; deleteSavedScale(0)")
                 chrome.until("state.savedScales.length === 0")
                 assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") is None
+                assert chrome.evaluate("ScaleReferences.read(localStorage).some(x=>x.source==='api' && x.scale.nome==='Escala API de teste')") is False
                 assert json.loads((data_dir / "escalas.json").read_text(encoding="utf-8")) == []
                 chrome.evaluate("""(() => {
                     const original = window.apiRequest;
@@ -600,9 +677,9 @@ def main():
             second_tab = chrome.open_tab(origin + "comparador.html?browserOnly")
             chrome.until("!!document.querySelector('#pwaUpdateBanner')", session_id=second_tab)
             chrome.evaluate("window.__keepMarker = 'second tab stayed open'", session_id=second_tab)
-            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-5", b"pwa-6")
+            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-6", b"pwa-7")
             QuietHandler.worker_override = new_worker
-            assert chrome.evaluate("fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>t.includes('pwa-6'))")
+            assert chrome.evaluate("fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>t.includes('pwa-7'))")
             chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
             chrome.until("navigator.serviceWorker.getRegistration().then(r=>r.waiting?.state==='installed')")
             chrome.until("document.querySelector('#pwaUpdateBanner')?.hidden === false")
@@ -652,7 +729,7 @@ def main():
             chrome.until("document.querySelector('#pwaUpdateBanner')?.hidden === false", session_id=second_tab)
             chrome.evaluate("document.querySelector('#pwaUpdateBanner .button.primary').click()", session_id=second_tab)
             time.sleep(.5)
-            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-6')))", session_id=second_tab)
+            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-7')))", session_id=second_tab)
             assert chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Restaurada 12x36')")
             assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") == confirmed_record
             print("UPDATE: all pages notified; dirty form protected; chosen tab reloaded once; second tab waited")
@@ -670,7 +747,7 @@ def main():
 
             legacy_script = ("window.__legacyPwa=true; window.addEventListener('load',()=>"
                              "navigator.serviceWorker.register('sw.js',{scope:'./',updateViaCache:'none'}));").encode()
-            QuietHandler.worker_override = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-5", b"pwa-4")
+            QuietHandler.worker_override = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-6", b"pwa-5")
             QuietHandler.pwa_override = legacy_script
             with socket.socket() as legacy_port_socket:
                 legacy_port_socket.bind(("127.0.0.1", 0))
@@ -678,14 +755,14 @@ def main():
             legacy = Chrome(legacy_port, base / "legacy-profile")
             try:
                 legacy.navigate(origin + "simulador.html?browserOnly")
-                legacy.until("navigator.serviceWorker.controller && caches.keys().then(x=>x.some(y=>y.endsWith('pwa-4')))")
+                legacy.until("navigator.serviceWorker.controller && caches.keys().then(x=>x.some(y=>y.endsWith('pwa-5')))")
                 assert legacy.evaluate("window.__legacyPwa === true && !document.querySelector('#pwaUpdateBanner')")
                 legacy.evaluate("localStorage.setItem('simulador_escala_demo_v014_local', JSON.stringify([{nome:'Escala anterior',tipo:'ciclo_dias',dias_trabalho:6,dias_folga:3}]))")
                 legacy.evaluate("localStorage.setItem('simulador_escala_active_v1', " + json.dumps(confirmed_record) + ")")
                 legacy.open_tab(origin + "dados.html?browserOnly")
                 QuietHandler.pwa_override = None
                 QuietHandler.worker_override = (ROOT / "docs" / "demo" / "sw.js").read_bytes()
-                assert legacy.evaluate("fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>t.includes('pwa-5'))")
+                assert legacy.evaluate("fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>t.includes('pwa-6'))")
                 legacy.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
                 legacy.until("navigator.serviceWorker.getRegistration().then(r=>r.waiting?.state==='installed')")
                 assert legacy.evaluate("!document.querySelector('#pwaUpdateBanner')")
@@ -694,7 +771,7 @@ def main():
             legacy = Chrome(legacy_port, base / "legacy-profile")
             try:
                 legacy.navigate(origin + "simulador.html?browserOnly")
-                legacy.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-5')))")
+                legacy.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-6')))")
                 legacy.until("!!document.querySelector('#pwaUpdateBanner')")
                 assert legacy.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Escala anterior')")
                 assert legacy.evaluate("localStorage.getItem('simulador_escala_active_v1')") == confirmed_record
@@ -703,6 +780,15 @@ def main():
                 print("LEGACY UPDATE: closing old tabs activated the new shell; scales and confirmed query remained")
             finally:
                 legacy.close()
+            chrome.call("Network.emulateNetworkConditions", {
+                "offline": False, "latency": 0, "downloadThroughput": -1, "uploadThroughput": -1
+            })
+            for runner in ("comparator-e2e.html", "report-e2e.html"):
+                chrome.navigate(f"http://127.0.0.1:{server.server_port}/tests/browser/{runner}?scenario=public")
+                chrome.until("document.querySelector('#result').dataset.result", lambda value: value != "running")
+                result = chrome.evaluate("({status:document.querySelector('#result').dataset.result,text:document.querySelector('#result').textContent})")
+                assert result["status"] == "pass", (runner, result["text"])
+                print("BROWSER E2E:", runner, result["text"].split(":", 1)[0])
         finally:
             chrome.close()
             server.shutdown()

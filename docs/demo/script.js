@@ -27,6 +27,7 @@ const LEGACY_STORAGE_KEY = "simulador_escala_demo_v09";
 const PREVIOUS_STORAGE_KEY = "simulador_escala_demo_v013";
 const STORAGE_KEY = "simulador_escala_demo_v014_local";
 const ACTIVE_SELECTION_KEY = window.ScaleActiveSelection?.KEY || "simulador_escala_active_v1";
+const scaleReferences = window.ScaleReferences;
 const THEME_KEY = "simulador_escala_theme";
 
 const ESCALA_REAL_24_DIAS = [
@@ -102,6 +103,7 @@ const state = {
     savedTurns: ["Manhã", "Tarde", "Noite", "Folga"],
     selectedSavedScaleName: null,
     isSavingScale: false,
+    savedPreviewSignature: null,
     scrollTicking: false,
     calendarView: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     selectedModelId: null,
@@ -204,6 +206,33 @@ function cloneScale(scale) {
     return JSON.parse(JSON.stringify(scale));
 }
 
+function storedStart(scale, source) {
+    return scaleReferences.find(scaleReferences.read(localStorage), scale, source);
+}
+
+function availableStart(scale) {
+    try { return storedStart(scale, scale.source || "model") || ""; }
+    catch (error) {
+        const feedback = elements.comparisonFeedback || elements.reportFeedback;
+        if (feedback) feedback.textContent = error.message;
+        return "";
+    }
+}
+
+function migrateConfirmedStart(record) {
+    if (!record) return;
+    const source = record.flow === "saved" ? (record.source || "local") : "model";
+    const scale = source === "model" && record.modelId
+        ? PREDEFINED_MODELS.find((item) => item.id === record.modelId) : record.scale;
+    if (!scale) return;
+    if (source === "local" && !loadSavedScales().some((saved) =>
+        saved.nome === scale.nome && JSON.stringify(scaleReferences.definition(saved)) ===
+            JSON.stringify(scaleReferences.definition(scale)))) return;
+    try {
+        if (!storedStart(scale, source)) scaleReferences.set(localStorage, scale, source, record.start);
+    } catch (error) { console.warn("A referência anterior foi preservada sem migração:", error); }
+}
+
 function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>\"']/g, (character) => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
@@ -235,6 +264,19 @@ function loadSavedScales() {
         console.warn("Não foi possível carregar escalas salvas.", error);
     }
 
+    return [];
+}
+
+function loadSavedScalesForWrite() {
+    for (const key of [STORAGE_KEY, PREVIOUS_STORAGE_KEY, LEGACY_STORAGE_KEY]) {
+        const raw = localStorage.getItem(key);
+        if (raw === null) continue;
+        let scales;
+        try { scales = JSON.parse(raw); }
+        catch { throw new Error(`Os cadastros existentes em ${key} estão inválidos. Nenhum dado foi substituído.`); }
+        if (!Array.isArray(scales)) throw new Error(`Os cadastros existentes em ${key} precisam de revisão. Nenhum dado foi substituído.`);
+        return scales;
+    }
     return [];
 }
 
@@ -326,6 +368,10 @@ function applyModelToSimulator(model) {
     }
 
     renderDynamicFields();
+    try {
+        const start = storedStart(model, "model");
+        if (start) $(model.tipo === TIPO_CICLO_HORAS ? "#startDateTime" : "#startDate").value = start;
+    } catch (error) { setSimulatorFeedback(error.message); }
 
     if (model.tipo === TIPO_CICLO_HORAS) {
         $("#workHours").value = model.horas_trabalho;
@@ -418,6 +464,7 @@ function readConfirmedSelection() {
         if (record.scale.tipo === TIPO_CICLO_HORAS && record.queryTime != null &&
             !/^([01]\d|2[0-3]):[0-5]\d$/u.test(record.queryTime)) return null;
         if (record.source != null && !["local", "api"].includes(record.source)) return null;
+        if (!scaleReferences.validStart(record.scale.tipo, record.start)) return null;
         const start = record.scale.tipo === TIPO_CICLO_HORAS
             ? parseDateTimeInput(record.start) : parseDateInput(record.start);
         if (!Number.isFinite(start.getTime())) return null;
@@ -507,10 +554,23 @@ function saveConfirmedSelection() {
         start: state.selectedType === TIPO_CICLO_HORAS ? $("#startDateTime").value : $("#startDate").value
     };
     try {
-        localStorage.setItem(ACTIVE_SELECTION_KEY, JSON.stringify(record));
+        const source = identity.flow === "saved" ? (identity.source || state.savedScaleSource) :
+            identity.flow === "custom" ? null : "model";
+        const previousReferences = source ? localStorage.getItem(scaleReferences.KEY) : null;
+        const referencedScale = source === "model" && state.selectedModelId
+            ? PREDEFINED_MODELS.find((item) => item.id === state.selectedModelId) || scale : scale;
+        if (source) scaleReferences.set(localStorage, referencedScale, source, record.start);
+        try { localStorage.setItem(ACTIVE_SELECTION_KEY, JSON.stringify(record)); }
+        catch (error) {
+            if (source) {
+                if (previousReferences === null) localStorage.removeItem(scaleReferences.KEY);
+                else localStorage.setItem(scaleReferences.KEY, previousReferences);
+            }
+            throw error;
+        }
         state.guide.active = record;
         showActiveSummary();
-        $("#guideSaveFeedback").textContent = "Consulta guardada neste dispositivo. Ao voltar, você verá a situação atual; consultas históricas não são retomadas. O backup JSON dos cadastros não inclui esta consulta.";
+        $("#guideSaveFeedback").textContent = "Consulta e referência guardadas neste dispositivo. Ao voltar, você verá a situação atual; consultas históricas não são retomadas. O backup v2 guarda referências confirmadas.";
     } catch (error) {
         $("#guideSaveFeedback").textContent = `Não foi possível guardar neste dispositivo: ${error.message}`;
     }
@@ -545,6 +605,10 @@ function getSimulatorValidationError() {
         ? "Informe a data e a hora reais em que começou esse ciclo."
         : "Informe a data real em que começou esse ciclo.";
     if (!queryValue) return "Informe a data que você quer consultar.";
+    if (!scaleReferences.validStart(state.selectedType, startValue) ||
+        !scaleReferences.validStart(state.selectedType, queryValue)) {
+        return "Informe uma data de início da sequência e uma data consultada válidas.";
+    }
 
     const start = state.selectedType === TIPO_CICLO_HORAS ? parseDateTimeInput(startValue) : parseDateInput(startValue);
     const query = state.selectedType === TIPO_CICLO_HORAS ? parseDateTimeInput(queryValue) : parseDateInput(queryValue);
@@ -783,7 +847,7 @@ function renderTurnPreview(target) {
 
     preview.innerHTML = turns
         .map((turn, index) => `
-            <span class="turn-chip ${getTurnClass(turn)}">
+            <span class="turn-chip ${getTurnClass(turn)} ${index === 0 ? "is-sequence-start" : ""}">
                 ${index + 1}. ${escapeHtml(turn)}
                 <button type="button" aria-label="Remover ${escapeHtml(turn)}" data-turn-target="${target}" data-turn-remove="${index}">×</button>
             </span>
@@ -800,7 +864,7 @@ function renderDynamicFields() {
         elements.dynamicFields.innerHTML = `
             <div class="field-grid">
                 <label>
-                    Quando começou esse ciclo? Data e hora
+                    Data de início da sequência · data e hora
                     <input id="startDateTime" type="datetime-local" required>
                 </label>
                 <p class="field-help">No 12x36, começar às 18:00 significa trabalhar até as 06:00 do dia seguinte. Um mesmo dia pode ter trabalho e folga.</p>
@@ -829,7 +893,7 @@ function renderDynamicFields() {
         elements.dynamicFields.innerHTML = `
             <div class="field-grid">
                 <label>
-                    Quando começou esse ciclo?
+                    Data de início da sequência
                     <input id="startDate" type="date" required>
                 </label>
                 <label class="field-advanced field-query">
@@ -850,7 +914,7 @@ function renderDynamicFields() {
     elements.dynamicFields.innerHTML = `
         <div class="field-grid">
             <label>
-                Quando começou esse ciclo?
+                Data de início da sequência
                 <input id="startDate" type="date" required>
             </label>
             <label class="field-advanced field-query">
@@ -891,13 +955,18 @@ function renderSavedDynamicFields() {
                     Horas de folga
                     <input id="savedOffHours" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="36" required>
                 </label>
+                <label>Data de início da sequência · data e hora
+                    <input id="savedStart" type="datetime-local" required>
+                </label>
             </div>
         `;
         return;
     }
 
     if (type === TIPO_TURNO_ROTATIVO) {
-        elements.savedDynamicFields.innerHTML = renderTurnBuilder("saved");
+        elements.savedDynamicFields.innerHTML =
+            '<label>Data de início da sequência<input id="savedStart" type="date" required></label>' +
+            renderTurnBuilder("saved");
         renderTurnPreview("saved");
         return;
     }
@@ -911,6 +980,9 @@ function renderSavedDynamicFields() {
             <label>
                 Dias de folga
                 <input id="savedOffDays" type="number" min="1" max="${MAX_CYCLE_LENGTH}" value="3" required>
+            </label>
+            <label>Data de início da sequência
+                <input id="savedStart" type="date" required>
             </label>
         </div>
     `;
@@ -998,15 +1070,17 @@ function renderCalendar() {
         if (!date) return '<div class="calendar-empty" aria-hidden="true"></div>';
         const value = dateInputValue(date);
         const status = statusForDate(spec, date);
+        const before = window.ScaleCalendarCore.beforeStart(spec, date, spec.type === TIPO_CICLO_HORAS ? formatTime(spec.query) : "00:00");
         const timeLabel = spec.query.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-        const label = spec.type === TIPO_CICLO_HORAS ? timeLabel + " · " + status : status;
+        const label = (spec.type === TIPO_CICLO_HORAS ? timeLabel + " · " + status : status) +
+            (before ? " · anterior ao início, projeção não confirmada" : "");
         const displayStatus = status === "Trabalhando" ? "Trabalho" : status;
         const current = value === selectedDate;
         const todayClass = value === today ? "is-today" : "";
         const visibleStatus = spec.type === TIPO_CICLO_HORAS
             ? '<span class="calendar-time">' + escapeHtml(timeLabel) + '</span><span class="calendar-status">' + escapeHtml(displayStatus) + '</span>'
             : escapeHtml(displayStatus);
-        return '<button type="button" class="calendar-day ' + getTurnClass(status) + ' ' + (current ? "is-query-date" : "") + ' ' + todayClass + '" data-calendar-date="' + value + '" ' + (current ? 'aria-current="date"' : '') + ' aria-label="' + value + ': ' + escapeHtml(label) + '"><strong>' + date.getDate() + '<span>' + (current ? "Sel." : value === today ? "Hoje" : "") + '</span></strong><small>' + visibleStatus + '</small></button>';
+        return '<button type="button" class="calendar-day ' + getTurnClass(status) + ' ' + (current ? "is-query-date" : "") + ' ' + todayClass + '" data-calendar-date="' + value + '" ' + (current ? 'aria-current="date"' : '') + ' aria-label="' + value + ': ' + escapeHtml(label) + '"><strong>' + date.getDate() + '<span>' + (current ? "Sel." : value === today ? "Hoje" : "") + '</span></strong><small>' + visibleStatus + (before ? '<span class="before-start-label">Projeção</span>' : '') + '</small></button>';
     });
     elements.calendarMonth.textContent = formatMonth(state.calendarView);
     elements.calendarGrid.innerHTML = weekdays.map((day) => '<div class="calendar-weekday">' + day + '</div>').concat(cells).join("");
@@ -1130,8 +1204,11 @@ function showResult(title, description, items) {
         const empty = $("#calendarEmpty");
         if (empty) empty.hidden = true;
         const spec = getSimulatorSpec();
+        const before = window.ScaleCalendarCore.beforeStart(spec, spec.query,
+            spec.type === TIPO_CICLO_HORAS ? formatTime(spec.query) : "00:00");
+        if (before) elements.resultDescription.textContent += " Esta data é anterior ao início da sequência: o status exibido é apenas uma projeção não confirmada.";
         const moment = spec.type === TIPO_CICLO_HORAS ? formatDateTime(spec.query) : formatDate(spec.query);
-        $("#resultMoment").textContent = `${state.guide.queryMode === "now" ? "Consulta atual" : "Consulta escolhida"}: ${moment}`;
+        $("#resultMoment").textContent = `${before ? "Antes do início · projeção" : state.guide.queryMode === "now" ? "Consulta atual" : "Consulta escolhida"}: ${moment}`;
         renderGuideReview();
         setGuideStep(3);
     }
@@ -1147,7 +1224,9 @@ function renderGuideReview() {
     if (!summary) return;
     const spec = getSimulatorSpec();
     const status = statusForDate(spec, spec.query);
-    const next = window.ScaleCalendarCore.nextChange(spec, spec.query);
+    const before = window.ScaleCalendarCore.beforeStart(spec, spec.query,
+        spec.type === TIPO_CICLO_HORAS ? formatTime(spec.query) : "00:00");
+    const next = before ? null : window.ScaleCalendarCore.nextChange(spec, spec.query);
     const position = spec.type === TIPO_CICLO_HORAS
         ? `Fase ${window.ScaleCalendarCore.cycleHoursPosition(spec.start, spec.query, spec.work, spec.off) < spec.work ? "de trabalho" : "de folga"}`
         : spec.type === TIPO_TURNO_ROTATIVO
@@ -1157,7 +1236,7 @@ function renderGuideReview() {
     const start = spec.type === TIPO_CICLO_HORAS ? formatDateTime(spec.start) : formatDate(spec.start);
     const query = spec.type === TIPO_CICLO_HORAS ? formatDateTime(spec.query) : formatDate(spec.query);
     const context = state.guide.queryMode === "now" ? "Situação atual" : "Consulta escolhida";
-    summary.textContent = `${name} · início confirmado: ${start}. ${context} em ${query}: ${status}. ${position}. ${next ? `Próxima mudança: ${spec.type === TIPO_CICLO_HORAS ? formatDateTime(next) : formatDate(next)}.` : "Sem mudança na sequência."} Confira os próximos dias e o calendário antes de guardar.`;
+    summary.textContent = `${name} · início confirmado: ${start}. ${before ? "Consulta anterior ao início: projeção não confirmada" : context} em ${query}: ${status}. ${position}. ${before ? "Não há próxima mudança confirmada antes do início." : next ? `Próxima mudança: ${spec.type === TIPO_CICLO_HORAS ? formatDateTime(next) : formatDate(next)}.` : "Sem mudança na sequência."} Confira os próximos dias e o calendário antes de guardar.`;
     const feedback = $("#guideSaveFeedback");
     if (feedback) feedback.textContent = "";
 }
@@ -1712,8 +1791,72 @@ function getScaleValidationError(scale) {
     return "";
 }
 
+function readSavedFormScale() {
+    const nome = elements.savedName.value.trim();
+    const tipo = elements.savedType.value;
+    if (!nome) throw new Error("Informe um nome para salvar a escala.");
+    if (tipo === TIPO_CICLO_HORAS) {
+        return { nome, tipo, horas_trabalho: Number($("#savedWorkHours")?.value),
+            horas_folga: Number($("#savedOffHours")?.value) };
+    }
+    if (tipo === TIPO_TURNO_ROTATIVO) {
+        return { nome, tipo, sequencia_turnos: normalizeTurns(state.savedTurns) };
+    }
+    if (tipo === TIPO_CICLO_DIAS) {
+        return { nome, tipo, dias_trabalho: Number($("#savedWorkDays")?.value),
+            dias_folga: Number($("#savedOffDays")?.value) };
+    }
+    throw new Error("Tipo de escala inválido.");
+}
+
+function invalidateSavedPreview() {
+    state.savedPreviewSignature = null;
+    const button = $("#savedScaleSubmitButton");
+    if (button) button.disabled = true;
+    const preview = $("#savedReferencePreview");
+    if (preview) preview.replaceChildren();
+}
+
+function previewSavedScale() {
+    invalidateSavedPreview();
+    try {
+        const scale = readSavedFormScale();
+        scaleReferences.definition(scale);
+        const error = getScaleValidationError(scale);
+        if (error) throw new Error(error);
+        const start = $("#savedStart")?.value || "";
+        if (!scaleReferences.validStart(scale.tipo, start)) {
+            throw new Error("Informe a data de início da sequência; para ciclos por horas, inclua a hora.");
+        }
+        const anchor = scale.tipo === TIPO_CICLO_HORAS ? parseDateTimeInput(start) : parseDateInput(start);
+        const spec = scale.tipo === TIPO_CICLO_HORAS
+            ? { type: scale.tipo, start: anchor, work: scale.horas_trabalho, off: scale.horas_folga }
+            : scale.tipo === TIPO_TURNO_ROTATIVO
+                ? { type: scale.tipo, start: anchor, turns: scale.sequencia_turnos }
+                : { type: scale.tipo, start: anchor, work: scale.dias_trabalho, off: scale.dias_folga };
+        const container = $("#savedReferencePreview");
+        const heading = document.createElement("strong");
+        heading.textContent = `Prévia a partir de ${scale.tipo === TIPO_CICLO_HORAS ? formatDateTime(anchor) : formatDate(anchor)}:`;
+        const list = document.createElement("ol");
+        for (let offset = 0; offset < 6; offset += 1) {
+            const day = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() + offset,
+                anchor.getHours(), anchor.getMinutes());
+            const status = window.ScaleCalendarCore.comparisonStatus(spec, day,
+                scale.tipo === TIPO_CICLO_HORAS ? formatTime(anchor) : "00:00");
+            const item = document.createElement("li");
+            item.textContent = `${formatDate(day)}${scale.tipo === TIPO_CICLO_HORAS ? ` às ${formatTime(anchor)}` : ""}: ${status}`;
+            if (offset === 0) item.className = "is-sequence-start";
+            list.append(item);
+        }
+        container.replaceChildren(heading, list);
+        state.savedPreviewSignature = JSON.stringify({ scale, start });
+        $("#savedScaleSubmitButton").disabled = false;
+        setSavedScaleFeedback("Confira o primeiro turno destacado e os dias seguintes. Depois confirme o cadastro.", "info");
+    } catch (error) { setSavedScaleFeedback(error.message, "error"); }
+}
+
 function saveScaleInBrowser(scale) {
-    const localScales = loadSavedScales();
+    const localScales = loadSavedScalesForWrite();
     if (localScales.some((item) => getScaleKey(item) === getScaleKey(scale))) {
         throw new Error("Já existe uma escala local com esse nome.");
     }
@@ -1755,12 +1898,16 @@ function renderSavedScales() {
         return;
     }
 
+    let references;
+    try { references = scaleReferences.read(localStorage); }
+    catch (error) { setSavedScaleFeedback(error.message, "error"); references = []; }
     elements.savedScalesList.innerHTML = state.savedScales
         .map((scale, index) => `
             <div class="saved-item">
                 <div>
                     <strong>${escapeHtml(scale.nome)}</strong>
                     <small>${escapeHtml(getTypeName(scale.tipo))} · ${escapeHtml(getScaleSummary(scale))}</small>
+                    <small>${escapeHtml(scaleReferences.find(references, scale, state.savedScaleSource) || "Data de início ainda não confirmada neste dispositivo")}</small>
                 </div>
                 <div class="saved-item-actions">
                     <button class="tiny-button" type="button" data-apply-scale="${index}">Aplicar</button>
@@ -1789,60 +1936,14 @@ async function saveScaleFromForm(button = null) {
     const submitButton = getSavedScaleSubmitButton(button);
     const originalButtonText = submitButton ? submitButton.innerHTML : "";
 
-    const name = elements.savedName.value.trim();
-    const type = elements.savedType.value;
-
-    if (!name) {
-        setSavedScaleFeedback("Informe um nome para salvar a escala.", "error");
-        elements.savedName.focus();
-        return;
-    }
-
     let scale;
-
-    if (type === TIPO_CICLO_HORAS) {
-        const workHoursInput = $("#savedWorkHours");
-        const offHoursInput = $("#savedOffHours");
-
-        if (!workHoursInput || !offHoursInput) {
-            setSavedScaleFeedback("Campos de horas não encontrados. Troque o tipo e tente novamente.", "error");
-            return;
-        }
-
-        scale = {
-            nome: name,
-            tipo: type,
-            horas_trabalho: Number(workHoursInput.value),
-            horas_folga: Number(offHoursInput.value)
-        };
-    } else if (type === TIPO_TURNO_ROTATIVO) {
-        const turns = normalizeTurns(state.savedTurns);
-
-        if (!turns.length) {
-            setSavedScaleFeedback("Adicione pelo menos um turno antes de salvar.", "error");
-            return;
-        }
-
-        scale = {
-            nome: name,
-            tipo: type,
-            sequencia_turnos: turns
-        };
-    } else {
-        const workDaysInput = $("#savedWorkDays");
-        const offDaysInput = $("#savedOffDays");
-
-        if (!workDaysInput || !offDaysInput) {
-            setSavedScaleFeedback("Campos de dias não encontrados. Troque o tipo e tente novamente.", "error");
-            return;
-        }
-
-        scale = {
-            nome: name,
-            tipo: type,
-            dias_trabalho: Number(workDaysInput.value),
-            dias_folga: Number(offDaysInput.value)
-        };
+    try { scale = readSavedFormScale(); }
+    catch (error) { setSavedScaleFeedback(error.message, "error"); return; }
+    const start = $("#savedStart")?.value || "";
+    if (!scaleReferences.validStart(scale.tipo, start) ||
+        state.savedPreviewSignature !== JSON.stringify({ scale, start })) {
+        setSavedScaleFeedback("Confira a prévia desta configuração e da data de início antes de salvar.", "error");
+        return;
     }
 
     const validationError = getScaleValidationError(scale);
@@ -1852,6 +1953,7 @@ async function saveScaleFromForm(button = null) {
     }
 
     try {
+        scaleReferences.read(localStorage);
         state.isSavingScale = true;
 
         if (submitButton) {
@@ -1880,7 +1982,7 @@ async function saveScaleFromForm(button = null) {
                 if (!(apiError instanceof TypeError) && apiError?.name !== "AbortError") {
                     throw apiError;
                 }
-                const localScales = loadSavedScales();
+                const localScales = loadSavedScalesForWrite();
                 if (localScales.some((item) => getScaleKey(item) === getScaleKey(scale))) {
                     throw new Error("Já existe uma escala local com esse nome.");
                 }
@@ -1895,11 +1997,13 @@ async function saveScaleFromForm(button = null) {
         } else {
             saveScaleInBrowser(scale);
         }
+        scaleReferences.set(localStorage, createdScale, state.savedScaleSource, start);
         renderSavedScales();
 
         elements.savedScaleForm.reset();
         state.savedTurns = ["Manhã", "Tarde", "Noite", "Folga"];
         renderSavedDynamicFields();
+        invalidateSavedPreview();
 
         setSavedScaleFeedback(`Escala "${createdScale.nome}" salva em ${destination}.`, "success");
 
@@ -1962,12 +2066,17 @@ function applySavedScale(index) {
     }
 
     state.selectedSavedScaleName = scale.nome;
+    let start = null;
+    try { start = storedStart(scale, state.savedScaleSource); }
+    catch (error) { setSimulatorFeedback(error.message); }
+    if (start) $(scale.tipo === TIPO_CICLO_HORAS ? "#startDateTime" : "#startDate").value = start;
 
     $("#guideSelectedModel").textContent = scale.nome;
     renderAlternativeWeek();
     setGuideStep(2);
     invalidateSimulatorResult();
-    setSimulatorFeedback("Informe quando começou esta escala para consultar. O cadastro não contém essa data.", "info");
+    if (start) elements.simulatorForm.requestSubmit();
+    else setSimulatorFeedback("Esta escala ainda não tem data de início confirmada neste dispositivo. Informe-a, confira os próximos dias e guarde a consulta uma vez.", "info");
 
     const simulator = document.querySelector("#simulador");
 
@@ -1994,6 +2103,7 @@ async function deleteSavedScale(index) {
     }
 
     try {
+        scaleReferences.read(localStorage);
         if (source === "api") {
             await apiRequest(`/api/v1/escalas/${encodeURIComponent(scale.nome)}`, { method: "DELETE" });
         } else {
@@ -2002,6 +2112,7 @@ async function deleteSavedScale(index) {
             state.savedScales = remaining;
             renderSavedScales();
         }
+        scaleReferences.remove(localStorage, scale, source);
         if (linked) clearActiveSelection();
         setSavedScaleFeedback(`Escala "${scale.nome}" excluída de ${source === "api" ? "API local" : "este navegador"}.${linked ? " A consulta guardada vinculada também foi removida." : " A consulta independente permaneceu."}`, "success");
         if (source === "api") await loadSavedScalesFromApi();
@@ -2039,6 +2150,7 @@ function handleTurnBuilderClick(event) {
 
         list.push(value);
         renderTurnPreview(target);
+        if (target === "saved") invalidateSavedPreview();
         if (target === "simulator") validateSimulatorForm();
         return;
     }
@@ -2050,6 +2162,7 @@ function handleTurnBuilderClick(event) {
 
         list.splice(index, 1);
         renderTurnPreview(target);
+        if (target === "saved") invalidateSavedPreview();
         if (target === "simulator") validateSimulatorForm();
         return;
     }
@@ -2072,6 +2185,7 @@ function handleTurnBuilderClick(event) {
         }
 
         renderTurnPreview(target);
+        if (target === "saved") invalidateSavedPreview();
         if (target === "simulator") validateSimulatorForm();
     }
 }
@@ -2499,16 +2613,14 @@ function renderComparisonFields(side, scale) {
     const container = side === "a" ? elements.comparisonAFields : elements.comparisonBFields;
     if (!container) return;
     container.replaceChildren();
-    const now = new Date();
-    const defaultDate = dateInputValue(now);
+    const start = availableStart(scale);
 
     if (scale.tipo === TIPO_CICLO_HORAS) {
-        const anchor = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0);
-        appendComparisonInput(container, side, "anchor", "Início do ciclo · data e hora", scale.data_inicio || `${dateInputValue(anchor)}T06:00`, { type: "datetime-local", required: "required" });
+        appendComparisonInput(container, side, "anchor", "Data de início da sequência · data e hora", start, { type: "datetime-local", required: "required" });
         appendComparisonInput(container, side, "work", "Horas de trabalho", scale.horas_trabalho, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
         appendComparisonInput(container, side, "off", "Horas de folga", scale.horas_folga, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
     } else {
-        appendComparisonInput(container, side, "anchor", "Início do ciclo · data", scale.data_inicio || defaultDate, { type: "date", required: "required" });
+        appendComparisonInput(container, side, "anchor", "Data de início da sequência", start, { type: "date", required: "required" });
         if (scale.tipo === TIPO_TURNO_ROTATIVO) {
             appendComparisonInput(container, side, "turns", "Sequência diária · separada por vírgulas", normalizeTurns(scale.sequencia_turnos).join(", "), { type: "text", maxlength: String(MAX_SEQUENCE_LENGTH * 12), required: "required", placeholder: "Manhã, Tarde, Noite, Folga" });
         } else {
@@ -2519,7 +2631,7 @@ function renderComparisonFields(side, scale) {
 
     const note = document.createElement("p");
     note.className = "comparison-edit-note";
-    note.textContent = "Você pode ajustar estes parâmetros só para comparar; a escala original não será alterada nem salva.";
+    note.textContent = "A referência confirmada é recuperada deste dispositivo. Correções nesta comparação são temporárias; configure e confirme a referência no simulador para guardá-la.";
     container.append(note);
 }
 
@@ -2549,13 +2661,13 @@ function comparisonStatusLabel(status) {
     return status === "Trabalhando" ? "Trabalho" : status;
 }
 
-function appendComparisonStatus(parent, side, status) {
+function appendComparisonStatus(parent, side, status, before = false) {
     const line = document.createElement("span");
     line.className = `compare-status ${getTurnClass(status)}`;
     const tag = document.createElement("b");
     tag.textContent = side.toUpperCase();
     const label = document.createElement("span");
-    label.textContent = comparisonStatusLabel(status);
+    label.textContent = comparisonStatusLabel(status) + (before ? " · Projeção" : "");
     line.append(tag, label);
     parent.append(line);
 }
@@ -2591,13 +2703,13 @@ function renderComparisonCalendar(result) {
         button.dataset.compareDate = key;
         button.setAttribute("role", "gridcell");
         button.setAttribute("aria-pressed", String(key === selected));
-        button.setAttribute("aria-label", `${formatDate(date)}. Escala A: ${day.statusA}. Escala B: ${day.statusB}.`);
+        button.setAttribute("aria-label", `${formatDate(date)}. Escala A: ${day.statusA}${day.beforeA ? ", projeção anterior ao início" : ""}. Escala B: ${day.statusB}${day.beforeB ? ", projeção anterior ao início" : ""}.`);
         const dateLabel = document.createElement("strong");
         dateLabel.className = "compare-date-number";
         dateLabel.textContent = String(date.getDate());
         button.append(dateLabel);
-        appendComparisonStatus(button, "a", day.statusA);
-        appendComparisonStatus(button, "b", day.statusB);
+        appendComparisonStatus(button, "a", day.statusA, day.beforeA);
+        appendComparisonStatus(button, "b", day.statusB, day.beforeB);
         fragment.append(button);
     });
     elements.comparisonCalendar.replaceChildren(fragment);
@@ -2617,9 +2729,9 @@ function renderComparisonDetail(result, specA, specB) {
     const panel = document.createElement("div");
     panel.className = "compare-detail-layout";
     [
-        { side: "a", spec: specA, status: selected.statusA, intervals: selected.intervalsA },
-        { side: "b", spec: specB, status: selected.statusB, intervals: selected.intervalsB }
-    ].forEach(({ side, spec, status, intervals }) => {
+        { side: "a", spec: specA, status: selected.statusA, intervals: selected.intervalsA, before: selected.beforeA },
+        { side: "b", spec: specB, status: selected.statusB, intervals: selected.intervalsB, before: selected.beforeB }
+    ].forEach(({ side, spec, status, intervals, before }) => {
         const card = document.createElement("article");
         card.className = "compare-detail-card";
         const heading = document.createElement("h3");
@@ -2629,7 +2741,7 @@ function renderComparisonDetail(result, specA, specB) {
         origin.textContent = sourceLabel(spec.source);
         const statusLine = document.createElement("p");
         statusLine.className = "compare-detail-at-time";
-        statusLine.textContent = `Às ${elements.comparisonTime.value}: ${comparisonStatusLabel(status)}`;
+        statusLine.textContent = `Às ${elements.comparisonTime.value}: ${comparisonStatusLabel(status)}${before ? " · Projeção anterior ao início, não confirmada" : ""}`;
         card.append(heading, origin, statusLine);
 
         if (intervals) {
@@ -2680,6 +2792,11 @@ function renderComparisonSummary(summary) {
         fragment.append(item);
     });
     elements.comparisonSummary.replaceChildren(fragment);
+    if (summary.aBefore || summary.bBefore) {
+        const note = document.createElement("p");
+        note.textContent = `Datas anteriores ao início ficaram fora dos totais: A ${summary.aBefore}, B ${summary.bBefore}. Seus status no calendário são apenas projeções.`;
+        elements.comparisonSummary.append(note);
+    }
 }
 
 function updateComparison() {
@@ -2721,6 +2838,7 @@ function selectComparisonScale(side, key) {
 
 function initComparisonPage() {
     if (!hasComparator()) return;
+    migrateConfirmedStart(readConfirmedSelection());
     state.comparison.catalog = new Map();
     state.comparison.fieldSelection = { a: null, b: null };
     const today = new Date();
@@ -2848,14 +2966,13 @@ function appendReportInput(container, side, key, labelText, value, attributes = 
 function renderReportFields(side, scale) {
     const container = side === "a" ? elements.reportAFields : elements.reportBFields;
     container.replaceChildren();
-    const today = new Date();
+    const start = availableStart(scale);
     if (scale.tipo === TIPO_CICLO_HORAS) {
-        const anchor = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 6, 0);
-        appendReportInput(container, side, "anchor", "Início do ciclo · data e hora", scale.data_inicio || `${dateInputValue(anchor)}T06:00`, { type: "datetime-local", required: "required" });
+        appendReportInput(container, side, "anchor", "Data de início da sequência · data e hora", start, { type: "datetime-local", required: "required" });
         appendReportInput(container, side, "work", "Horas de trabalho", scale.horas_trabalho, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
         appendReportInput(container, side, "off", "Horas de folga", scale.horas_folga, { type: "number", min: "1", max: String(MAX_CYCLE_LENGTH - 1), step: "1", required: "required" });
     } else {
-        appendReportInput(container, side, "anchor", "Início do ciclo · data", scale.data_inicio || dateInputValue(today), { type: "date", required: "required" });
+        appendReportInput(container, side, "anchor", "Data de início da sequência", start, { type: "date", required: "required" });
         if (scale.tipo === TIPO_TURNO_ROTATIVO) {
             appendReportInput(container, side, "turns", "Sequência diária · separada por vírgulas", normalizeTurns(scale.sequencia_turnos).join(", "), { type: "text", maxlength: String(MAX_SEQUENCE_LENGTH * 12), required: "required", placeholder: "Manhã, Tarde, Noite, Folga" });
         } else {
@@ -2865,7 +2982,7 @@ function renderReportFields(side, scale) {
     }
     const note = document.createElement("p");
     note.className = "comparison-edit-note";
-    note.textContent = "Ajustes usados somente neste relatório; não alteram nem salvam a escala original.";
+    note.textContent = "A referência confirmada é recuperada deste dispositivo. Ajustes neste relatório são temporários; confirme correções no simulador para guardá-las.";
     container.append(note);
 }
 
@@ -2976,6 +3093,9 @@ function renderReport(report) {
     note.textContent = report.usesTime
         ? `Cada data registra o status às ${report.time}. Em ciclos por horas pode haver outra situação no mesmo dia. Os totais não representam dias inteiros de trabalho nem horas trabalhadas.`
         : "Cada data registra a situação do ciclo por dias. Os totais não representam horas trabalhadas.";
+    if (report.rows.some((row) => row.beforeA || row.beforeB)) {
+        note.textContent += " Datas anteriores ao início são projeções não confirmadas e ficam fora dos totais.";
+    }
     summary.append(summaryHeading, summaryList, note);
     fragment.append(summary);
 
@@ -3003,21 +3123,21 @@ function renderReport(report) {
     }
     report.rows.forEach((record) => {
         const day = document.createElement("article");
-        const bothOff = report.mode === "compare" && record.statusA === "Folga" && record.statusB === "Folga";
+        const bothOff = report.mode === "compare" && !record.beforeA && !record.beforeB && record.statusA === "Folga" && record.statusB === "Folga";
         day.className = `report-calendar-day${bothOff ? " both-off" : ""}${record.transitionA || record.transitionB ? " has-transition" : ""}`;
-        day.setAttribute("aria-label", `${record.dateLabel}. Escala A: ${record.statusA}.${report.mode === "compare" ? ` Escala B: ${record.statusB}.` : ""}${record.transitionA || record.transitionB ? " Há transição de status na data." : ""}`);
+        day.setAttribute("aria-label", `${record.dateLabel}. Escala A: ${window.ScaleReportCore.displayedStatus(record.statusA, record.beforeA)}.${report.mode === "compare" ? ` Escala B: ${window.ScaleReportCore.displayedStatus(record.statusB, record.beforeB)}.` : ""}${record.transitionA || record.transitionB ? " Há transição de status na data." : ""}`);
         const date = document.createElement("strong");
         date.className = "report-calendar-date";
         date.textContent = String(record.date.getDate());
         day.append(date);
-        [["a", record.statusA], ...(report.mode === "compare" ? [["b", record.statusB]] : [])].forEach(([side, status]) => {
+        [["a", record.statusA, record.beforeA], ...(report.mode === "compare" ? [["b", record.statusB, record.beforeB]] : [])].forEach(([side, status, before]) => {
             const statusLabel = document.createElement("span");
             statusLabel.className = `report-calendar-status status-${TURN_CLASSES[status.toLowerCase()] || "trabalhando"}`;
             const sideLabel = document.createElement("b");
             sideLabel.textContent = side.toUpperCase();
             const text = document.createElement("span");
             text.className = "report-status-full";
-            text.textContent = status === "Trabalhando" ? "Trabalho" : status;
+            text.textContent = (status === "Trabalhando" ? "Trabalho" : status) + (before ? " · Projeção" : "");
             statusLabel.append(sideLabel, text);
             if (status === "Trabalhando") {
                 const short = document.createElement("span");
@@ -3068,7 +3188,8 @@ function renderReport(report) {
     const body = document.createElement("tbody");
     report.rows.forEach((record) => {
         const row = document.createElement("tr");
-        [record.dateLabel, record.weekday, record.statusA].concat(report.mode === "compare" ? [record.statusB] : []).forEach((value) => {
+        [record.dateLabel, record.weekday, window.ScaleReportCore.displayedStatus(record.statusA, record.beforeA)]
+            .concat(report.mode === "compare" ? [window.ScaleReportCore.displayedStatus(record.statusB, record.beforeB)] : []).forEach((value) => {
             const cell = document.createElement("td");
             cell.textContent = value;
             row.append(cell);
@@ -3184,6 +3305,7 @@ function jumpReportToAnchorMonth(side) {
 
 function initReportPage() {
     if (!hasReport()) return;
+    migrateConfirmedStart(readConfirmedSelection());
     const now = new Date();
     elements.reportMonth.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     elements.reportTime.value = "06:00";
@@ -3338,11 +3460,14 @@ function configureEvents() {
     if (elements.savedScaleForm) {
         elements.savedScaleForm.addEventListener("submit", handleSavedScaleSubmit);
         elements.savedScaleForm.addEventListener("click", handleTurnBuilderClick);
+        elements.savedScaleForm.addEventListener("input", invalidateSavedPreview);
     }
+    $("#previewSavedScale")?.addEventListener("click", previewSavedScale);
 
     if (elements.savedType) {
         elements.savedType.addEventListener("change", () => {
             renderSavedDynamicFields();
+            invalidateSavedPreview();
             setSavedScaleFeedback("Preencha os dados da escala e clique em Salvar escala.", "info");
         });
     }
@@ -3390,6 +3515,7 @@ function initSimulatorPage() {
     renderSavedDynamicFields();
     renderSavedScales();
     state.guide.active = readConfirmedSelection();
+    migrateConfirmedStart(state.guide.active);
     showActiveSummary();
     invalidateSimulatorResult();
     const hash = window.location.hash;

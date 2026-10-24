@@ -256,6 +256,7 @@ select option:hover { background: #dbeafa; color: #162638; }
 .turn-chip.tarde { background: var(--afternoon-bg); color: var(--afternoon-ink); }
 .turn-chip.noite { background: var(--night-bg); color: var(--night-ink); }
 .turn-chip.folga { background: var(--off-bg); color: var(--off-ink); }
+.turn-chip.is-sequence-start { outline: 2px solid var(--primary); outline-offset: 2px; }
 .turn-chip button { padding: 0 3px; border: 0; background: transparent; cursor: pointer; }
 .turn-actions { display: flex; flex-wrap: wrap; gap: 5px; }
 .tiny-button { min-height: 29px; padding: 0 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); cursor: pointer; font-size: .63rem; }
@@ -272,6 +273,11 @@ select option:hover { background: #dbeafa; color: #162638; }
 .saved-item-actions { display: flex; gap: 4px; }
 .saved-form { display: grid; gap: 9px; padding-top: 10px; border-top: 1px solid var(--line); }
 .saved-form h3 { font-size: .8rem; }
+.saved-reference-preview { display: grid; gap: 8px; }
+.saved-reference-preview:empty { display: none; }
+.saved-reference-preview ol { display: grid; gap: 4px; margin: 0; padding-left: 24px; }
+.saved-reference-preview li.is-sequence-start { font-weight: 700; color: var(--primary); }
+.before-start-label { display: block; font-size: .65em; font-weight: 700; }
 .form-feedback { margin: 0; font-size: .68rem; }
 .form-feedback[data-feedback-type="error"] { color: var(--danger); }
 .form-feedback[data-feedback-type="success"] { color: var(--success); }
