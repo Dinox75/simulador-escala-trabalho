@@ -1,6 +1,7 @@
 """Render the editable SVG PWA marks with isolated headless Chrome."""
 
 import base64
+import argparse
 import importlib.util
 import pathlib
 import socket
@@ -15,14 +16,19 @@ Chrome = MODULE.Chrome
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Renderiza os ícones v5 da PWA em Chrome isolado.")
+    parser.add_argument("--output-dir", type=pathlib.Path, default=ICONS,
+                        help="Diretório de saída (padrão: docs/demo/icons).")
+    output_dir = parser.parse_args().output_dir
+    output_dir.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="simulador-icon-render-") as profile:
         with socket.socket() as probe:
             probe.bind(("127.0.0.1", 0))
             port = probe.getsockname()[1]
         chrome = Chrome(port, profile)
         try:
-            for source, name in (("escala-source.svg", "icon-v2"),
-                                 ("escala-maskable-source.svg", "icon-maskable-v2")):
+            for source, name in (("escala-v5-3d-source.svg", "icon-v5"),
+                                 ("escala-v5-3d-maskable-source.svg", "icon-maskable-v5")):
                 for size in (192, 512):
                     chrome.call("Emulation.setDeviceMetricsOverride", {
                         "width": size, "height": size, "deviceScaleFactor": 1,
@@ -33,7 +39,7 @@ def main():
                     image = chrome.call("Page.captureScreenshot", {
                         "format": "png", "captureBeyondViewport": False,
                     })["data"]
-                    (ICONS / f"{name}-{size}.png").write_bytes(base64.b64decode(image))
+                    (output_dir / f"{name}-{size}.png").write_bytes(base64.b64decode(image))
         finally:
             chrome.close()
 

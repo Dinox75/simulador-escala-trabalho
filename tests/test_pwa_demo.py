@@ -32,8 +32,8 @@ def test_manifest_is_scoped_to_demo_and_has_real_png_icons() -> None:
     assert manifest["start_url"] == "./simulador.html"
     assert manifest["scope"] == "./"
     assert {icon["src"] for icon in manifest["icons"]} == {
-        "icons/icon-v2-192.png", "icons/icon-v2-512.png",
-        "icons/icon-maskable-v2-192.png", "icons/icon-maskable-v2-512.png",
+        "icons/icon-v5-192.png", "icons/icon-v5-512.png",
+        "icons/icon-maskable-v5-192.png", "icons/icon-maskable-v5-512.png",
     }
     for icon in manifest["icons"]:
         width, height = map(int, icon["sizes"].split("x"))
@@ -41,6 +41,11 @@ def test_manifest_is_scoped_to_demo_and_has_real_png_icons() -> None:
         assert content[:8] == b"\x89PNG\r\n\x1a\n"
         assert (int.from_bytes(content[16:20], "big"), int.from_bytes(content[20:24], "big")) == (width, height)
     assert {icon["sizes"] for icon in manifest["icons"]} == {"192x192", "512x512"}
+    assert [icon["purpose"] for icon in manifest["icons"]] == ["any", "any", "maskable", "maskable"]
+    assert (DEMO / "icons/escala-v5-3d-source.svg").is_file()
+    assert (DEMO / "icons/escala-v5-3d-maskable-source.svg").is_file()
+    assert all((DEMO / f"icons/{name}-{size}.png").is_file()
+               for name in ("icon-v2", "icon-maskable-v2") for size in (192, 512))
 
 
 def test_every_demo_page_has_only_local_runtime_assets_in_precache() -> None:
@@ -52,6 +57,8 @@ def test_every_demo_page_has_only_local_runtime_assets_in_precache() -> None:
         source = page.read_text(encoding="utf-8")
         assert page.name in precached
         assert 'href="manifest.webmanifest"' in source
+        assert 'href="icons/icon-v5-192.png"' in source
+        assert 'icon-v2-' not in source
         assert 'src="pwa.js"' in source
         for resource in re.findall(r'<script[^>]+src="([^"]+)"', source):
             assert not resource.startswith("http")

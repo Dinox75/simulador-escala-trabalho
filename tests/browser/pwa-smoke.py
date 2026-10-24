@@ -187,7 +187,7 @@ class Chrome:
 
 def main():
     assert pathlib.Path(BROWSER).is_file(), f"Personal Chrome unavailable: {BROWSER}"
-    for name in ("icon-v2", "icon-maskable-v2"):
+    for name in ("icon-v5", "icon-maskable-v5"):
         for size in (192, 512):
             png = (ROOT / "docs" / "demo" / "icons" / f"{name}-{size}.png").read_bytes()
             assert png[:8] == b"\x89PNG\r\n\x1a\n"
@@ -214,7 +214,7 @@ def main():
             for script in scripts:
                 chrome.evaluate("new Function(" + json.dumps(script.read_text(encoding="utf-8")) + "); true")
             print("JAVASCRIPT SYNTAX:", len(scripts), "demo scripts compiled in Chrome")
-            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-6')))")
+            chrome.until("navigator.serviceWorker?.controller && caches.keys().then(x=>x.some(y=>y.includes('pwa-7')))")
             scope = chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.scope)")
             assert scope == origin, scope
             install_errors = chrome.call("Page.getInstallabilityErrors").get("installabilityErrors", [])
@@ -499,6 +499,10 @@ def main():
             assert [icon["purpose"] for icon in manifest["icons"]] == [
                 "any", "any", "maskable", "maskable"
             ]
+            assert [icon["src"] for icon in manifest["icons"]] == [
+                "icons/icon-v5-192.png", "icons/icon-v5-512.png",
+                "icons/icon-maskable-v5-192.png", "icons/icon-maskable-v5-512.png",
+            ]
             assert chrome.evaluate("Promise.all(" + json.dumps([icon["src"] for icon in manifest["icons"]]) +
                                    ".map(path=>fetch(path).then(r=>r.ok))).then(x=>x.every(Boolean))")
             assert not [event for event in chrome.events if event.get("method") == "Network.requestWillBeSent"
@@ -677,9 +681,11 @@ def main():
             second_tab = chrome.open_tab(origin + "comparador.html?browserOnly")
             chrome.until("!!document.querySelector('#pwaUpdateBanner')", session_id=second_tab)
             chrome.evaluate("window.__keepMarker = 'second tab stayed open'", session_id=second_tab)
-            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-6", b"pwa-7")
+            confirmed_references = chrome.evaluate("localStorage.getItem('simulador_escala_references_v1')", session_id=second_tab)
+            assert confirmed_references
+            new_worker = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-7", b"pwa-8")
             QuietHandler.worker_override = new_worker
-            assert chrome.evaluate("fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>t.includes('pwa-7'))")
+            assert chrome.evaluate("fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>t.includes('pwa-8'))")
             chrome.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
             chrome.until("navigator.serviceWorker.getRegistration().then(r=>r.waiting?.state==='installed')")
             chrome.until("document.querySelector('#pwaUpdateBanner')?.hidden === false")
@@ -729,9 +735,10 @@ def main():
             chrome.until("document.querySelector('#pwaUpdateBanner')?.hidden === false", session_id=second_tab)
             chrome.evaluate("document.querySelector('#pwaUpdateBanner .button.primary').click()", session_id=second_tab)
             time.sleep(.5)
-            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-7')))", session_id=second_tab)
+            chrome.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-8')))", session_id=second_tab)
             assert chrome.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Restaurada 12x36')")
             assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") == confirmed_record
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_references_v1')") == confirmed_references
             print("UPDATE: all pages notified; dirty form protected; chosen tab reloaded once; second tab waited")
             chrome.call("Network.emulateNetworkConditions", {
                 "offline": True, "latency": 0, "downloadThroughput": 0, "uploadThroughput": 0
@@ -741,13 +748,14 @@ def main():
                 assert chrome.evaluate("document.querySelector('h1') !== null"), page
                 assert chrome.evaluate("document.querySelector('#pwaUpdateBanner')?.hidden"), page
             assert chrome.evaluate("localStorage.getItem('simulador_escala_active_v1')") == confirmed_record
+            assert chrome.evaluate("localStorage.getItem('simulador_escala_references_v1')") == confirmed_references
             errors = [event for event in chrome.events if event.get("method") == "Runtime.exceptionThrown"]
             assert not errors, json.dumps(errors[-2:], ensure_ascii=False)
             print("UPDATED OFFLINE: simulator, comparator, report and local data opened without losing scales")
 
             legacy_script = ("window.__legacyPwa=true; window.addEventListener('load',()=>"
                              "navigator.serviceWorker.register('sw.js',{scope:'./',updateViaCache:'none'}));").encode()
-            QuietHandler.worker_override = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-6", b"pwa-5")
+            QuietHandler.worker_override = (ROOT / "docs" / "demo" / "sw.js").read_bytes().replace(b"pwa-7", b"pwa-5")
             QuietHandler.pwa_override = legacy_script
             with socket.socket() as legacy_port_socket:
                 legacy_port_socket.bind(("127.0.0.1", 0))
@@ -762,7 +770,7 @@ def main():
                 legacy.open_tab(origin + "dados.html?browserOnly")
                 QuietHandler.pwa_override = None
                 QuietHandler.worker_override = (ROOT / "docs" / "demo" / "sw.js").read_bytes()
-                assert legacy.evaluate("fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>t.includes('pwa-6'))")
+                assert legacy.evaluate("fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>t.includes('pwa-7'))")
                 legacy.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
                 legacy.until("navigator.serviceWorker.getRegistration().then(r=>r.waiting?.state==='installed')")
                 assert legacy.evaluate("!document.querySelector('#pwaUpdateBanner')")
@@ -771,10 +779,11 @@ def main():
             legacy = Chrome(legacy_port, base / "legacy-profile")
             try:
                 legacy.navigate(origin + "simulador.html?browserOnly")
-                legacy.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-6')))")
+                legacy.until("caches.keys().then(x=>x.some(y=>y.endsWith('pwa-7')))")
                 legacy.until("!!document.querySelector('#pwaUpdateBanner')")
                 assert legacy.evaluate("localStorage.getItem('simulador_escala_demo_v014_local').includes('Escala anterior')")
                 assert legacy.evaluate("localStorage.getItem('simulador_escala_active_v1')") == confirmed_record
+                assert legacy.evaluate("ScaleReferences.read(localStorage).some(x=>x.start === JSON.parse(localStorage.getItem('simulador_escala_active_v1')).start)")
                 errors = [event for event in legacy.events if event.get("method") == "Runtime.exceptionThrown"]
                 assert not errors, json.dumps(errors[-2:], ensure_ascii=False)
                 print("LEGACY UPDATE: closing old tabs activated the new shell; scales and confirmed query remained")

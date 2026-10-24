@@ -10,8 +10,8 @@
     <script defer src="vendor/lucide-0.468.0.min.js"></script>
     <script defer src="script.js"></script>
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="icon" type="image/png" href="icons/icon-v2-192.png">
-    <link rel="apple-touch-icon" href="icons/icon-v2-192.png">
+    <link rel="icon" type="image/png" href="icons/icon-v5-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-v5-192.png">
     <meta name="theme-color" content="#12171f">
     <script defer src="pwa.js"></script>
 </head>
@@ -223,7 +223,7 @@ EscalaRepository
                 <p>As escalas salvas neste navegador ficam neste dispositivo, sem sincronização. Informe a <strong>Data de início da sequência</strong> (data e hora para ciclos por horas), confira a prévia e confirme. A referência fixa é guardada separadamente da definição da escala: a API local não a persiste. Ao aplicar a mesma escala ou abrir comparador e relatório, a referência confirmada volta; cadastros antigos sem referência pedem confirmação uma vez. Uma data consultada anterior ao início aparece como projeção não confirmada, fora dos totais mensais.</p>
                 <p>Em <a href="dados.html">Dados locais</a>, o backup JSON v2 inclui cadastros locais e referências confirmadas. Cada referência leva nome, tipo e parâmetros da escala para validação, inclusive se vier da API local; o arquivo não copia o catálogo completo da API nem a consulta ativa. Antes de importar, confira a prévia do efeito sobre as referências. Backups v1 são aceitos e preservam referências de cadastros idênticos. Para o protótipo Android, use a exportação v1 compatível e digite a referência manualmente. Limpar os dados do navegador ou desinstalar pode apagar escalas e referências.</p>
                 <p>Quando uma versão nova estiver pronta e houver conexão, todas as telas mostram <strong>Atualização disponível</strong>. Você pode escolher <strong>Atualizar agora</strong> ou <strong>Mais tarde</strong>; a segunda opção oculta o aviso nesta aba por até uma hora. Antes de atualizar, confirme o aviso se houver campos alterados; a página recarrega somente após sua escolha. Em duas abas, a outra não recarrega sozinha: conclua o que estiver preenchendo e atualize-a quando quiser. As escalas e a consulta guardada permanecem no dispositivo.</p>
-                <p>Para passar da versão anterior, que ainda não tinha esse botão, feche todas as janelas da PWA e abas da demo e abra novamente com conexão. O worker em espera poderá assumir sem limpar dados. O ícone instalado no Android pode depender de uma confirmação do Chrome e não necessariamente muda ao tocar no botão de atualização. No GitHub Pages não há chamadas para a API em localhost; em um servidor estático local, a API continua opcional.</p>
+                <p>Para passar da versão anterior, que ainda não tinha esse botão, feche todas as janelas da PWA e abas da demo e abra novamente com conexão. O worker em espera poderá assumir sem limpar dados. O manifesto usa o ícone 3D v5 em versões comum e maskable; as fontes SVG editáveis e os PNGs estão em <code>icons/</code>, enquanto os arquivos v2 continuam acessíveis. O ícone instalado no Android pode depender de uma confirmação do Chrome e não necessariamente muda ao tocar no botão de atualização. No GitHub Pages não há chamadas para a API em localhost; em um servidor estático local, a API continua opcional.</p>
             </div>
         </section>
 

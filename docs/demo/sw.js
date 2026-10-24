@@ -1,6 +1,6 @@
 /* Bump this name whenever a cached page or asset changes. Keep each shell complete. */
 const CACHE_PREFIX = "simulador-demo-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}pwa-6`;
+const CACHE_NAME = `${CACHE_PREFIX}pwa-7`;
 const SHELL = [
     "./", "index.html", "simulador.html", "comparador.html", "relatorio.html",
     "dados.html", "modelos.html", "documentacao.html", "sobre.html",
@@ -11,6 +11,8 @@ const SHELL = [
     "icons/icon-maskable-192.png", "icons/icon-maskable-512.png",
     "icons/icon-v2-192.png", "icons/icon-v2-512.png",
     "icons/icon-maskable-v2-192.png", "icons/icon-maskable-v2-512.png",
+    "icons/icon-v5-192.png", "icons/icon-v5-512.png",
+    "icons/icon-maskable-v5-192.png", "icons/icon-maskable-v5-512.png",
     "vendor/lucide-0.468.0.min.js"
 ];
 const shellUrls = new Set(SHELL.map((file) => new URL(file, self.registration.scope).href));
