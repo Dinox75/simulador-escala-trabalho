@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Escalas — turnos e horário</title>
+  <desc id="desc">Três faixas de turnos e um marcador vertical que indica o horário consultado.</desc>
+  <rect width="512" height="512" fill="#101B2C"/>
+  <rect x="38" y="38" width="436" height="436" rx="106" fill="#172B43"/>
+  <g stroke-linecap="round" fill="none" stroke-width="48">
+    <path d="M134 168h168" stroke="#6DD6E8"/>
+    <path d="M178 256h200" stroke="#6F97FA"/>
+    <path d="M134 344h154" stroke="#F7BE72"/>
+  </g>
+  <path d="M326 119v274" stroke="#EDF5FF" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="326" cy="256" r="20" fill="#EDF5FF"/>
+</svg>

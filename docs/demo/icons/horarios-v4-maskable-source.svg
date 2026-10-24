@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Escalas — ícone adaptável</title>
+  <desc id="desc">Três faixas de turnos e um marcador de horário na área segura do ícone Android.</desc>
+  <rect width="512" height="512" fill="#172B43"/>
+  <g transform="translate(38 38) scale(.8515625)">
+    <g stroke-linecap="round" fill="none" stroke-width="48">
+      <path d="M134 168h168" stroke="#6DD6E8"/>
+      <path d="M178 256h200" stroke="#6F97FA"/>
+      <path d="M134 344h154" stroke="#F7BE72"/>
+    </g>
+    <path d="M326 119v274" stroke="#EDF5FF" stroke-width="14" stroke-linecap="round"/>
+    <circle cx="326" cy="256" r="20" fill="#EDF5FF"/>
+  </g>
+</svg>
